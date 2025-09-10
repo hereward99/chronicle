@@ -1,0 +1,188 @@
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Plus, Search, Crown, User, Skull, Users } from "lucide-react";
+
+const mockCharacters = [
+  {
+    id: 1,
+    name: "Elena Voss",
+    clan: "Toreador",
+    generation: 10,
+    type: "PC",
+    status: "Active",
+    concept: "Artist turned predator",
+    avatar: null
+  },
+  {
+    id: 2,
+    name: "Marcus Kane",
+    clan: "Ventrue",
+    generation: 9,
+    type: "PC",
+    status: "Active",
+    concept: "Corporate executive",
+    avatar: null
+  },
+  {
+    id: 3,
+    name: "Baron Alexei",
+    clan: "Nosferatu",
+    generation: 8,
+    type: "NPC",
+    status: "Ally",
+    concept: "Information broker",
+    avatar: null
+  }
+];
+
+export default function Characters() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+
+  const filteredCharacters = mockCharacters.filter(character => {
+    const matchesSearch = character.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         character.clan.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesTab = activeTab === "all" || 
+                      (activeTab === "pcs" && character.type === "PC") ||
+                      (activeTab === "npcs" && character.type === "NPC");
+    
+    return matchesSearch && matchesTab;
+  });
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Active": return "default";
+      case "Ally": return "secondary";
+      case "Enemy": return "destructive";
+      default: return "outline";
+    }
+  };
+
+  const getClanIcon = (clan: string) => {
+    switch (clan) {
+      case "Ventrue": return <Crown className="h-4 w-4" />;
+      case "Nosferatu": return <Skull className="h-4 w-4" />;
+      default: return <User className="h-4 w-4" />;
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Characters</h1>
+          <p className="text-muted-foreground">Manage your chronicle's characters</p>
+        </div>
+        <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
+          <Plus className="w-4 h-4 mr-2" />
+          New Character
+        </Button>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search characters..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 bg-input border-border"
+          />
+        </div>
+      </div>
+
+      {/* Character Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="bg-secondary border-border">
+          <TabsTrigger value="all">All Characters</TabsTrigger>
+          <TabsTrigger value="pcs">Player Characters</TabsTrigger>
+          <TabsTrigger value="npcs">NPCs</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value={activeTab} className="mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCharacters.map((character) => (
+              <Card key={character.id} className="bg-gradient-subtle border-border shadow-gothic hover:shadow-deep transition-all duration-300">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center space-x-3">
+                    <Avatar className="h-12 w-12 border-2 border-border">
+                      <AvatarImage src={character.avatar || ""} />
+                      <AvatarFallback className="bg-secondary text-secondary-foreground">
+                        {character.name.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <CardTitle className="text-lg text-foreground">{character.name}</CardTitle>
+                      <div className="flex items-center space-x-2 mt-1">
+                        {getClanIcon(character.clan)}
+                        <span className="text-sm text-muted-foreground">{character.clan}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Generation</span>
+                    <Badge variant="outline">{character.generation}th</Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Type</span>
+                    <Badge variant={character.type === "PC" ? "default" : "secondary"}>
+                      {character.type}
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Status</span>
+                    <Badge variant={getStatusColor(character.status) as any}>
+                      {character.status}
+                    </Badge>
+                  </div>
+                  
+                  <div className="pt-2 border-t border-border">
+                    <p className="text-sm text-muted-foreground italic">
+                      "{character.concept}"
+                    </p>
+                  </div>
+                  
+                  <div className="flex space-x-2 pt-2">
+                    <Button size="sm" variant="outline" className="flex-1 border-border hover:bg-secondary">
+                      View
+                    </Button>
+                    <Button size="sm" variant="outline" className="flex-1 border-border hover:bg-secondary">
+                      Edit
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {filteredCharacters.length === 0 && (
+            <div className="text-center py-12">
+              <div className="mb-4">
+                <Users className="h-12 w-12 text-muted-foreground mx-auto" />
+              </div>
+              <h3 className="text-lg font-medium text-foreground mb-2">No characters found</h3>
+              <p className="text-muted-foreground mb-4">
+                {searchTerm ? "Try adjusting your search terms." : "Create your first character to get started."}
+              </p>
+              <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Character
+              </Button>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
