@@ -5,46 +5,16 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Search, Crown, User, Skull, Users } from "lucide-react";
-
-const mockCharacters = [
-  {
-    id: 1,
-    name: "Elena Voss",
-    clan: "Toreador",
-    generation: 10,
-    type: "PC",
-    status: "Active",
-    concept: "Artist turned predator",
-    avatar: null
-  },
-  {
-    id: 2,
-    name: "Marcus Kane",
-    clan: "Ventrue",
-    generation: 9,
-    type: "PC",
-    status: "Active",
-    concept: "Corporate executive",
-    avatar: null
-  },
-  {
-    id: 3,
-    name: "Baron Alexei",
-    clan: "Nosferatu",
-    generation: 8,
-    type: "NPC",
-    status: "Ally",
-    concept: "Information broker",
-    avatar: null
-  }
-];
+import { useCharacters } from "@/hooks/useCharacters";
 
 export default function Characters() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+  const { characters, loading } = useCharacters();
 
-  const filteredCharacters = mockCharacters.filter(character => {
+  const filteredCharacters = characters.filter(character => {
     const matchesSearch = character.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          character.clan.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesTab = activeTab === "all" || 
@@ -107,13 +77,37 @@ export default function Characters() {
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCharacters.map((character) => (
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <Card key={i} className="bg-gradient-subtle border-border">
+                  <CardHeader>
+                    <div className="flex items-center space-x-3">
+                      <Skeleton className="h-12 w-12 rounded-full" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <Skeleton className="h-6 w-full" />
+                      <Skeleton className="h-6 w-full" />
+                      <Skeleton className="h-6 w-full" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredCharacters.map((character) => (
               <Card key={character.id} className="bg-gradient-subtle border-border shadow-gothic hover:shadow-deep transition-all duration-300">
                 <CardHeader className="pb-3">
                   <div className="flex items-center space-x-3">
                     <Avatar className="h-12 w-12 border-2 border-border">
-                      <AvatarImage src={character.avatar || ""} />
+                      <AvatarImage src={character.avatar_url || ""} />
                       <AvatarFallback className="bg-secondary text-secondary-foreground">
                         {character.name.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
@@ -163,10 +157,11 @@ export default function Characters() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
+                ))}
+              </div>
+            )}
 
-          {filteredCharacters.length === 0 && (
+          {!loading && filteredCharacters.length === 0 && (
             <div className="text-center py-12">
               <div className="mb-4">
                 <Users className="h-12 w-12 text-muted-foreground mx-auto" />

@@ -1,9 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Users, BookOpen, Calendar, Scroll } from "lucide-react";
+import { useChronicleStats } from "@/hooks/useChronicleStats";
+import { usePlots } from "@/hooks/usePlots";
+import { formatDistanceToNow } from "date-fns";
 
 export default function Chronicle() {
+  const { stats, loading: statsLoading } = useChronicleStats();
+  const { plots, loading: plotsLoading } = usePlots();
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -26,19 +32,35 @@ export default function Chronicle() {
             <Users className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">8</div>
-            <p className="text-xs text-muted-foreground">3 PCs, 5 NPCs</p>
+            {statsLoading ? (
+              <Skeleton className="h-8 w-16 mb-2" />
+            ) : (
+              <div className="text-2xl font-bold text-foreground">{stats.characters.total}</div>
+            )}
+            {statsLoading ? (
+              <Skeleton className="h-3 w-20" />
+            ) : (
+              <p className="text-xs text-muted-foreground">{stats.characters.pcs} PCs, {stats.characters.npcs} NPCs</p>
+            )}
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-subtle border-border shadow-gothic">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Stories</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Plots</CardTitle>
             <BookOpen className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">12</div>
-            <p className="text-xs text-muted-foreground">4 active plots</p>
+            {statsLoading ? (
+              <Skeleton className="h-8 w-16 mb-2" />
+            ) : (
+              <div className="text-2xl font-bold text-foreground">{stats.plots.total}</div>
+            )}
+            {statsLoading ? (
+              <Skeleton className="h-3 w-20" />
+            ) : (
+              <p className="text-xs text-muted-foreground">{stats.plots.active} active plots</p>
+            )}
           </CardContent>
         </Card>
 
@@ -48,8 +70,21 @@ export default function Chronicle() {
             <Calendar className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">23</div>
-            <p className="text-xs text-muted-foreground">Last: 3 days ago</p>
+            {statsLoading ? (
+              <Skeleton className="h-8 w-16 mb-2" />
+            ) : (
+              <div className="text-2xl font-bold text-foreground">{stats.sessions.total}</div>
+            )}
+            {statsLoading ? (
+              <Skeleton className="h-3 w-20" />
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                {stats.sessions.lastSession 
+                  ? `Last: ${formatDistanceToNow(new Date(stats.sessions.lastSession))} ago`
+                  : 'No sessions yet'
+                }
+              </p>
+            )}
           </CardContent>
         </Card>
 
@@ -59,8 +94,16 @@ export default function Chronicle() {
             <Scroll className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">47</div>
-            <p className="text-xs text-muted-foreground">Chronicle entries</p>
+            {statsLoading ? (
+              <Skeleton className="h-8 w-16 mb-2" />
+            ) : (
+              <div className="text-2xl font-bold text-foreground">{stats.notes.total}</div>
+            )}
+            {statsLoading ? (
+              <Skeleton className="h-3 w-20" />
+            ) : (
+              <p className="text-xs text-muted-foreground">Chronicle entries</p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -101,27 +144,42 @@ export default function Chronicle() {
             <CardTitle className="text-foreground">Active Plots</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium text-foreground">The Prince's Gambit</h4>
-                <Badge variant="destructive">Critical</Badge>
+            {plotsLoading ? (
+              [...Array(3)].map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-5 w-16" />
+                  </div>
+                  <Skeleton className="h-3 w-full" />
+                </div>
+              ))
+            ) : plots.length === 0 ? (
+              <div className="text-center py-4">
+                <p className="text-sm text-muted-foreground">No active plots</p>
+                <Button size="sm" className="mt-2" variant="outline">
+                  Create your first plot
+                </Button>
               </div>
-              <p className="text-sm text-muted-foreground">The Prince's mysterious disappearance threatens the Domain...</p>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium text-foreground">Blood Hunt</h4>
-                <Badge variant="secondary">Active</Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">A rogue Toreador has violated the Masquerade...</p>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium text-foreground">The Thin Blood</h4>
-                <Badge variant="outline">Subplot</Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">Strange new thin-bloods appear in the city...</p>
-            </div>
+            ) : (
+              plots.map((plot) => (
+                <div key={plot.id} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium text-foreground">{plot.title}</h4>
+                    <Badge variant={
+                      plot.status === 'Critical' ? 'destructive' : 
+                      plot.status === 'Active' ? 'secondary' : 
+                      'outline'
+                    }>
+                      {plot.status}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {plot.description || 'No description provided'}
+                  </p>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
       </div>
