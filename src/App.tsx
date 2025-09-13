@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import Chronicle from "./pages/Chronicle";
 import Characters from "./pages/Characters";
+import Stories from "./pages/Stories";
+import Sessions from "./pages/Sessions";
 import Generator from "./pages/Generator";
 import NotFound from "./pages/NotFound";
 
@@ -21,6 +23,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Chronicle />} />
             <Route path="/characters" element={<Characters />} />
+            <Route path="/stories" element={<Stories />} />
+            <Route path="/sessions" element={<Sessions />} />
             <Route path="/generator" element={<Generator />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
