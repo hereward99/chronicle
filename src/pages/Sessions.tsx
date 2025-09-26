@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Calendar, Users, Clock, MapPin } from "lucide-react";
+import { CreateSessionDialog } from "@/components/dialogs/CreateSessionDialog";
 
 const Sessions = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -58,10 +59,12 @@ const Sessions = () => {
             Track your gaming sessions and chronicle progress
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-crimson">
-          <Plus className="h-4 w-4 mr-2" />
-          Log New Session
-        </Button>
+        <CreateSessionDialog>
+          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-crimson">
+            <Plus className="h-4 w-4 mr-2" />
+            Log New Session
+          </Button>
+        </CreateSessionDialog>
       </div>
 
       {/* Search */}
@@ -151,10 +154,12 @@ const Sessions = () => {
                 }
               </p>
               {!searchTerm && (
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Log Your First Session
-                </Button>
+                <CreateSessionDialog>
+                  <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Log Your First Session
+                  </Button>
+                </CreateSessionDialog>
               )}
             </CardContent>
           </Card>

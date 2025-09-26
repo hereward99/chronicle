@@ -4,34 +4,68 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "@/components/Layout";
+import { AuthProvider } from "@/hooks/useAuth";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Chronicle from "./pages/Chronicle";
 import Characters from "./pages/Characters";
 import Stories from "./pages/Stories";
 import Sessions from "./pages/Sessions";
 import Generator from "./pages/Generator";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Layout>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Chronicle />} />
-            <Route path="/characters" element={<Characters />} />
-            <Route path="/stories" element={<Stories />} />
-            <Route path="/sessions" element={<Sessions />} />
-            <Route path="/generator" element={<Generator />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Chronicle />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/characters" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Characters />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/stories" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Stories />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/sessions" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Sessions />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/generator" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Generator />
+                </Layout>
+              </ProtectedRoute>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </Layout>
-      </BrowserRouter>
-    </TooltipProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

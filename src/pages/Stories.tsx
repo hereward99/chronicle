@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, BookOpen, Clock, Users } from "lucide-react";
+import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
 
 const Stories = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -61,10 +62,12 @@ const Stories = () => {
             Manage your chronicle's ongoing and planned storylines
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-crimson">
-          <Plus className="h-4 w-4 mr-2" />
-          New Story
-        </Button>
+        <CreatePlotDialog>
+          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-crimson">
+            <Plus className="h-4 w-4 mr-2" />
+            New Story
+          </Button>
+        </CreatePlotDialog>
       </div>
 
       {/* Search */}
@@ -141,10 +144,12 @@ const Stories = () => {
                   }
                 </p>
                 {!searchTerm && (
-                  <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Your First Story
-                  </Button>
+                  <CreatePlotDialog>
+                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Your First Story
+                    </Button>
+                  </CreatePlotDialog>
                 )}
               </CardContent>
             </Card>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   Home, 
   Users, 
@@ -10,7 +11,8 @@ import {
   Sparkles, 
   Menu, 
   X,
-  Skull
+  Skull,
+  LogOut
 } from "lucide-react";
 
 const navigationItems = [
@@ -24,6 +26,7 @@ const navigationItems = [
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { signOut, user } = useAuth();
 
   return (
     <>
@@ -90,10 +93,22 @@ export function Navigation() {
           </div>
 
           {/* Footer */}
-          <div className="p-4 border-t border-border">
+          <div className="p-4 border-t border-border space-y-3">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={signOut}
+              className="w-full justify-start text-muted-foreground hover:text-foreground"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
             <div className="text-xs text-muted-foreground text-center">
               <p>Vampire: The Masquerade</p>
               <p className="text-primary">5th Edition Assistant</p>
+              {user?.email && (
+                <p className="mt-1 truncate">{user.email}</p>
+              )}
             </div>
           </div>
         </div>

@@ -6,6 +6,10 @@ import { Plus, Users, BookOpen, Calendar, Scroll } from "lucide-react";
 import { useChronicleStats } from "@/hooks/useChronicleStats";
 import { usePlots } from "@/hooks/usePlots";
 import { formatDistanceToNow } from "date-fns";
+import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialog";
+import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
+import { CreateSessionDialog } from "@/components/dialogs/CreateSessionDialog";
+import { CreateNoteDialog } from "@/components/dialogs/CreateNoteDialog";
 
 export default function Chronicle() {
   const { stats, loading: statsLoading } = useChronicleStats();
@@ -18,10 +22,12 @@ export default function Chronicle() {
           <h1 className="text-4xl font-bold text-foreground mb-2">Chronicle Dashboard</h1>
           <p className="text-lg text-muted-foreground">Manage your Vampire: The Masquerade chronicle</p>
         </div>
-        <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
-          <Plus className="w-4 h-4 mr-2" />
-          New Entry
-        </Button>
+        <CreateNoteDialog>
+          <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
+            <Plus className="w-4 h-4 mr-2" />
+            New Entry
+          </Button>
+        </CreateNoteDialog>
       </div>
 
       {/* Stats Cards */}
@@ -157,9 +163,11 @@ export default function Chronicle() {
             ) : plots.length === 0 ? (
               <div className="text-center py-4">
                 <p className="text-sm text-muted-foreground">No active plots</p>
-                <Button size="sm" className="mt-2" variant="outline">
-                  Create your first plot
-                </Button>
+                <CreatePlotDialog>
+                  <Button size="sm" className="mt-2" variant="outline">
+                    Create your first plot
+                  </Button>
+                </CreatePlotDialog>
               </div>
             ) : (
               plots.map((plot) => (
@@ -191,22 +199,30 @@ export default function Chronicle() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-20 flex-col space-y-2 border-border hover:bg-secondary">
-              <Users className="h-6 w-6" />
-              <span>Add Character</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col space-y-2 border-border hover:bg-secondary">
-              <BookOpen className="h-6 w-6" />
-              <span>New Story</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col space-y-2 border-border hover:bg-secondary">
-              <Calendar className="h-6 w-6" />
-              <span>Log Session</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col space-y-2 border-border hover:bg-secondary">
-              <Scroll className="h-6 w-6" />
-              <span>Add Note</span>
-            </Button>
+            <CreateCharacterDialog>
+              <Button variant="outline" className="h-20 flex-col space-y-2 border-border hover:bg-secondary">
+                <Users className="h-6 w-6" />
+                <span>Add Character</span>
+              </Button>
+            </CreateCharacterDialog>
+            <CreatePlotDialog>
+              <Button variant="outline" className="h-20 flex-col space-y-2 border-border hover:bg-secondary">
+                <BookOpen className="h-6 w-6" />
+                <span>New Story</span>
+              </Button>
+            </CreatePlotDialog>
+            <CreateSessionDialog>
+              <Button variant="outline" className="h-20 flex-col space-y-2 border-border hover:bg-secondary">
+                <Calendar className="h-6 w-6" />
+                <span>Log Session</span>
+              </Button>
+            </CreateSessionDialog>
+            <CreateNoteDialog>
+              <Button variant="outline" className="h-20 flex-col space-y-2 border-border hover:bg-secondary">
+                <Scroll className="h-6 w-6" />
+                <span>Add Note</span>
+              </Button>
+            </CreateNoteDialog>
           </div>
         </CardContent>
       </Card>

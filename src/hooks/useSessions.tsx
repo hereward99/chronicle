@@ -1,38 +1,36 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
-export interface Plot {
+export interface Session {
   id: string;
   title: string;
-  description: string | null;
-  status: string;
-  priority: string;
+  summary: string | null;
+  date_played: string;
+  experience_awarded: number | null;
   chronicle_id: string;
   user_id: string;
   created_at: string;
   updated_at: string;
 }
 
-export function usePlots() {
-  const [plots, setPlots] = useState<Plot[]>([]);
+export function useSessions() {
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchPlots = async () => {
+  const fetchSessions = async () => {
     try {
       const { data, error } = await supabase
-        .from('plots')
+        .from('sessions')
         .select('*')
-        .in('status', ['Active', 'Critical'])
-        .order('created_at', { ascending: false })
-        .limit(3);
+        .order('date_played', { ascending: false });
 
       if (error) throw error;
-      setPlots(data || []);
+      setSessions(data as Session[] || []);
     } catch (error: any) {
       toast({
-        title: "Error fetching plots",
+        title: "Error fetching sessions",
         description: error.message,
         variant: "destructive",
       });
@@ -41,29 +39,29 @@ export function usePlots() {
     }
   };
 
-  const createPlot = async (plot: Omit<Plot, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+  const createSession = async (session: Omit<Session, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
-        .from('plots')
-        .insert([{ ...plot, user_id: user.id }])
+        .from('sessions')
+        .insert([{ ...session, user_id: user.id }])
         .select()
         .single();
 
       if (error) throw error;
       
-      setPlots(prev => [data as Plot, ...prev]);
+      setSessions(prev => [data as Session, ...prev]);
       toast({
-        title: "Story created",
-        description: `${plot.title} has been added to your chronicle.`,
+        title: "Session logged",
+        description: `${session.title} has been added to your chronicle.`,
       });
       
       return data;
     } catch (error: any) {
       toast({
-        title: "Error creating story",
+        title: "Error creating session",
         description: error.message,
         variant: "destructive",
       });
@@ -72,8 +70,13 @@ export function usePlots() {
   };
 
   useEffect(() => {
-    fetchPlots();
+    fetchSessions();
   }, []);
 
-  return { plots, loading, createPlot, refetch: fetchPlots };
+  return {
+    sessions,
+    loading,
+    createSession,
+    refetch: fetchSessions,
+  };
 }

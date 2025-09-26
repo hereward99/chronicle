@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Search, Crown, User, Skull, Users } from "lucide-react";
 import { useCharacters } from "@/hooks/useCharacters";
+import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialog";
 
 export default function Characters() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -49,10 +50,12 @@ export default function Characters() {
           <h1 className="text-3xl font-bold text-foreground">Characters</h1>
           <p className="text-muted-foreground">Manage your chronicle's characters</p>
         </div>
-        <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
-          <Plus className="w-4 h-4 mr-2" />
-          New Character
-        </Button>
+        <CreateCharacterDialog>
+          <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
+            <Plus className="w-4 h-4 mr-2" />
+            New Character
+          </Button>
+        </CreateCharacterDialog>
       </div>
 
       {/* Search and Filters */}
