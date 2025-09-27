@@ -4,11 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, BookOpen, Clock, Users } from "lucide-react";
+import { Plus, Search, BookOpen, Clock, Users, Loader2 } from "lucide-react";
 import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
+import { usePlots } from "@/hooks/usePlots";
 
 const Stories = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const { plots, loading } = usePlots();
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -18,38 +20,16 @@ const Stories = () => {
         return 'secondary';
       case 'planned':
         return 'outline';
+      case 'critical':
+        return 'destructive';
       default:
         return 'outline';
     }
   };
 
-  // Mock data for now - replace with real data later
-  const stories = [
-    {
-      id: '1',
-      title: 'The Prince\'s Gambit',
-      description: 'A political intrigue involving the Prince of the city and a mysterious Sabbat infiltrator.',
-      status: 'Active',
-      priority: 'High',
-      sessions: 3,
-      characters: ['Marcus Kane', 'Isabella Torretti'],
-      created_at: '2024-01-15',
-    },
-    {
-      id: '2', 
-      title: 'Blood Hunt',
-      description: 'The coterie must track down a rogue Malkavian before they expose the Masquerade.',
-      status: 'Planned',
-      priority: 'Medium',
-      sessions: 0,
-      characters: [],
-      created_at: '2024-01-20',
-    }
-  ];
-
-  const filteredStories = stories.filter(story =>
+  const filteredStories = plots.filter(story =>
     story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    story.description.toLowerCase().includes(searchTerm.toLowerCase())
+    (story.description && story.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -91,7 +71,11 @@ const Stories = () => {
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
-          {filteredStories.length > 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : filteredStories.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredStories.map((story) => (
                 <Card key={story.id} className="bg-card border-border shadow-gothic hover:shadow-crimson transition-shadow">
@@ -105,21 +89,18 @@ const Stories = () => {
                       </Badge>
                     </div>
                     <CardDescription className="line-clamp-3">
-                      {story.description}
+                      {story.description || "No description provided"}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-0">
                     <div className="space-y-2">
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Clock className="h-4 w-4 mr-2" />
-                        {story.sessions} sessions played
+                        0 sessions played
                       </div>
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Users className="h-4 w-4 mr-2" />
-                        {story.characters.length > 0 
-                          ? `${story.characters.length} characters involved`
-                          : 'No characters assigned'
-                        }
+                        No characters assigned
                       </div>
                       <div className="flex items-center text-sm text-muted-foreground">
                         <BookOpen className="h-4 w-4 mr-2" />
