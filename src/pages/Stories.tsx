@@ -4,13 +4,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, BookOpen, Clock, Users, Loader2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Plus, Search, BookOpen, Clock, Users, Loader2, Edit, Trash2, MoreVertical } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
-import { usePlots } from "@/hooks/usePlots";
+import { EditPlotDialog } from "@/components/dialogs/EditPlotDialog";
+import { usePlots, Plot } from "@/hooks/usePlots";
 
 const Stories = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const { plots, loading, refetch } = usePlots();
+  const [editingPlot, setEditingPlot] = useState<Plot | null>(null);
+  const { plots, loading, deletePlot, refetch } = usePlots();
+
+  const handleDelete = async (plotId: string) => {
+    await deletePlot(plotId);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -27,9 +35,90 @@ const Stories = () => {
     }
   };
 
-  const filteredStories = plots.filter(story =>
-    story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (story.description && story.description.toLowerCase().includes(searchTerm.toLowerCase()))
+  const getFilteredStories = (status?: string) => {
+    let filtered = plots.filter(story =>
+      story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (story.description && story.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+
+    if (status && status !== 'all') {
+      filtered = filtered.filter(story => 
+        story.status.toLowerCase() === status.toLowerCase()
+      );
+    }
+
+    return filtered;
+  };
+
+  const renderStoryCard = (story: Plot) => (
+    <Card key={story.id} className="bg-card border-border shadow-gothic hover:shadow-crimson transition-shadow">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <CardTitle className="text-lg text-foreground line-clamp-2">
+            {story.title}
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Badge variant={getStatusColor(story.status)} className="shrink-0">
+              {story.status}
+            </Badge>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setEditingPlot(story)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Story</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete "{story.title}"? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleDelete(story.id)} className="bg-destructive hover:bg-destructive/90">
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+        <CardDescription className="line-clamp-3">
+          {story.description || "No description provided"}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="space-y-2">
+          <div className="flex items-center text-sm text-muted-foreground">
+            <Clock className="h-4 w-4 mr-2" />
+            0 sessions played
+          </div>
+          <div className="flex items-center text-sm text-muted-foreground">
+            <Users className="h-4 w-4 mr-2" />
+            No characters assigned
+          </div>
+          <div className="flex items-center text-sm text-muted-foreground">
+            <BookOpen className="h-4 w-4 mr-2" />
+            Priority: {story.priority}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 
   return (
@@ -75,41 +164,9 @@ const Stories = () => {
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
-          ) : filteredStories.length > 0 ? (
+          ) : getFilteredStories().length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredStories.map((story) => (
-                <Card key={story.id} className="bg-card border-border shadow-gothic hover:shadow-crimson transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="text-lg text-foreground line-clamp-2">
-                        {story.title}
-                      </CardTitle>
-                      <Badge variant={getStatusColor(story.status)} className="ml-2 shrink-0">
-                        {story.status}
-                      </Badge>
-                    </div>
-                    <CardDescription className="line-clamp-3">
-                      {story.description || "No description provided"}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="space-y-2">
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Clock className="h-4 w-4 mr-2" />
-                        0 sessions played
-                      </div>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Users className="h-4 w-4 mr-2" />
-                        No characters assigned
-                      </div>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <BookOpen className="h-4 w-4 mr-2" />
-                        Priority: {story.priority}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {getFilteredStories().map(renderStoryCard)}
             </div>
           ) : (
             <Card className="bg-card border-border">
@@ -137,25 +194,66 @@ const Stories = () => {
           )}
         </TabsContent>
 
-        {/* Other tab contents would filter the same data */}
-        <TabsContent value="active">
-          <div className="text-center py-8 text-muted-foreground">
-            Active stories will be shown here
-          </div>
+        <TabsContent value="active" className="space-y-4">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : getFilteredStories('active').length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {getFilteredStories('active').map(renderStoryCard)}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              No active stories found
+            </div>
+          )}
         </TabsContent>
 
-        <TabsContent value="planned">
-          <div className="text-center py-8 text-muted-foreground">
-            Planned stories will be shown here
-          </div>
+        <TabsContent value="planned" className="space-y-4">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : getFilteredStories('planned').length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {getFilteredStories('planned').map(renderStoryCard)}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              No planned stories found
+            </div>
+          )}
         </TabsContent>
 
-        <TabsContent value="completed">
-          <div className="text-center py-8 text-muted-foreground">
-            Completed stories will be shown here
-          </div>
+        <TabsContent value="completed" className="space-y-4">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : getFilteredStories('completed').length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {getFilteredStories('completed').map(renderStoryCard)}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              No completed stories found
+            </div>
+          )}
         </TabsContent>
       </Tabs>
+
+      {editingPlot && (
+        <EditPlotDialog
+          plot={editingPlot}
+          open={!!editingPlot}
+          onOpenChange={(open) => !open && setEditingPlot(null)}
+          onUpdated={() => {
+            setEditingPlot(null);
+            refetch();
+          }}
+        />
+      )}
     </div>
   );
 };

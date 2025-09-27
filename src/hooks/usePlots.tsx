@@ -69,9 +69,61 @@ export function usePlots() {
     }
   };
 
+  const updatePlot = async (id: string, updates: Partial<Plot>) => {
+    try {
+      const { data, error } = await supabase
+        .from('plots')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setPlots(prev => prev.map(plot => plot.id === id ? data as Plot : plot));
+      toast({
+        title: "Story updated",
+        description: "Your story has been updated successfully.",
+      });
+      
+      return data;
+    } catch (error: any) {
+      toast({
+        title: "Error updating story",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const deletePlot = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('plots')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setPlots(prev => prev.filter(plot => plot.id !== id));
+      toast({
+        title: "Story deleted",
+        description: "The story has been removed from your chronicle.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error deleting story",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   useEffect(() => {
     fetchPlots();
   }, []);
 
-  return { plots, loading, createPlot, refetch: fetchPlots };
+  return { plots, loading, createPlot, updatePlot, deletePlot, refetch: fetchPlots };
 }
