@@ -20,9 +20,10 @@ const plotSchema = z.object({
 
 interface CreatePlotDialogProps {
   children: React.ReactNode;
+  onCreated?: () => void;
 }
 
-export function CreatePlotDialog({ children }: CreatePlotDialogProps) {
+export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -71,6 +72,7 @@ export function CreatePlotDialog({ children }: CreatePlotDialogProps) {
       });
       
       setOpen(false);
+      onCreated?.();
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({

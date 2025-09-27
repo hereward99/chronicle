@@ -10,7 +10,7 @@ import { usePlots } from "@/hooks/usePlots";
 
 const Stories = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const { plots, loading } = usePlots();
+  const { plots, loading, refetch } = usePlots();
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -42,7 +42,7 @@ const Stories = () => {
             Manage your chronicle's ongoing and planned storylines
           </p>
         </div>
-        <CreatePlotDialog>
+        <CreatePlotDialog onCreated={refetch}>
           <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-crimson">
             <Plus className="h-4 w-4 mr-2" />
             New Story
@@ -125,7 +125,7 @@ const Stories = () => {
                   }
                 </p>
                 {!searchTerm && (
-                  <CreatePlotDialog>
+                  <CreatePlotDialog onCreated={refetch}>
                     <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
                       <Plus className="h-4 w-4 mr-2" />
                       Create Your First Story

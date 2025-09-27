@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export interface Plot {
   id: string;
@@ -24,9 +24,7 @@ export function usePlots() {
       const { data, error } = await supabase
         .from('plots')
         .select('*')
-        .in('status', ['Active', 'Critical'])
-        .order('created_at', { ascending: false })
-        .limit(3);
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setPlots(data || []);
