@@ -3,41 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Calendar, Users, Clock, MapPin } from "lucide-react";
+import { Plus, Search, Calendar, Users, Clock, MapPin, Loader2 } from "lucide-react";
 import { CreateSessionDialog } from "@/components/dialogs/CreateSessionDialog";
+import { useSessions } from "@/hooks/useSessions";
 
 const Sessions = () => {
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Mock data for now - replace with real data later
-  const sessions = [
-    {
-      id: '1',
-      title: 'The Prince\'s Court',
-      date: '2024-01-15',
-      duration: '4 hours',
-      players: ['Alice', 'Bob', 'Charlie', 'Diana'],
-      location: 'Online - Discord',
-      story: 'The Prince\'s Gambit',
-      notes: 'The coterie was introduced to Prince Lodin and received their first mission.',
-      experience: 2,
-    },
-    {
-      id: '2',
-      title: 'Shadows in the Alley',
-      date: '2024-01-08',
-      duration: '3.5 hours',
-      players: ['Alice', 'Bob', 'Charlie'],
-      location: 'Mike\'s House',
-      story: 'Blood Hunt',
-      notes: 'Investigation of the mysterious murders in the warehouse district.',
-      experience: 1,
-    },
-  ];
+  const { sessions, loading } = useSessions();
 
   const filteredSessions = sessions.filter(session =>
     session.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    session.story.toLowerCase().includes(searchTerm.toLowerCase())
+    (session.summary && session.summary.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const formatDate = (dateString: string) => {
@@ -80,7 +56,11 @@ const Sessions = () => {
 
       {/* Sessions List */}
       <div className="space-y-4">
-        {filteredSessions.length > 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : filteredSessions.length > 0 ? (
           filteredSessions.map((session) => (
             <Card key={session.id} className="bg-card border-border shadow-gothic hover:shadow-crimson transition-shadow">
               <CardHeader className="pb-4">
@@ -91,52 +71,25 @@ const Sessions = () => {
                     </CardTitle>
                     <CardDescription className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      {formatDate(session.date)}
+                      {formatDate(session.date_played)}
                     </CardDescription>
                   </div>
-                  <Badge variant="outline" className="w-fit">
-                    {session.story}
-                  </Badge>
+                  {session.experience_awarded && (
+                    <Badge variant="secondary" className="w-fit">
+                      {session.experience_awarded} XP awarded
+                    </Badge>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span>{session.duration}</span>
+                {session.summary && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-foreground">Session Summary:</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {session.summary}
+                    </p>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Users className="h-4 w-4" />
-                    <span>{session.players.length} players</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    <span>{session.location}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Badge variant="secondary">
-                      {session.experience} XP awarded
-                    </Badge>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-foreground">Players:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {session.players.map((player) => (
-                      <Badge key={player} variant="outline">
-                        {player}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-foreground">Session Notes:</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {session.notes}
-                  </p>
-                </div>
+                )}
               </CardContent>
             </Card>
           ))
