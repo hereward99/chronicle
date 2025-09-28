@@ -9,6 +9,7 @@ import { Character } from "@/hooks/useCharacters";
 import { usePlots } from "@/hooks/usePlots";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
+import { FileUpload } from "@/components/ui/file-upload";
 
 interface EditCharacterDialogProps {
   character: Character | null;
@@ -46,7 +47,8 @@ export function EditCharacterDialog({
     sire: "",
     coterie: "",
     avatar_url: "",
-    connected_stories: [] as string[]
+    connected_stories: [] as string[],
+    attachments: [] as any[]
   });
 
   useEffect(() => {
@@ -61,7 +63,8 @@ export function EditCharacterDialog({
         sire: character.sire || "",
         coterie: character.coterie || "",
         avatar_url: character.avatar_url || "",
-        connected_stories: [] // We'll implement story connections later
+        connected_stories: [], // We'll implement story connections later
+        attachments: (character as any).attachments || []
       });
     }
   }, [character]);
@@ -81,6 +84,7 @@ export function EditCharacterDialog({
         sire: formData.sire || null,
         coterie: formData.coterie || null,
         avatar_url: formData.avatar_url || null,
+        attachments: formData.attachments,
       };
       
       await onUpdate(character.id, updates);
@@ -195,8 +199,21 @@ export function EditCharacterDialog({
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-          </div>
+        </div>
+
+        <div className="col-span-1 md:col-span-2">
+          <FileUpload
+            bucket="character-files"
+            entityId={character.id}
+            entityType="character"
+            attachments={formData.attachments}
+            onAttachmentsChange={(attachments) => setFormData(prev => ({ ...prev, attachments }))}
+            accept="image/*,.pdf,.doc,.docx,.txt,.md"
+            maxFiles={5}
+            maxSize={10}
+          />
+        </div>
+      </div>
 
           <div className="space-y-4">
             <div>

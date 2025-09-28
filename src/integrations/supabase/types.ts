@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       characters: {
         Row: {
+          attachments: Json | null
           avatar_url: string | null
           chronicle_id: string
           clan: string
@@ -32,6 +33,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attachments?: Json | null
           avatar_url?: string | null
           chronicle_id: string
           clan: string
@@ -48,6 +50,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attachments?: Json | null
           avatar_url?: string | null
           chronicle_id?: string
           clan?: string
@@ -146,6 +149,7 @@ export type Database = {
       }
       plots: {
         Row: {
+          attachments: Json | null
           chronicle_id: string
           created_at: string
           description: string | null
@@ -157,6 +161,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attachments?: Json | null
           chronicle_id: string
           created_at?: string
           description?: string | null
@@ -168,6 +173,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attachments?: Json | null
           chronicle_id?: string
           created_at?: string
           description?: string | null
@@ -190,6 +196,7 @@ export type Database = {
       }
       sessions: {
         Row: {
+          attachments: Json | null
           chronicle_id: string
           created_at: string
           date_played: string
@@ -201,6 +208,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attachments?: Json | null
           chronicle_id: string
           created_at?: string
           date_played?: string
@@ -212,6 +220,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attachments?: Json | null
           chronicle_id?: string
           created_at?: string
           date_played?: string

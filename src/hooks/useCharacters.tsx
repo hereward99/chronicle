@@ -17,6 +17,7 @@ export interface Character {
   user_id: string;
   created_at: string;
   updated_at: string;
+  attachments?: any[];
 }
 
 export function useCharacters() {
@@ -32,7 +33,10 @@ export function useCharacters() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setCharacters(data as Character[] || []);
+      setCharacters((data as Character[] || []).map(char => ({
+        ...char,
+        attachments: char.attachments || []
+      })));
     } catch (error: any) {
       toast({
         title: "Error fetching characters",

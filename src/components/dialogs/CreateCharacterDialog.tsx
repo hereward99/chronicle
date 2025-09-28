@@ -10,6 +10,7 @@ import { useChronicles } from "@/hooks/useChronicles";
 import { Plus } from "lucide-react";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
+import { FileUpload } from "@/components/ui/file-upload";
 
 const characterSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
@@ -46,6 +47,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
     status: "Active",
     sire: "",
     coterie: "",
+    attachments: [] as any[]
   });
   
   const { createCharacter } = useCharacters();
@@ -83,7 +85,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
         coterie: validated.coterie || null,
         chronicle_id: chronicleId,
         avatar_url: null,
-      });
+      } as any); // Type assertion to handle attachments
 
       // Reset form
       setFormData({
@@ -95,6 +97,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
         status: "Active",
         sire: "",
         coterie: "",
+        attachments: []
       });
       
       setOpen(false);
@@ -229,6 +232,17 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
               />
             </div>
           </div>
+
+          <FileUpload
+            bucket="character-files"
+            entityId="new-character"
+            entityType="character"
+            attachments={formData.attachments}
+            onAttachmentsChange={(attachments) => setFormData(prev => ({ ...prev, attachments }))}
+            accept="image/*,.pdf,.doc,.docx,.txt,.md"
+            maxFiles={5}
+            maxSize={10}
+          />
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>

@@ -12,6 +12,7 @@ export interface Plot {
   user_id: string;
   created_at: string;
   updated_at: string;
+  attachments?: any[];
 }
 
 export function usePlots() {
@@ -27,7 +28,10 @@ export function usePlots() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPlots(data || []);
+      setPlots((data || []).map(plot => ({
+        ...plot,
+        attachments: plot.attachments || []
+      })) as Plot[]);
     } catch (error: any) {
       toast({
         title: "Error fetching plots",

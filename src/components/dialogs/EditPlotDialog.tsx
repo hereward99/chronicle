@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { usePlots, Plot } from "@/hooks/usePlots";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
+import { FileUpload } from "@/components/ui/file-upload";
 
 const plotSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
@@ -30,6 +31,7 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
     description: plot.description || "",
     status: plot.status as "Active" | "Planned" | "Completed" | "Critical",
     priority: plot.priority as "Low" | "Medium" | "High" | "Critical",
+    attachments: (plot as any).attachments || []
   });
   
   const { updatePlot } = usePlots();
@@ -51,6 +53,7 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
         description: validated.description || null,
         status: validated.status,
         priority: validated.priority,
+        attachments: formData.attachments,
       });
 
       onOpenChange(false);
@@ -134,6 +137,17 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
               maxLength={2000}
             />
           </div>
+
+          <FileUpload
+            bucket="story-files"
+            entityId={plot.id}
+            entityType="story"
+            attachments={formData.attachments}
+            onAttachmentsChange={(attachments) => setFormData(prev => ({ ...prev, attachments }))}
+            accept=".pdf,.doc,.docx,.txt,.md,image/*"
+            maxFiles={10}
+            maxSize={20}
+          />
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
