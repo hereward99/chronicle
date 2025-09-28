@@ -74,6 +74,58 @@ export function useCharacters() {
     }
   };
 
+  const updateCharacter = async (id: string, updates: Partial<Character>) => {
+    try {
+      const { data, error } = await supabase
+        .from('characters')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setCharacters(prev => prev.map(char => char.id === id ? data as Character : char));
+      toast({
+        title: "Character updated",
+        description: "Character has been successfully updated.",
+      });
+      
+      return data;
+    } catch (error: any) {
+      toast({
+        title: "Error updating character",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const deleteCharacter = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('characters')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setCharacters(prev => prev.filter(char => char.id !== id));
+      toast({
+        title: "Character deleted",
+        description: "Character has been successfully deleted.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error deleting character",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   useEffect(() => {
     fetchCharacters();
   }, []);
@@ -82,6 +134,8 @@ export function useCharacters() {
     characters,
     loading,
     createCharacter,
+    updateCharacter,
+    deleteCharacter,
     refetch: fetchCharacters,
   };
 }

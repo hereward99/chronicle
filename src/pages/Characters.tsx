@@ -7,13 +7,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Search, Crown, User, Skull, Users } from "lucide-react";
-import { useCharacters } from "@/hooks/useCharacters";
+import { useCharacters, Character } from "@/hooks/useCharacters";
 import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialog";
+import { ViewCharacterDialog } from "@/components/dialogs/ViewCharacterDialog";
+import { EditCharacterDialog } from "@/components/dialogs/EditCharacterDialog";
 
 export default function Characters() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
-  const { characters, loading } = useCharacters();
+  const [viewCharacter, setViewCharacter] = useState<Character | null>(null);
+  const [editCharacter, setEditCharacter] = useState<Character | null>(null);
+  const { characters, loading, updateCharacter, deleteCharacter } = useCharacters();
 
   const filteredCharacters = characters.filter(character => {
     const matchesSearch = character.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -151,10 +155,20 @@ export default function Characters() {
                   </div>
                   
                   <div className="flex space-x-2 pt-2">
-                    <Button size="sm" variant="outline" className="flex-1 border-border hover:bg-secondary">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="flex-1 border-border hover:bg-secondary"
+                      onClick={() => setViewCharacter(character)}
+                    >
                       View
                     </Button>
-                    <Button size="sm" variant="outline" className="flex-1 border-border hover:bg-secondary">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="flex-1 border-border hover:bg-secondary"
+                      onClick={() => setEditCharacter(character)}
+                    >
                       Edit
                     </Button>
                   </div>
@@ -181,6 +195,20 @@ export default function Characters() {
           )}
         </TabsContent>
       </Tabs>
+
+      <ViewCharacterDialog
+        character={viewCharacter}
+        open={!!viewCharacter}
+        onOpenChange={(open) => !open && setViewCharacter(null)}
+      />
+
+      <EditCharacterDialog
+        character={editCharacter}
+        open={!!editCharacter}
+        onOpenChange={(open) => !open && setEditCharacter(null)}
+        onUpdate={updateCharacter}
+        onDelete={deleteCharacter}
+      />
     </div>
   );
 }
