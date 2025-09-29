@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Users, BookOpen, Calendar, Scroll } from "lucide-react";
 import { useChronicleStats } from "@/hooks/useChronicleStats";
 import { usePlots } from "@/hooks/usePlots";
+import { useNotes } from "@/hooks/useNotes";
 import { formatDistanceToNow } from "date-fns";
 import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialog";
 import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
@@ -14,6 +15,7 @@ import { CreateNoteDialog } from "@/components/dialogs/CreateNoteDialog";
 export default function Chronicle() {
   const { stats, loading: statsLoading } = useChronicleStats();
   const { plots, loading: plotsLoading } = usePlots();
+  const { notes, loading: notesLoading } = useNotes();
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -114,7 +116,7 @@ export default function Chronicle() {
         </Card>
       </div>
 
-      {/* Recent Activity */}
+      {/* Recent Activity and Active Plots */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="bg-gradient-subtle border-border shadow-gothic">
           <CardHeader>
@@ -191,6 +193,60 @@ export default function Chronicle() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Chronicle Notes */}
+      <Card className="bg-gradient-subtle border-border shadow-gothic">
+        <CardHeader>
+          <CardTitle className="text-foreground">Chronicle Notes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {notesLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-5 w-20" />
+                  </div>
+                  <Skeleton className="h-3 w-full" />
+                </div>
+              ))}
+            </div>
+          ) : notes.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-sm text-muted-foreground">No notes yet</p>
+              <CreateNoteDialog>
+                <Button size="sm" className="mt-2" variant="outline">
+                  Create your first note
+                </Button>
+              </CreateNoteDialog>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {notes.map((note) => (
+                <Card key={note.id} className="border-border">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <CardTitle className="text-base text-foreground">{note.title}</CardTitle>
+                      <Badge variant="outline" className="ml-2">
+                        {note.category || 'General'}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground line-clamp-3">
+                      {note.content || 'No content'}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {formatDistanceToNow(new Date(note.created_at))} ago
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Quick Actions */}
       <Card className="bg-gradient-subtle border-border shadow-gothic">
