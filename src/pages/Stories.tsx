@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Search, BookOpen, Clock, Users, Loader2, Edit, Trash2, MoreVertical } from "lucide-react";
+import { Plus, Search, BookOpen, Clock, Users, Loader2, Edit, Trash2, MoreVertical, FileText, Image as ImageIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
 import { EditPlotDialog } from "@/components/dialogs/EditPlotDialog";
@@ -48,6 +48,19 @@ const Stories = () => {
     }
 
     return filtered;
+  };
+
+  const getImageAttachments = (attachments: any[]) => {
+    return attachments?.filter(att => att.type?.startsWith('image/')) || [];
+  };
+
+  const getDocumentAttachments = (attachments: any[]) => {
+    return attachments?.filter(att => 
+      att.type?.includes('pdf') || 
+      att.type?.includes('document') || 
+      att.type?.includes('text') ||
+      att.name?.match(/\.(pdf|doc|docx|txt|rtf)$/i)
+    ) || [];
   };
 
   const renderStoryCard = (story: Plot) => (
@@ -116,6 +129,42 @@ const Stories = () => {
             <BookOpen className="h-4 w-4 mr-2" />
             Priority: {story.priority}
           </div>
+
+          {/* Image Thumbnails */}
+          {getImageAttachments(story.attachments || []).length > 0 && (
+            <div className="flex gap-2 pt-2">
+              {getImageAttachments(story.attachments || []).slice(0, 3).map((img, idx) => (
+                <div key={idx} className="relative w-16 h-16 rounded overflow-hidden border border-border">
+                  <img src={img.url} alt={img.name} className="w-full h-full object-cover" />
+                </div>
+              ))}
+              {getImageAttachments(story.attachments || []).length > 3 && (
+                <div className="w-16 h-16 rounded border border-border flex items-center justify-center bg-secondary">
+                  <span className="text-xs text-muted-foreground">
+                    +{getImageAttachments(story.attachments || []).length - 3}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Document Buttons */}
+          {getDocumentAttachments(story.attachments || []).length > 0 && (
+            <div className="pt-2 space-y-1">
+              {getDocumentAttachments(story.attachments || []).map((doc, idx) => (
+                <Button
+                  key={idx}
+                  size="sm"
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => window.open(doc.url, '_blank')}
+                >
+                  <FileText className="h-3 w-3 mr-2" />
+                  <span className="truncate text-xs">{doc.name}</span>
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

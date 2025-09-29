@@ -12,6 +12,7 @@ export interface Session {
   user_id: string;
   created_at: string;
   updated_at: string;
+  attachments?: any[];
 }
 
 export function useSessions() {
@@ -27,7 +28,10 @@ export function useSessions() {
         .order('date_played', { ascending: false });
 
       if (error) throw error;
-      setSessions(data as Session[] || []);
+      setSessions((data as Session[] || []).map(session => ({
+        ...session,
+        attachments: session.attachments || []
+      })));
     } catch (error: any) {
       toast({
         title: "Error fetching sessions",

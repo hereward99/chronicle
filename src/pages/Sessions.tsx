@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Calendar, Users, Clock, MapPin, Loader2 } from "lucide-react";
+import { Plus, Search, Calendar, Users, Clock, MapPin, Loader2, FileText, Image as ImageIcon } from "lucide-react";
 import { CreateSessionDialog } from "@/components/dialogs/CreateSessionDialog";
 import { useSessions } from "@/hooks/useSessions";
 
@@ -23,6 +23,19 @@ const Sessions = () => {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const getImageAttachments = (attachments: any[]) => {
+    return attachments?.filter(att => att.type?.startsWith('image/')) || [];
+  };
+
+  const getDocumentAttachments = (attachments: any[]) => {
+    return attachments?.filter(att => 
+      att.type?.includes('pdf') || 
+      att.type?.includes('document') || 
+      att.type?.includes('text') ||
+      att.name?.match(/\.(pdf|doc|docx|txt|rtf)$/i)
+    ) || [];
   };
 
   return (
@@ -88,6 +101,42 @@ const Sessions = () => {
                     <p className="text-sm text-muted-foreground">
                       {session.summary}
                     </p>
+                  </div>
+                )}
+
+                {/* Image Thumbnails */}
+                {getImageAttachments(session.attachments || []).length > 0 && (
+                  <div className="flex gap-2">
+                    {getImageAttachments(session.attachments || []).slice(0, 3).map((img, idx) => (
+                      <div key={idx} className="relative w-16 h-16 rounded overflow-hidden border border-border">
+                        <img src={img.url} alt={img.name} className="w-full h-full object-cover" />
+                      </div>
+                    ))}
+                    {getImageAttachments(session.attachments || []).length > 3 && (
+                      <div className="w-16 h-16 rounded border border-border flex items-center justify-center bg-secondary">
+                        <span className="text-xs text-muted-foreground">
+                          +{getImageAttachments(session.attachments || []).length - 3}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Document Buttons */}
+                {getDocumentAttachments(session.attachments || []).length > 0 && (
+                  <div className="space-y-1">
+                    {getDocumentAttachments(session.attachments || []).map((doc, idx) => (
+                      <Button
+                        key={idx}
+                        size="sm"
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => window.open(doc.url, '_blank')}
+                      >
+                        <FileText className="h-3 w-3 mr-2" />
+                        <span className="truncate text-xs">{doc.name}</span>
+                      </Button>
+                    ))}
                   </div>
                 )}
               </CardContent>

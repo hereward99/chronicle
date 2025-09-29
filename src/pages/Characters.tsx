@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Search, Crown, User, Skull, Users } from "lucide-react";
+import { Plus, Search, Crown, User, Skull, Users, FileText, Image as ImageIcon } from "lucide-react";
 import { useCharacters, Character } from "@/hooks/useCharacters";
 import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialog";
 import { ViewCharacterDialog } from "@/components/dialogs/ViewCharacterDialog";
@@ -44,6 +44,19 @@ export default function Characters() {
       case "Nosferatu": return <Skull className="h-4 w-4" />;
       default: return <User className="h-4 w-4" />;
     }
+  };
+
+  const getImageAttachments = (attachments: any[]) => {
+    return attachments?.filter(att => att.type?.startsWith('image/')) || [];
+  };
+
+  const getDocumentAttachments = (attachments: any[]) => {
+    return attachments?.filter(att => 
+      att.type?.includes('pdf') || 
+      att.type?.includes('document') || 
+      att.type?.includes('text') ||
+      att.name?.match(/\.(pdf|doc|docx|txt|rtf)$/i)
+    ) || [];
   };
 
   return (
@@ -153,6 +166,42 @@ export default function Characters() {
                       "{character.concept}"
                     </p>
                   </div>
+
+                  {/* Image Thumbnails */}
+                  {getImageAttachments(character.attachments || []).length > 0 && (
+                    <div className="flex gap-2 pt-2">
+                      {getImageAttachments(character.attachments || []).slice(0, 3).map((img, idx) => (
+                        <div key={idx} className="relative w-16 h-16 rounded overflow-hidden border border-border">
+                          <img src={img.url} alt={img.name} className="w-full h-full object-cover" />
+                        </div>
+                      ))}
+                      {getImageAttachments(character.attachments || []).length > 3 && (
+                        <div className="w-16 h-16 rounded border border-border flex items-center justify-center bg-secondary">
+                          <span className="text-xs text-muted-foreground">
+                            +{getImageAttachments(character.attachments || []).length - 3}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Document Buttons */}
+                  {getDocumentAttachments(character.attachments || []).length > 0 && (
+                    <div className="pt-2">
+                      {getDocumentAttachments(character.attachments || []).map((doc, idx) => (
+                        <Button
+                          key={idx}
+                          size="sm"
+                          variant="outline"
+                          className="w-full justify-start mb-1"
+                          onClick={() => window.open(doc.url, '_blank')}
+                        >
+                          <FileText className="h-3 w-3 mr-2" />
+                          <span className="truncate text-xs">{doc.name}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  )}
                   
                   <div className="flex space-x-2 pt-2">
                     <Button 
