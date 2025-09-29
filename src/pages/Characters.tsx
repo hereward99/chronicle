@@ -171,8 +171,17 @@ export default function Characters() {
                   {getImageAttachments(character.attachments || []).length > 0 && (
                     <div className="flex gap-2 pt-2">
                       {getImageAttachments(character.attachments || []).slice(0, 3).map((img, idx) => (
-                        <div key={idx} className="relative w-16 h-16 rounded overflow-hidden border border-border">
-                          <img src={img.url} alt={img.name} className="w-full h-full object-cover" />
+                        <div key={idx} className="relative w-16 h-16 rounded overflow-hidden border border-border bg-secondary">
+                          <img 
+                            src={img.url} 
+                            alt={img.name} 
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              console.error('Failed to load image:', img.url);
+                              e.currentTarget.style.display = 'none';
+                            }}
+                            onLoad={() => console.log('Image loaded:', img.url)}
+                          />
                         </div>
                       ))}
                       {getImageAttachments(character.attachments || []).length > 3 && (
