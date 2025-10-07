@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Crown, User, Skull, Calendar, Users } from "lucide-react";
+import { Crown, User, Skull, Calendar, Users, X } from "lucide-react";
 import { Character } from "@/hooks/useCharacters";
+import { Button } from "@/components/ui/button";
 
 interface ViewCharacterDialogProps {
   character: Character | null;
@@ -28,8 +30,16 @@ const getStatusColor = (status: string) => {
   }
 };
 
+const getImageAttachments = (attachments: any[]) => {
+  return attachments?.filter(att => att.type?.startsWith('image/')) || [];
+};
+
 export function ViewCharacterDialog({ character, open, onOpenChange }: ViewCharacterDialogProps) {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  
   if (!character) return null;
+
+  const imageAttachments = getImageAttachments(character.attachments || []);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -105,9 +115,57 @@ export function ViewCharacterDialog({ character, open, onOpenChange }: ViewChara
               <Calendar className="h-3 w-3" />
               <span>Created {new Date(character.created_at).toLocaleDateString()}</span>
             </div>
+
+            {/* Image Gallery */}
+            {imageAttachments.length > 0 && (
+              <div>
+                <Separator className="bg-border mb-4" />
+                <span className="text-sm font-medium text-muted-foreground block mb-3">
+                  Images ({imageAttachments.length})
+                </span>
+                <div className="grid grid-cols-3 gap-2">
+                  {imageAttachments.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedImage(img.url)}
+                      className="relative aspect-square rounded overflow-hidden border border-border bg-secondary hover:opacity-80 transition-opacity cursor-pointer"
+                    >
+                      <img 
+                        src={img.url} 
+                        alt={img.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </DialogContent>
+
+      {/* Full-size Image Dialog */}
+      <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+        <DialogContent className="max-w-4xl w-full p-0 bg-background/95 border-border">
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 right-2 z-10 bg-background/80 hover:bg-background"
+              onClick={() => setSelectedImage(null)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+            {selectedImage && (
+              <img 
+                src={selectedImage} 
+                alt="Full size" 
+                className="w-full h-auto max-h-[80vh] object-contain"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
