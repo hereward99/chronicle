@@ -240,7 +240,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
             attachments={formData.attachments}
             onAttachmentsChange={(attachments) => setFormData(prev => ({ ...prev, attachments }))}
             accept="image/*,.pdf,.doc,.docx,.txt,.md"
-            maxFiles={5}
+            maxFiles={15}
             maxSize={10}
           />
 
