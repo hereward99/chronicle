@@ -10,6 +10,7 @@ import { useChronicles } from "@/hooks/useChronicles";
 import { BookOpen } from "lucide-react";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
+import { FileUpload } from "@/components/ui/file-upload";
 
 const plotSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
@@ -31,6 +32,7 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
     description: "",
     status: "Active" as "Active" | "Planned" | "Completed" | "Critical",
     priority: "Medium" as "Low" | "Medium" | "High" | "Critical",
+    attachments: [] as any[],
   });
   
   const { createPlot } = usePlots();
@@ -61,6 +63,7 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
         status: validated.status,
         priority: validated.priority,
         chronicle_id: chronicleId,
+        attachments: formData.attachments,
       });
 
       // Reset form
@@ -69,6 +72,7 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
         description: "",
         status: "Active",
         priority: "Medium",
+        attachments: [],
       });
       
       setOpen(false);
@@ -155,6 +159,17 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
               maxLength={2000}
             />
           </div>
+
+          <FileUpload
+            bucket="story-files"
+            entityId="new"
+            entityType="story"
+            attachments={formData.attachments}
+            onAttachmentsChange={(attachments) => setFormData(prev => ({ ...prev, attachments }))}
+            accept=".pdf,.doc,.docx,.txt,.md,image/*"
+            maxFiles={15}
+            maxSize={10}
+          />
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>

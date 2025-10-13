@@ -145,8 +145,8 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
             attachments={formData.attachments}
             onAttachmentsChange={(attachments) => setFormData(prev => ({ ...prev, attachments }))}
             accept=".pdf,.doc,.docx,.txt,.md,image/*"
-            maxFiles={10}
-            maxSize={20}
+            maxFiles={15}
+            maxSize={10}
           />
 
           <div className="flex justify-end space-x-2 pt-4">
