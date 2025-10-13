@@ -6,6 +6,7 @@ import { Plus, Users, BookOpen, Calendar, Scroll } from "lucide-react";
 import { useChronicleStats } from "@/hooks/useChronicleStats";
 import { usePlots } from "@/hooks/usePlots";
 import { useNotes } from "@/hooks/useNotes";
+import { useRecentActivity } from "@/hooks/useRecentActivity";
 import { formatDistanceToNow } from "date-fns";
 import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialog";
 import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
@@ -16,6 +17,7 @@ export default function Chronicle() {
   const { stats, loading: statsLoading } = useChronicleStats();
   const { plots, loading: plotsLoading } = usePlots();
   const { notes, loading: notesLoading } = useNotes();
+  const { activities, loading: activitiesLoading } = useRecentActivity();
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -123,27 +125,38 @@ export default function Chronicle() {
             <CardTitle className="text-foreground">Recent Activity</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-primary rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm text-foreground">Created new NPC: Baron Vex</p>
-                <p className="text-xs text-muted-foreground">2 hours ago</p>
+            {activitiesLoading ? (
+              [...Array(3)].map((_, i) => (
+                <div key={i} className="flex items-center space-x-3">
+                  <Skeleton className="w-2 h-2 rounded-full" />
+                  <div className="flex-1 space-y-1">
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                </div>
+              ))
+            ) : activities.length === 0 ? (
+              <div className="text-center py-4">
+                <p className="text-sm text-muted-foreground">No recent activity</p>
               </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-accent rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm text-foreground">Updated session notes</p>
-                <p className="text-xs text-muted-foreground">1 day ago</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm text-foreground">Generated new story hook</p>
-                <p className="text-xs text-muted-foreground">3 days ago</p>
-              </div>
-            </div>
+            ) : (
+              activities.map((activity) => (
+                <div key={activity.id} className="flex items-center space-x-3">
+                  <div className={`w-2 h-2 rounded-full ${
+                    activity.type === 'character' ? 'bg-primary' :
+                    activity.type === 'session' ? 'bg-accent' :
+                    activity.type === 'plot' ? 'bg-secondary' :
+                    'bg-muted-foreground'
+                  }`}></div>
+                  <div className="flex-1">
+                    <p className="text-sm text-foreground">{activity.action}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(activity.timestamp))} ago
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
 
