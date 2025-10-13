@@ -37,6 +37,17 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
   const { updatePlot } = usePlots();
   const { toast } = useToast();
 
+  const handleAttachmentsChange = async (attachments: any[]) => {
+    setFormData(prev => ({ ...prev, attachments }));
+    
+    // Auto-save attachments to database
+    try {
+      await updatePlot(plot.id, { attachments });
+    } catch (error) {
+      // Error already handled by updatePlot
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -143,7 +154,7 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
             entityId={plot.id}
             entityType="story"
             attachments={formData.attachments}
-            onAttachmentsChange={(attachments) => setFormData(prev => ({ ...prev, attachments }))}
+            onAttachmentsChange={handleAttachmentsChange}
             accept=".pdf,.doc,.docx,.txt,.md,image/*"
             maxFiles={15}
             maxSize={10}
