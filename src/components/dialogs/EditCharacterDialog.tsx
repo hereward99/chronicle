@@ -172,6 +172,8 @@ export function EditCharacterDialog({
                 value={formData.generation}
                 onChange={(e) => setFormData(prev => ({ ...prev, generation: parseInt(e.target.value) || 13 }))}
                 className="bg-input border-border"
+                disabled={formData.clan === "Human"}
+                placeholder={formData.clan === "Human" ? "N/A" : ""}
               />
             </div>
 
