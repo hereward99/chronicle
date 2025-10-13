@@ -20,8 +20,9 @@ interface EditCharacterDialogProps {
 }
 
 const clans = [
-  "Brujah", "Gangrel", "Malkavian", "Nosferatu", "Toreador", 
-  "Tremere", "Ventrue", "Caitiff", "Thin-Blood"
+  "Human", "Banu Haqim", "Brujah", "Gangrel", "Hecata", "Lasombra", "Malkavian", 
+  "Ministry", "Nosferatu", "Ravnos", "Salubri", "Toreador", "Tremere", 
+  "Tzimisce", "Ventrue", "Caitiff", "Thin-Blood"
 ];
 
 const statuses = ["Active", "Inactive", "Dead", "Missing", "Ally", "Enemy"];
