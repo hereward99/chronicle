@@ -26,6 +26,7 @@ export type Database = {
           generation: number | null
           id: string
           name: string
+          plot_id: string | null
           sire: string | null
           status: string
           type: string
@@ -43,6 +44,7 @@ export type Database = {
           generation?: number | null
           id?: string
           name: string
+          plot_id?: string | null
           sire?: string | null
           status?: string
           type?: string
@@ -60,6 +62,7 @@ export type Database = {
           generation?: number | null
           id?: string
           name?: string
+          plot_id?: string | null
           sire?: string | null
           status?: string
           type?: string
@@ -72,6 +75,13 @@ export type Database = {
             columns: ["chronicle_id"]
             isOneToOne: false
             referencedRelation: "chronicles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "characters_plot_id_fkey"
+            columns: ["plot_id"]
+            isOneToOne: false
+            referencedRelation: "plots"
             referencedColumns: ["id"]
           },
         ]

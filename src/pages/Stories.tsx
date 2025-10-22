@@ -10,11 +10,17 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
 import { EditPlotDialog } from "@/components/dialogs/EditPlotDialog";
 import { usePlots, Plot } from "@/hooks/usePlots";
+import { useCharacters } from "@/hooks/useCharacters";
 
 const Stories = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingPlot, setEditingPlot] = useState<Plot | null>(null);
   const { plots, loading, deletePlot, refetch } = usePlots();
+  const { characters } = useCharacters();
+
+  const getCharacterCountForPlot = (plotId: string) => {
+    return characters.filter(c => c.plot_id === plotId).length;
+  };
 
   const handleDelete = async (plotId: string) => {
     await deletePlot(plotId);
@@ -123,7 +129,7 @@ const Stories = () => {
           </div>
           <div className="flex items-center text-sm text-muted-foreground">
             <Users className="h-4 w-4 mr-2" />
-            No characters assigned
+            {getCharacterCountForPlot(story.id)} character{getCharacterCountForPlot(story.id) !== 1 ? 's' : ''} assigned
           </div>
           <div className="flex items-center text-sm text-muted-foreground">
             <BookOpen className="h-4 w-4 mr-2" />

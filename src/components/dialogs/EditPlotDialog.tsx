@@ -6,9 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { usePlots, Plot } from "@/hooks/usePlots";
+import { useCharacters } from "@/hooks/useCharacters";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { FileUpload } from "@/components/ui/file-upload";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const plotSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
@@ -26,6 +28,7 @@ interface EditPlotDialogProps {
 
 export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlotDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [selectedCharacters, setSelectedCharacters] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     title: plot.title,
     description: plot.description || "",
@@ -35,6 +38,7 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
   });
   
   const { updatePlot } = usePlots();
+  const { characters, updateCharacter } = useCharacters();
   const { toast } = useToast();
 
   const handleAttachmentsChange = async (attachments: any[]) => {
@@ -45,6 +49,32 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
       await updatePlot(plot.id, { attachments });
     } catch (error) {
       // Error already handled by updatePlot
+    }
+  };
+
+  // Load currently assigned characters when dialog opens
+  useState(() => {
+    if (open) {
+      const assigned = characters
+        .filter(c => c.plot_id === plot.id)
+        .map(c => c.id);
+      setSelectedCharacters(assigned);
+    }
+  });
+
+  const handleCharacterToggle = async (characterId: string, checked: boolean) => {
+    try {
+      await updateCharacter(characterId, { 
+        plot_id: checked ? plot.id : null 
+      });
+      
+      setSelectedCharacters(prev => 
+        checked 
+          ? [...prev, characterId]
+          : prev.filter(id => id !== characterId)
+      );
+    } catch (error) {
+      // Error already handled by updateCharacter
     }
   };
 
@@ -159,6 +189,31 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
             maxFiles={15}
             maxSize={10}
           />
+
+          <div className="space-y-2">
+            <Label>Assigned Characters</Label>
+            <div className="border border-border rounded-md p-3 max-h-48 overflow-y-auto space-y-2 bg-input">
+              {characters.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No characters available</p>
+              ) : (
+                characters.map((character) => (
+                  <div key={character.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`char-${character.id}`}
+                      checked={selectedCharacters.includes(character.id)}
+                      onCheckedChange={(checked) => handleCharacterToggle(character.id, checked as boolean)}
+                    />
+                    <Label
+                      htmlFor={`char-${character.id}`}
+                      className="text-sm font-normal cursor-pointer flex-1"
+                    >
+                      {character.name} ({character.clan})
+                    </Label>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>

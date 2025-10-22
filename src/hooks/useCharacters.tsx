@@ -6,13 +6,14 @@ export interface Character {
   id: string;
   name: string;
   clan: string;
-  generation: number;
+  generation: number | null;
   type: 'PC' | 'NPC';
   status: string;
   concept: string | null;
   sire: string | null;
   coterie: string | null;
   avatar_url: string | null;
+  plot_id: string | null;
   chronicle_id: string;
   user_id: string;
   created_at: string;
