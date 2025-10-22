@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,7 @@ import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { FileUpload } from "@/components/ui/file-upload";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Trash2 } from "lucide-react";
 
 const plotSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
@@ -37,9 +39,19 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
     attachments: (plot as any).attachments || []
   });
   
-  const { updatePlot } = usePlots();
+  const { updatePlot, deletePlot } = usePlots();
   const { characters, updateCharacter } = useCharacters();
   const { toast } = useToast();
+
+  const handleDelete = async () => {
+    try {
+      await deletePlot(plot.id);
+      onOpenChange(false);
+      onUpdated?.();
+    } catch (error) {
+      // Error already handled by deletePlot
+    }
+  };
 
   const handleAttachmentsChange = async (attachments: any[]) => {
     setFormData(prev => ({ ...prev, attachments }));
@@ -215,13 +227,38 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
             </div>
           </div>
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-              Cancel
-            </Button>
-            <Button type="submit" className="bg-gradient-blood hover:opacity-90" disabled={loading}>
-              {loading ? "Updating..." : "Update Story"}
-            </Button>
+          <div className="flex justify-between items-center pt-4 border-t border-border">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button type="button" variant="destructive" size="sm" disabled={loading}>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Story
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Story</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete "{plot.title}"? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            
+            <div className="flex space-x-2">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-gradient-blood hover:opacity-90" disabled={loading}>
+                {loading ? "Updating..." : "Update Story"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>

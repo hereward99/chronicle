@@ -4,26 +4,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Search, BookOpen, Clock, Users, Loader2, Edit, Trash2, MoreVertical, FileText, Image as ImageIcon } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Plus, Search, BookOpen, Clock, Users, Loader2, Eye, Edit, FileText, Image as ImageIcon } from "lucide-react";
 import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
 import { EditPlotDialog } from "@/components/dialogs/EditPlotDialog";
+import { ViewPlotDialog } from "@/components/dialogs/ViewPlotDialog";
 import { usePlots, Plot } from "@/hooks/usePlots";
 import { useCharacters } from "@/hooks/useCharacters";
 
 const Stories = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [viewingPlot, setViewingPlot] = useState<Plot | null>(null);
   const [editingPlot, setEditingPlot] = useState<Plot | null>(null);
-  const { plots, loading, deletePlot, refetch } = usePlots();
+  const { plots, loading, refetch } = usePlots();
   const { characters } = useCharacters();
 
   const getCharacterCountForPlot = (plotId: string) => {
     return characters.filter(c => c.plot_id === plotId).length;
-  };
-
-  const handleDelete = async (plotId: string) => {
-    await deletePlot(plotId);
   };
 
   const getStatusColor = (status: string) => {
@@ -76,46 +72,9 @@ const Stories = () => {
           <CardTitle className="text-lg text-foreground line-clamp-2">
             {story.title}
           </CardTitle>
-          <div className="flex items-center gap-2">
-            <Badge variant={getStatusColor(story.status)} className="shrink-0">
-              {story.status}
-            </Badge>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setEditingPlot(story)}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </DropdownMenuItem>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Story</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Are you sure you want to delete "{story.title}"? This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handleDelete(story.id)} className="bg-destructive hover:bg-destructive/90">
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          <Badge variant={getStatusColor(story.status)} className="shrink-0">
+            {story.status}
+          </Badge>
         </div>
         <CardDescription className="line-clamp-3">
           {story.description || "No description provided"}
@@ -171,6 +130,28 @@ const Stories = () => {
               ))}
             </div>
           )}
+
+          {/* Action Buttons */}
+          <div className="flex gap-2 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => setViewingPlot(story)}
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              View
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => setEditingPlot(story)}
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -297,6 +278,12 @@ const Stories = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      <ViewPlotDialog
+        plot={viewingPlot}
+        open={!!viewingPlot}
+        onOpenChange={(open) => !open && setViewingPlot(null)}
+      />
 
       {editingPlot && (
         <EditPlotDialog
