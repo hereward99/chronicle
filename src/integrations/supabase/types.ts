@@ -23,7 +23,7 @@ export type Database = {
           concept: string | null
           coterie: string | null
           created_at: string
-          generation: number
+          generation: number | null
           id: string
           name: string
           sire: string | null
@@ -40,7 +40,7 @@ export type Database = {
           concept?: string | null
           coterie?: string | null
           created_at?: string
-          generation?: number
+          generation?: number | null
           id?: string
           name: string
           sire?: string | null
@@ -57,7 +57,7 @@ export type Database = {
           concept?: string | null
           coterie?: string | null
           created_at?: string
-          generation?: number
+          generation?: number | null
           id?: string
           name?: string
           sire?: string | null
