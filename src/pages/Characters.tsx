@@ -144,7 +144,7 @@ export default function Characters() {
                 <CardContent className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Generation</span>
-                    <Badge variant="outline">{character.generation}th</Badge>
+                    <Badge variant="outline">{character.generation ? `${character.generation}th` : 'N/A'}</Badge>
                   </div>
                   
                   <div className="flex items-center justify-between">
