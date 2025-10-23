@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plot } from "@/hooks/usePlots";
 import { useCharacters } from "@/hooks/useCharacters";
+import { usePlotCharacters } from "@/hooks/usePlotCharacters";
 import { BookOpen, Clock, Users, Flag, FileText, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -14,10 +15,12 @@ interface ViewPlotDialogProps {
 
 export function ViewPlotDialog({ plot, open, onOpenChange }: ViewPlotDialogProps) {
   const { characters } = useCharacters();
+  const { getCharactersForPlot } = usePlotCharacters(plot?.id);
 
   if (!plot) return null;
 
-  const assignedCharacters = characters.filter(c => c.plot_id === plot.id);
+  const assignedCharacterIds = getCharactersForPlot(plot.id);
+  const assignedCharacters = characters.filter(c => assignedCharacterIds.includes(c.id));
   
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {

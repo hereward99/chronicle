@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { usePlots, Plot } from "@/hooks/usePlots";
 import { useCharacters } from "@/hooks/useCharacters";
+import { usePlotCharacters } from "@/hooks/usePlotCharacters";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { FileUpload } from "@/components/ui/file-upload";
@@ -40,7 +41,8 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
   });
   
   const { updatePlot, deletePlot } = usePlots();
-  const { characters, updateCharacter } = useCharacters();
+  const { characters } = useCharacters();
+  const { assignCharacter, unassignCharacter, getCharactersForPlot, refetch: refetchPlotCharacters } = usePlotCharacters(plot.id);
   const { toast } = useToast();
 
   const handleDelete = async () => {
@@ -67,18 +69,20 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
   // Load currently assigned characters when dialog opens
   useState(() => {
     if (open) {
-      const assigned = characters
-        .filter(c => c.plot_id === plot.id)
-        .map(c => c.id);
-      setSelectedCharacters(assigned);
+      refetchPlotCharacters().then(() => {
+        const assigned = getCharactersForPlot(plot.id);
+        setSelectedCharacters(assigned);
+      });
     }
   });
 
   const handleCharacterToggle = async (characterId: string, checked: boolean) => {
     try {
-      await updateCharacter(characterId, { 
-        plot_id: checked ? plot.id : null 
-      });
+      if (checked) {
+        await assignCharacter(plot.id, characterId);
+      } else {
+        await unassignCharacter(plot.id, characterId);
+      }
       
       setSelectedCharacters(prev => 
         checked 
@@ -86,7 +90,7 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
           : prev.filter(id => id !== characterId)
       );
     } catch (error) {
-      // Error already handled by updateCharacter
+      // Error already handled by assignCharacter/unassignCharacter
     }
   };
 

@@ -9,17 +9,17 @@ import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
 import { EditPlotDialog } from "@/components/dialogs/EditPlotDialog";
 import { ViewPlotDialog } from "@/components/dialogs/ViewPlotDialog";
 import { usePlots, Plot } from "@/hooks/usePlots";
-import { useCharacters } from "@/hooks/useCharacters";
+import { usePlotCharacters } from "@/hooks/usePlotCharacters";
 
 const Stories = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewingPlot, setViewingPlot] = useState<Plot | null>(null);
   const [editingPlot, setEditingPlot] = useState<Plot | null>(null);
   const { plots, loading, refetch } = usePlots();
-  const { characters } = useCharacters();
+  const { getCharactersForPlot } = usePlotCharacters();
 
   const getCharacterCountForPlot = (plotId: string) => {
-    return characters.filter(c => c.plot_id === plotId).length;
+    return getCharactersForPlot(plotId).length;
   };
 
   const getStatusColor = (status: string) => {

@@ -13,7 +13,6 @@ export interface Character {
   sire: string | null;
   coterie: string | null;
   avatar_url: string | null;
-  plot_id: string | null;
   chronicle_id: string;
   user_id: string;
   created_at: string;
