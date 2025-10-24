@@ -75,7 +75,11 @@ export function FileUpload({
         }
 
         const fileExt = file.name.split('.').pop();
-        const fileName = `${user.id}/${entityType}-${entityId}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        // For new entities, use a timestamp-based folder instead of "new" to avoid conflicts
+        const folderName = entityId === 'new' 
+          ? `${entityType}s/${Date.now()}-${Math.random().toString(36).substring(2)}`
+          : `${entityType}-${entityId}`;
+        const fileName = `${user.id}/${folderName}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
 
         const { data, error } = await supabase.storage
           .from(bucket)
