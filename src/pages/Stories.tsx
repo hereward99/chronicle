@@ -53,9 +53,13 @@ const Stories = () => {
   };
 
   const getImageAttachments = (attachments: any[]) => {
-    return attachments?.filter(att => att.type?.startsWith('image/')) || [];
+    return attachments?.filter(att => {
+      if (att.type?.startsWith('image/')) return true;
+      const name = att.name?.toLowerCase() || '';
+      // Fallback by extension for cases where content-type is missing or generic
+      return /(\.(png|jpe?g|gif|webp|bmp|svg|heic|heif|tif|tiff))$/i.test(name);
+    }) || [];
   };
-
   const getDocumentAttachments = (attachments: any[]) => {
     return attachments?.filter(att => 
       att.type?.includes('pdf') || 
