@@ -58,14 +58,14 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
   const handleAttachmentsChange = async (attachments: any[]) => {
     setFormData(prev => ({ ...prev, attachments }));
     
-    // Auto-save attachments to database
+    // Auto-save attachments to database and refresh parent list so tiles update immediately
     try {
       await updatePlot(plot.id, { attachments });
+      onUpdated?.();
     } catch (error) {
       // Error already handled by updatePlot
     }
   };
-
   // Load currently assigned characters when dialog opens
   useState(() => {
     if (open) {
