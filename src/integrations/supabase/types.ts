@@ -16,55 +16,166 @@ export type Database = {
     Tables: {
       characters: {
         Row: {
+          advantages: Json | null
+          ambition: string | null
+          appearance: string | null
           attachments: Json | null
           avatar_url: string | null
+          blood_potency: number | null
+          charisma: number | null
           chronicle_id: string
+          chronicle_tenets: string[] | null
           clan: string
+          composure: number | null
           concept: string | null
+          convictions: string[] | null
           coterie: string | null
           created_at: string
+          desire: string | null
+          dexterity: number | null
+          disciplines: Json | null
+          distinguishing_features: string | null
+          experience_spent: number | null
+          experience_total: number | null
+          flaws: Json | null
           generation: number | null
+          health_aggravated: number | null
+          health_max: number | null
+          health_superficial: number | null
+          history: string | null
+          humanity: number | null
+          hunger: number | null
           id: string
+          intelligence: number | null
+          loresheets: Json | null
+          manipulation: number | null
           name: string
+          notes: string | null
+          powers: Json | null
+          predator_type: string | null
+          resolve: number | null
+          resonance: string | null
           sire: string | null
+          skills: Json | null
+          stamina: number | null
           status: string
+          strength: number | null
+          touchstones: Json | null
           type: string
           updated_at: string
           user_id: string
+          willpower_aggravated: number | null
+          willpower_max: number | null
+          willpower_superficial: number | null
+          wits: number | null
         }
         Insert: {
+          advantages?: Json | null
+          ambition?: string | null
+          appearance?: string | null
           attachments?: Json | null
           avatar_url?: string | null
+          blood_potency?: number | null
+          charisma?: number | null
           chronicle_id: string
+          chronicle_tenets?: string[] | null
           clan: string
+          composure?: number | null
           concept?: string | null
+          convictions?: string[] | null
           coterie?: string | null
           created_at?: string
+          desire?: string | null
+          dexterity?: number | null
+          disciplines?: Json | null
+          distinguishing_features?: string | null
+          experience_spent?: number | null
+          experience_total?: number | null
+          flaws?: Json | null
           generation?: number | null
+          health_aggravated?: number | null
+          health_max?: number | null
+          health_superficial?: number | null
+          history?: string | null
+          humanity?: number | null
+          hunger?: number | null
           id?: string
+          intelligence?: number | null
+          loresheets?: Json | null
+          manipulation?: number | null
           name: string
+          notes?: string | null
+          powers?: Json | null
+          predator_type?: string | null
+          resolve?: number | null
+          resonance?: string | null
           sire?: string | null
+          skills?: Json | null
+          stamina?: number | null
           status?: string
+          strength?: number | null
+          touchstones?: Json | null
           type?: string
           updated_at?: string
           user_id: string
+          willpower_aggravated?: number | null
+          willpower_max?: number | null
+          willpower_superficial?: number | null
+          wits?: number | null
         }
         Update: {
+          advantages?: Json | null
+          ambition?: string | null
+          appearance?: string | null
           attachments?: Json | null
           avatar_url?: string | null
+          blood_potency?: number | null
+          charisma?: number | null
           chronicle_id?: string
+          chronicle_tenets?: string[] | null
           clan?: string
+          composure?: number | null
           concept?: string | null
+          convictions?: string[] | null
           coterie?: string | null
           created_at?: string
+          desire?: string | null
+          dexterity?: number | null
+          disciplines?: Json | null
+          distinguishing_features?: string | null
+          experience_spent?: number | null
+          experience_total?: number | null
+          flaws?: Json | null
           generation?: number | null
+          health_aggravated?: number | null
+          health_max?: number | null
+          health_superficial?: number | null
+          history?: string | null
+          humanity?: number | null
+          hunger?: number | null
           id?: string
+          intelligence?: number | null
+          loresheets?: Json | null
+          manipulation?: number | null
           name?: string
+          notes?: string | null
+          powers?: Json | null
+          predator_type?: string | null
+          resolve?: number | null
+          resonance?: string | null
           sire?: string | null
+          skills?: Json | null
+          stamina?: number | null
           status?: string
+          strength?: number | null
+          touchstones?: Json | null
           type?: string
           updated_at?: string
           user_id?: string
+          willpower_aggravated?: number | null
+          willpower_max?: number | null
+          willpower_superficial?: number | null
+          wits?: number | null
         }
         Relationships: [
           {

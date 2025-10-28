@@ -18,6 +18,63 @@ export interface Character {
   created_at: string;
   updated_at: string;
   attachments?: any[];
+  
+  // Physical Attributes
+  strength?: number;
+  dexterity?: number;
+  stamina?: number;
+  
+  // Social Attributes
+  charisma?: number;
+  manipulation?: number;
+  composure?: number;
+  
+  // Mental Attributes
+  intelligence?: number;
+  wits?: number;
+  resolve?: number;
+  
+  // Skills & Disciplines
+  skills?: Record<string, { rating: number; specialty?: string }>;
+  disciplines?: Array<{ name: string; level: number }>;
+  powers?: Array<{ name: string; discipline: string; level: number; cost?: string; description?: string }>;
+  
+  // Character Creation
+  predator_type?: string;
+  chronicle_tenets?: string[];
+  
+  // Advantages & Flaws
+  advantages?: Array<{ name: string; type: string; rating?: number; description?: string }>;
+  flaws?: Array<{ name: string; rating?: number; description?: string }>;
+  loresheets?: Array<{ name: string; benefits: string[] }>;
+  
+  // Beliefs
+  convictions?: string[];
+  touchstones?: Array<{ name: string; conviction?: string; description?: string }>;
+  ambition?: string;
+  desire?: string;
+  
+  // Trackers
+  health_max?: number;
+  health_superficial?: number;
+  health_aggravated?: number;
+  willpower_max?: number;
+  willpower_superficial?: number;
+  willpower_aggravated?: number;
+  humanity?: number;
+  hunger?: number;
+  blood_potency?: number;
+  
+  // Experience
+  experience_total?: number;
+  experience_spent?: number;
+  
+  // Additional Details
+  appearance?: string;
+  distinguishing_features?: string;
+  history?: string;
+  notes?: string;
+  resonance?: string;
 }
 
 export function useCharacters() {
