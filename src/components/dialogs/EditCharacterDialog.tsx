@@ -3,13 +3,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Trash2 } from "lucide-react";
-import { Character } from "@/hooks/useCharacters";
-import { usePlots } from "@/hooks/usePlots";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileUpload } from "@/components/ui/file-upload";
+import { Loader2, Trash2, X, Plus } from "lucide-react";
+import { Character } from "@/hooks/useCharacters";
+import { useFiles } from "@/hooks/useFiles";
 
 interface EditCharacterDialogProps {
   character: Character | null;
@@ -27,6 +30,36 @@ const clans = [
 
 const statuses = ["Active", "Inactive", "Dead", "Missing", "Ally", "Enemy"];
 
+const predatorTypes = [
+  "Alleycat", "Bagger", "Blood Leech", "Cleaver", "Consensualist", 
+  "Farmer", "Osiris", "Sandman", "Scene Queen", "Siren", "Extortionist", "Graverobber"
+];
+
+const skillCategories = {
+  Physical: ["athletics", "brawl", "craft", "drive", "firearms", "melee", "larceny", "stealth", "survival"],
+  Social: ["animal_ken", "etiquette", "insight", "intimidation", "leadership", "performance", "persuasion", "streetwise", "subterfuge"],
+  Mental: ["academics", "awareness", "finance", "investigation", "medicine", "occult", "politics", "science", "technology"]
+};
+
+const DotSelector = ({ value, max = 5, onChange }: { value: number; max?: number; onChange: (val: number) => void }) => {
+  return (
+    <div className="flex gap-1">
+      {Array.from({ length: max }).map((_, i) => (
+        <button
+          key={i}
+          type="button"
+          onClick={() => onChange(i + 1)}
+          className={`w-4 h-4 rounded-full border-2 transition-colors ${
+            i < value
+              ? "bg-primary border-primary" 
+              : "border-muted-foreground/30 hover:border-primary/50"
+          }`}
+        />
+      ))}
+    </div>
+  );
+};
+
 export function EditCharacterDialog({ 
   character, 
   open, 
@@ -36,20 +69,65 @@ export function EditCharacterDialog({
 }: EditCharacterDialogProps) {
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const { plots } = usePlots();
+  const { uploadFile } = useFiles();
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Partial<Character>>({
     name: "",
     clan: "",
     generation: 13,
-    type: "PC" as "PC" | "NPC",
+    type: "PC",
     status: "Active",
     concept: "",
     sire: "",
     coterie: "",
     avatar_url: "",
-    connected_stories: [] as string[],
-    attachments: [] as any[]
+    attachments: [],
+    // Attributes
+    strength: 1,
+    dexterity: 1,
+    stamina: 1,
+    charisma: 1,
+    manipulation: 1,
+    composure: 1,
+    intelligence: 1,
+    wits: 1,
+    resolve: 1,
+    // Skills
+    skills: {},
+    // Disciplines & Powers
+    disciplines: [],
+    powers: [],
+    // Character Creation
+    predator_type: "",
+    chronicle_tenets: [],
+    // Advantages & Flaws
+    advantages: [],
+    flaws: [],
+    loresheets: [],
+    // Beliefs
+    convictions: [],
+    touchstones: [],
+    ambition: "",
+    desire: "",
+    // Trackers
+    health_max: 3,
+    health_superficial: 0,
+    health_aggravated: 0,
+    willpower_max: 3,
+    willpower_superficial: 0,
+    willpower_aggravated: 0,
+    humanity: 7,
+    hunger: 1,
+    blood_potency: 0,
+    // Experience
+    experience_total: 0,
+    experience_spent: 0,
+    // Additional Details
+    appearance: "",
+    distinguishing_features: "",
+    history: "",
+    notes: "",
+    resonance: "",
   });
 
   useEffect(() => {
@@ -57,15 +135,51 @@ export function EditCharacterDialog({
       setFormData({
         name: character.name,
         clan: character.clan,
-        generation: character.generation,
+        generation: character.generation || 13,
         type: character.type,
         status: character.status,
         concept: character.concept || "",
         sire: character.sire || "",
         coterie: character.coterie || "",
         avatar_url: character.avatar_url || "",
-        connected_stories: [], // We'll implement story connections later
-        attachments: (character as any).attachments || []
+        attachments: character.attachments || [],
+        strength: character.strength || 1,
+        dexterity: character.dexterity || 1,
+        stamina: character.stamina || 1,
+        charisma: character.charisma || 1,
+        manipulation: character.manipulation || 1,
+        composure: character.composure || 1,
+        intelligence: character.intelligence || 1,
+        wits: character.wits || 1,
+        resolve: character.resolve || 1,
+        skills: character.skills || {},
+        disciplines: character.disciplines || [],
+        powers: character.powers || [],
+        predator_type: character.predator_type || "",
+        chronicle_tenets: character.chronicle_tenets || [],
+        advantages: character.advantages || [],
+        flaws: character.flaws || [],
+        loresheets: character.loresheets || [],
+        convictions: character.convictions || [],
+        touchstones: character.touchstones || [],
+        ambition: character.ambition || "",
+        desire: character.desire || "",
+        health_max: character.health_max || 3,
+        health_superficial: character.health_superficial || 0,
+        health_aggravated: character.health_aggravated || 0,
+        willpower_max: character.willpower_max || 3,
+        willpower_superficial: character.willpower_superficial || 0,
+        willpower_aggravated: character.willpower_aggravated || 0,
+        humanity: character.humanity || 7,
+        hunger: character.hunger || 1,
+        blood_potency: character.blood_potency || 0,
+        experience_total: character.experience_total || 0,
+        experience_spent: character.experience_spent || 0,
+        appearance: character.appearance || "",
+        distinguishing_features: character.distinguishing_features || "",
+        history: character.history || "",
+        notes: character.notes || "",
+        resonance: character.resonance || "",
       });
     }
   }, [character]);
@@ -75,20 +189,7 @@ export function EditCharacterDialog({
     
     setLoading(true);
     try {
-      const updates = {
-        name: formData.name,
-        clan: formData.clan,
-        generation: formData.generation,
-        type: formData.type,
-        status: formData.status,
-        concept: formData.concept || null,
-        sire: formData.sire || null,
-        coterie: formData.coterie || null,
-        avatar_url: formData.avatar_url || null,
-        attachments: formData.attachments,
-      };
-      
-      await onUpdate(character.id, updates);
+      await onUpdate(character.id, formData);
       onOpenChange(false);
     } catch (error) {
       console.error('Error updating character:', error);
@@ -98,7 +199,7 @@ export function EditCharacterDialog({
   };
 
   const handleDelete = async () => {
-    if (!character) return;
+    if (!character || !window.confirm('Are you sure you want to delete this character? This action cannot be undone.')) return;
     
     setDeleteLoading(true);
     try {
@@ -111,19 +212,150 @@ export function EditCharacterDialog({
     }
   };
 
-  const addStoryConnection = (plotId: string) => {
-    if (!formData.connected_stories.includes(plotId)) {
-      setFormData(prev => ({
-        ...prev,
-        connected_stories: [...prev.connected_stories, plotId]
-      }));
+  const handleAvatarUpload = async (files: File[]) => {
+    if (!character || files.length === 0) return;
+    
+    const file = files[0];
+    const attachment = await uploadFile(file, 'character-avatars', character.id, 'character');
+    
+    if (attachment) {
+      setFormData(prev => ({ ...prev, avatar_url: attachment.url }));
     }
   };
 
-  const removeStoryConnection = (plotId: string) => {
+  const updateSkill = (skillKey: string, rating: number, specialty?: string) => {
     setFormData(prev => ({
       ...prev,
-      connected_stories: prev.connected_stories.filter(id => id !== plotId)
+      skills: {
+        ...prev.skills,
+        [skillKey]: { rating, specialty }
+      }
+    }));
+  };
+
+  const addDiscipline = () => {
+    setFormData(prev => ({
+      ...prev,
+      disciplines: [...(prev.disciplines || []), { name: "", level: 1 }]
+    }));
+  };
+
+  const updateDiscipline = (index: number, field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      disciplines: prev.disciplines?.map((d, i) => i === index ? { ...d, [field]: value } : d)
+    }));
+  };
+
+  const removeDiscipline = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      disciplines: prev.disciplines?.filter((_, i) => i !== index)
+    }));
+  };
+
+  const addPower = () => {
+    setFormData(prev => ({
+      ...prev,
+      powers: [...(prev.powers || []), { name: "", discipline: "", level: 1, cost: "", description: "" }]
+    }));
+  };
+
+  const updatePower = (index: number, field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      powers: prev.powers?.map((p, i) => i === index ? { ...p, [field]: value } : p)
+    }));
+  };
+
+  const removePower = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      powers: prev.powers?.filter((_, i) => i !== index)
+    }));
+  };
+
+  const addAdvantage = () => {
+    setFormData(prev => ({
+      ...prev,
+      advantages: [...(prev.advantages || []), { name: "", type: "Merit", rating: 1, description: "" }]
+    }));
+  };
+
+  const updateAdvantage = (index: number, field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      advantages: prev.advantages?.map((a, i) => i === index ? { ...a, [field]: value } : a)
+    }));
+  };
+
+  const removeAdvantage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      advantages: prev.advantages?.filter((_, i) => i !== index)
+    }));
+  };
+
+  const addFlaw = () => {
+    setFormData(prev => ({
+      ...prev,
+      flaws: [...(prev.flaws || []), { name: "", rating: 1, description: "" }]
+    }));
+  };
+
+  const updateFlaw = (index: number, field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      flaws: prev.flaws?.map((f, i) => i === index ? { ...f, [field]: value } : f)
+    }));
+  };
+
+  const removeFlaw = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      flaws: prev.flaws?.filter((_, i) => i !== index)
+    }));
+  };
+
+  const addConviction = () => {
+    setFormData(prev => ({
+      ...prev,
+      convictions: [...(prev.convictions || []), ""]
+    }));
+  };
+
+  const updateConviction = (index: number, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      convictions: prev.convictions?.map((c, i) => i === index ? value : c)
+    }));
+  };
+
+  const removeConviction = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      convictions: prev.convictions?.filter((_, i) => i !== index)
+    }));
+  };
+
+  const addTouchstone = () => {
+    setFormData(prev => ({
+      ...prev,
+      touchstones: [...(prev.touchstones || []), { name: "", conviction: "", description: "" }]
+    }));
+  };
+
+  const updateTouchstone = (index: number, field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      touchstones: prev.touchstones?.map((t, i) => i === index ? { ...t, [field]: value } : t)
+    }));
+  };
+
+  const removeTouchstone = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      touchstones: prev.touchstones?.filter((_, i) => i !== index)
     }));
   };
 
@@ -131,179 +363,635 @@ export function EditCharacterDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gradient-subtle border-border max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-foreground">Edit Character</DialogTitle>
+          <DialogTitle>Edit Character Sheet</DialogTitle>
         </DialogHeader>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="name" className="text-foreground">Name</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                className="bg-input border-border"
-              />
-            </div>
+        <ScrollArea className="flex-1 pr-4">
+          <Tabs defaultValue="basic" className="w-full">
+            <TabsList className="grid w-full grid-cols-6">
+              <TabsTrigger value="basic">Basic</TabsTrigger>
+              <TabsTrigger value="stats">Stats</TabsTrigger>
+              <TabsTrigger value="disciplines">Disciplines</TabsTrigger>
+              <TabsTrigger value="advantages">Advantages</TabsTrigger>
+              <TabsTrigger value="beliefs">Beliefs</TabsTrigger>
+              <TabsTrigger value="details">Details</TabsTrigger>
+            </TabsList>
 
-            <div>
-              <Label htmlFor="clan" className="text-foreground">Clan</Label>
-              <Select value={formData.clan} onValueChange={(value) => setFormData(prev => ({ ...prev, clan: value }))}>
-                <SelectTrigger className="bg-input border-border">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-popover border-border">
-                  {clans.map((clan) => (
-                    <SelectItem key={clan} value={clan}>{clan}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Basic Info Tab */}
+            <TabsContent value="basic" className="space-y-4">
+              <Card className="p-4">
+                <h3 className="text-lg font-semibold mb-4">Character Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Name</Label>
+                    <Input
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    />
+                  </div>
 
-            <div>
-              <Label htmlFor="generation" className="text-foreground">Generation</Label>
-              <Input
-                id="generation"
-                type="number"
-                min="1"
-                max="16"
-                value={formData.generation}
-                onChange={(e) => setFormData(prev => ({ ...prev, generation: parseInt(e.target.value) || 13 }))}
-                className="bg-input border-border"
-                disabled={formData.clan === "Human"}
-                placeholder={formData.clan === "Human" ? "N/A" : ""}
-              />
-            </div>
+                  <div>
+                    <Label>Concept</Label>
+                    <Input
+                      value={formData.concept}
+                      onChange={(e) => setFormData(prev => ({ ...prev, concept: e.target.value }))}
+                      placeholder="e.g., Rebellious artist"
+                    />
+                  </div>
 
-            <div>
-              <Label htmlFor="type" className="text-foreground">Type</Label>
-              <Select value={formData.type} onValueChange={(value: "PC" | "NPC") => setFormData(prev => ({ ...prev, type: value }))}>
-                <SelectTrigger className="bg-input border-border">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-popover border-border">
-                  <SelectItem value="PC">Player Character</SelectItem>
-                  <SelectItem value="NPC">Non-Player Character</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                  <div>
+                    <Label>Clan</Label>
+                    <Select value={formData.clan} onValueChange={(value) => setFormData(prev => ({ ...prev, clan: value }))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {clans.map((clan) => (
+                          <SelectItem key={clan} value={clan}>{clan}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-            <div>
-              <Label htmlFor="status" className="text-foreground">Status</Label>
-              <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
-                <SelectTrigger className="bg-input border-border">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-popover border-border">
-                  {statuses.map((status) => (
-                    <SelectItem key={status} value={status}>{status}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-        </div>
+                  <div>
+                    <Label>Generation</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="16"
+                      value={formData.generation}
+                      onChange={(e) => setFormData(prev => ({ ...prev, generation: parseInt(e.target.value) || 13 }))}
+                      disabled={formData.clan === "Human"}
+                    />
+                  </div>
 
-        <div className="col-span-1 md:col-span-2">
-          <FileUpload
-            bucket="character-files"
-            entityId={character.id}
-            entityType="character"
-            attachments={formData.attachments}
-            onAttachmentsChange={(attachments) => setFormData(prev => ({ ...prev, attachments }))}
-            accept="image/*,.pdf,.doc,.docx,.txt,.md"
-            maxFiles={15}
-            maxSize={10}
-          />
-        </div>
-      </div>
+                  <div>
+                    <Label>Predator Type</Label>
+                    <Select value={formData.predator_type} onValueChange={(value) => setFormData(prev => ({ ...prev, predator_type: value }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select predator type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {predatorTypes.map((type) => (
+                          <SelectItem key={type} value={type}>{type}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="concept" className="text-foreground">Concept</Label>
-              <Input
-                id="concept"
-                value={formData.concept}
-                onChange={(e) => setFormData(prev => ({ ...prev, concept: e.target.value }))}
-                className="bg-input border-border"
-                placeholder="e.g., Rebellious artist, Corporate executive"
-              />
-            </div>
+                  <div>
+                    <Label>Type</Label>
+                    <Select value={formData.type} onValueChange={(value: "PC" | "NPC") => setFormData(prev => ({ ...prev, type: value }))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="PC">Player Character</SelectItem>
+                        <SelectItem value="NPC">Non-Player Character</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-            <div>
-              <Label htmlFor="sire" className="text-foreground">Sire</Label>
-              <Input
-                id="sire"
-                value={formData.sire}
-                onChange={(e) => setFormData(prev => ({ ...prev, sire: e.target.value }))}
-                className="bg-input border-border"
-                placeholder="Name of the character's sire"
-              />
-            </div>
+                  <div>
+                    <Label>Status</Label>
+                    <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {statuses.map((status) => (
+                          <SelectItem key={status} value={status}>{status}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-            <div>
-              <Label htmlFor="coterie" className="text-foreground">Coterie</Label>
-              <Input
-                id="coterie"
-                value={formData.coterie}
-                onChange={(e) => setFormData(prev => ({ ...prev, coterie: e.target.value }))}
-                className="bg-input border-border"
-                placeholder="Name of the coterie"
-              />
-            </div>
+                  <div>
+                    <Label>Sire</Label>
+                    <Input
+                      value={formData.sire}
+                      onChange={(e) => setFormData(prev => ({ ...prev, sire: e.target.value }))}
+                      placeholder="Name of the character's sire"
+                    />
+                  </div>
 
-            <div>
-              <Label htmlFor="avatar_url" className="text-foreground">Avatar URL</Label>
-              <Input
-                id="avatar_url"
-                value={formData.avatar_url}
-                onChange={(e) => setFormData(prev => ({ ...prev, avatar_url: e.target.value }))}
-                className="bg-input border-border"
-                placeholder="https://example.com/avatar.jpg"
-              />
-            </div>
+                  <div>
+                    <Label>Coterie</Label>
+                    <Input
+                      value={formData.coterie}
+                      onChange={(e) => setFormData(prev => ({ ...prev, coterie: e.target.value }))}
+                      placeholder="Name of the coterie"
+                    />
+                  </div>
 
-            <div>
-              <Label className="text-foreground">Connected Stories</Label>
-              <Select onValueChange={addStoryConnection}>
-                <SelectTrigger className="bg-input border-border">
-                  <SelectValue placeholder="Add story connection..." />
-                </SelectTrigger>
-                <SelectContent className="bg-popover border-border">
-                  {plots.filter(plot => !formData.connected_stories.includes(plot.id)).map((plot) => (
-                    <SelectItem key={plot.id} value={plot.id}>{plot.title}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              {formData.connected_stories.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.connected_stories.map((plotId) => {
-                    const plot = plots.find(p => p.id === plotId);
-                    return plot ? (
-                      <Badge key={plotId} variant="secondary" className="flex items-center gap-1">
-                        {plot.title}
-                        <X 
-                          className="h-3 w-3 cursor-pointer" 
-                          onClick={() => removeStoryConnection(plotId)}
-                        />
-                      </Badge>
-                    ) : null;
-                  })}
+                  <div>
+                    <Label>Resonance</Label>
+                    <Input
+                      value={formData.resonance}
+                      onChange={(e) => setFormData(prev => ({ ...prev, resonance: e.target.value }))}
+                      placeholder="e.g., Melancholic, Sanguine"
+                    />
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
+              </Card>
 
-        <DialogFooter className="flex justify-between">
+              <Card className="p-4">
+                <h3 className="text-lg font-semibold mb-4">Avatar</h3>
+                <FileUpload
+                  bucket="character-avatars"
+                  entityId={character.id}
+                  entityType="character"
+                  attachments={formData.avatar_url ? [{ name: "Avatar", url: formData.avatar_url, type: "image", size: 0, id: "avatar", uploaded_at: "" }] : []}
+                  onAttachmentsChange={(attachments) => {
+                    if (attachments.length > 0) {
+                      setFormData(prev => ({ ...prev, avatar_url: attachments[0].url }));
+                    } else {
+                      setFormData(prev => ({ ...prev, avatar_url: "" }));
+                    }
+                  }}
+                  accept="image/*"
+                  maxFiles={1}
+                  maxSize={5}
+                />
+              </Card>
+
+              <Card className="p-4">
+                <h3 className="text-lg font-semibold mb-4">Attachments & Documents</h3>
+                <FileUpload
+                  bucket="character-files"
+                  entityId={character.id}
+                  entityType="character"
+                  attachments={formData.attachments || []}
+                  onAttachmentsChange={(attachments) => setFormData(prev => ({ ...prev, attachments }))}
+                  accept="image/*,.pdf,.doc,.docx,.txt,.md"
+                  maxFiles={20}
+                  maxSize={10}
+                />
+              </Card>
+            </TabsContent>
+
+            {/* Stats Tab */}
+            <TabsContent value="stats" className="space-y-4">
+              <Card className="p-4">
+                <h3 className="text-lg font-semibold mb-4">Trackers</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Health (Max)</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={formData.health_max}
+                      onChange={(e) => setFormData(prev => ({ ...prev, health_max: parseInt(e.target.value) || 3 }))}
+                    />
+                  </div>
+                  <div>
+                    <Label>Willpower (Max)</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={formData.willpower_max}
+                      onChange={(e) => setFormData(prev => ({ ...prev, willpower_max: parseInt(e.target.value) || 3 }))}
+                    />
+                  </div>
+                  <div>
+                    <Label>Humanity</Label>
+                    <DotSelector 
+                      value={formData.humanity || 7} 
+                      max={10}
+                      onChange={(val) => setFormData(prev => ({ ...prev, humanity: val }))}
+                    />
+                  </div>
+                  <div>
+                    <Label>Hunger</Label>
+                    <DotSelector 
+                      value={formData.hunger || 1} 
+                      max={5}
+                      onChange={(val) => setFormData(prev => ({ ...prev, hunger: val }))}
+                    />
+                  </div>
+                  <div>
+                    <Label>Blood Potency</Label>
+                    <DotSelector 
+                      value={formData.blood_potency || 0} 
+                      max={10}
+                      onChange={(val) => setFormData(prev => ({ ...prev, blood_potency: val }))}
+                    />
+                  </div>
+                  <div>
+                    <Label>Experience Total</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={formData.experience_total}
+                      onChange={(e) => setFormData(prev => ({ ...prev, experience_total: parseInt(e.target.value) || 0 }))}
+                    />
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-4">
+                <h3 className="text-lg font-semibold mb-4">Attributes</h3>
+                <div className="grid grid-cols-3 gap-6">
+                  <div>
+                    <h4 className="text-sm font-semibold mb-3">Physical</h4>
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-sm">Strength</Label>
+                        <DotSelector value={formData.strength || 1} onChange={(val) => setFormData(prev => ({ ...prev, strength: val }))} />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Dexterity</Label>
+                        <DotSelector value={formData.dexterity || 1} onChange={(val) => setFormData(prev => ({ ...prev, dexterity: val }))} />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Stamina</Label>
+                        <DotSelector value={formData.stamina || 1} onChange={(val) => setFormData(prev => ({ ...prev, stamina: val }))} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-semibold mb-3">Social</h4>
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-sm">Charisma</Label>
+                        <DotSelector value={formData.charisma || 1} onChange={(val) => setFormData(prev => ({ ...prev, charisma: val }))} />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Manipulation</Label>
+                        <DotSelector value={formData.manipulation || 1} onChange={(val) => setFormData(prev => ({ ...prev, manipulation: val }))} />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Composure</Label>
+                        <DotSelector value={formData.composure || 1} onChange={(val) => setFormData(prev => ({ ...prev, composure: val }))} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-semibold mb-3">Mental</h4>
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-sm">Intelligence</Label>
+                        <DotSelector value={formData.intelligence || 1} onChange={(val) => setFormData(prev => ({ ...prev, intelligence: val }))} />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Wits</Label>
+                        <DotSelector value={formData.wits || 1} onChange={(val) => setFormData(prev => ({ ...prev, wits: val }))} />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Resolve</Label>
+                        <DotSelector value={formData.resolve || 1} onChange={(val) => setFormData(prev => ({ ...prev, resolve: val }))} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-4">
+                <h3 className="text-lg font-semibold mb-4">Skills</h3>
+                <div className="grid grid-cols-3 gap-6">
+                  {Object.entries(skillCategories).map(([category, skillList]) => (
+                    <div key={category}>
+                      <h4 className="text-sm font-semibold mb-3">{category}</h4>
+                      <div className="space-y-2">
+                        {skillList.map((skillKey) => {
+                          const skill = formData.skills?.[skillKey];
+                          const displayName = skillKey.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                          
+                          return (
+                            <div key={skillKey} className="space-y-1">
+                              <div className="flex justify-between items-center">
+                                <Label className="text-sm">{displayName}</Label>
+                                <DotSelector 
+                                  value={skill?.rating || 0} 
+                                  onChange={(val) => updateSkill(skillKey, val, skill?.specialty)}
+                                />
+                              </div>
+                              {(skill?.rating || 0) > 0 && (
+                                <Input
+                                  placeholder="Specialty"
+                                  value={skill?.specialty || ""}
+                                  onChange={(e) => updateSkill(skillKey, skill?.rating || 0, e.target.value)}
+                                  className="text-xs h-7"
+                                />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </TabsContent>
+
+            {/* Disciplines Tab */}
+            <TabsContent value="disciplines" className="space-y-4">
+              <Card className="p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Disciplines</h3>
+                  <Button onClick={addDiscipline} size="sm">
+                    <Plus className="w-4 h-4 mr-1" /> Add Discipline
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  {formData.disciplines?.map((disc, idx) => (
+                    <div key={idx} className="flex gap-2 items-center">
+                      <Input
+                        placeholder="Discipline name"
+                        value={disc.name}
+                        onChange={(e) => updateDiscipline(idx, 'name', e.target.value)}
+                      />
+                      <DotSelector 
+                        value={disc.level} 
+                        onChange={(val) => updateDiscipline(idx, 'level', val)}
+                      />
+                      <Button variant="ghost" size="sm" onClick={() => removeDiscipline(idx)}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              <Card className="p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Powers</h3>
+                  <Button onClick={addPower} size="sm">
+                    <Plus className="w-4 h-4 mr-1" /> Add Power
+                  </Button>
+                </div>
+                <div className="space-y-4">
+                  {formData.powers?.map((power, idx) => (
+                    <div key={idx} className="border rounded-lg p-3 space-y-2">
+                      <div className="flex justify-between items-start">
+                        <Input
+                          placeholder="Power name"
+                          value={power.name}
+                          onChange={(e) => updatePower(idx, 'name', e.target.value)}
+                          className="flex-1"
+                        />
+                        <Button variant="ghost" size="sm" onClick={() => removePower(idx)}>
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <Input
+                          placeholder="Discipline"
+                          value={power.discipline}
+                          onChange={(e) => updatePower(idx, 'discipline', e.target.value)}
+                        />
+                        <Input
+                          type="number"
+                          placeholder="Level"
+                          value={power.level}
+                          onChange={(e) => updatePower(idx, 'level', parseInt(e.target.value) || 1)}
+                        />
+                        <Input
+                          placeholder="Cost"
+                          value={power.cost}
+                          onChange={(e) => updatePower(idx, 'cost', e.target.value)}
+                        />
+                      </div>
+                      <Textarea
+                        placeholder="Description"
+                        value={power.description}
+                        onChange={(e) => updatePower(idx, 'description', e.target.value)}
+                        rows={2}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </TabsContent>
+
+            {/* Advantages Tab */}
+            <TabsContent value="advantages" className="space-y-4">
+              <Card className="p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Advantages</h3>
+                  <Button onClick={addAdvantage} size="sm">
+                    <Plus className="w-4 h-4 mr-1" /> Add Advantage
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  {formData.advantages?.map((adv, idx) => (
+                    <div key={idx} className="border rounded-lg p-3 space-y-2">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Name"
+                          value={adv.name}
+                          onChange={(e) => updateAdvantage(idx, 'name', e.target.value)}
+                          className="flex-1"
+                        />
+                        <Select value={adv.type} onValueChange={(val) => updateAdvantage(idx, 'type', val)}>
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Merit">Merit</SelectItem>
+                            <SelectItem value="Background">Background</SelectItem>
+                            <SelectItem value="Status">Status</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <DotSelector 
+                          value={adv.rating || 1} 
+                          onChange={(val) => updateAdvantage(idx, 'rating', val)}
+                        />
+                        <Button variant="ghost" size="sm" onClick={() => removeAdvantage(idx)}>
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <Textarea
+                        placeholder="Description"
+                        value={adv.description}
+                        onChange={(e) => updateAdvantage(idx, 'description', e.target.value)}
+                        rows={2}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              <Card className="p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Flaws</h3>
+                  <Button onClick={addFlaw} size="sm">
+                    <Plus className="w-4 h-4 mr-1" /> Add Flaw
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  {formData.flaws?.map((flaw, idx) => (
+                    <div key={idx} className="border rounded-lg p-3 space-y-2">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Flaw name"
+                          value={flaw.name}
+                          onChange={(e) => updateFlaw(idx, 'name', e.target.value)}
+                          className="flex-1"
+                        />
+                        <DotSelector 
+                          value={flaw.rating || 1} 
+                          onChange={(val) => updateFlaw(idx, 'rating', val)}
+                        />
+                        <Button variant="ghost" size="sm" onClick={() => removeFlaw(idx)}>
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <Textarea
+                        placeholder="Description"
+                        value={flaw.description}
+                        onChange={(e) => updateFlaw(idx, 'description', e.target.value)}
+                        rows={2}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </TabsContent>
+
+            {/* Beliefs Tab */}
+            <TabsContent value="beliefs" className="space-y-4">
+              <Card className="p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Convictions</h3>
+                  <Button onClick={addConviction} size="sm">
+                    <Plus className="w-4 h-4 mr-1" /> Add Conviction
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {formData.convictions?.map((conviction, idx) => (
+                    <div key={idx} className="flex gap-2">
+                      <Input
+                        placeholder="Conviction"
+                        value={conviction}
+                        onChange={(e) => updateConviction(idx, e.target.value)}
+                      />
+                      <Button variant="ghost" size="sm" onClick={() => removeConviction(idx)}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              <Card className="p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Touchstones</h3>
+                  <Button onClick={addTouchstone} size="sm">
+                    <Plus className="w-4 h-4 mr-1" /> Add Touchstone
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  {formData.touchstones?.map((touchstone, idx) => (
+                    <div key={idx} className="border rounded-lg p-3 space-y-2">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Touchstone name"
+                          value={touchstone.name}
+                          onChange={(e) => updateTouchstone(idx, 'name', e.target.value)}
+                          className="flex-1"
+                        />
+                        <Button variant="ghost" size="sm" onClick={() => removeTouchstone(idx)}>
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <Input
+                        placeholder="Related conviction"
+                        value={touchstone.conviction}
+                        onChange={(e) => updateTouchstone(idx, 'conviction', e.target.value)}
+                      />
+                      <Textarea
+                        placeholder="Description"
+                        value={touchstone.description}
+                        onChange={(e) => updateTouchstone(idx, 'description', e.target.value)}
+                        rows={2}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="p-4">
+                  <Label>Ambition</Label>
+                  <Textarea
+                    value={formData.ambition}
+                    onChange={(e) => setFormData(prev => ({ ...prev, ambition: e.target.value }))}
+                    placeholder="Character's long-term goal"
+                    rows={3}
+                  />
+                </Card>
+
+                <Card className="p-4">
+                  <Label>Desire</Label>
+                  <Textarea
+                    value={formData.desire}
+                    onChange={(e) => setFormData(prev => ({ ...prev, desire: e.target.value }))}
+                    placeholder="Character's short-term want"
+                    rows={3}
+                  />
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Details Tab */}
+            <TabsContent value="details" className="space-y-4">
+              <Card className="p-4">
+                <Label>Appearance</Label>
+                <Textarea
+                  value={formData.appearance}
+                  onChange={(e) => setFormData(prev => ({ ...prev, appearance: e.target.value }))}
+                  placeholder="Physical description"
+                  rows={3}
+                />
+              </Card>
+
+              <Card className="p-4">
+                <Label>Distinguishing Features</Label>
+                <Textarea
+                  value={formData.distinguishing_features}
+                  onChange={(e) => setFormData(prev => ({ ...prev, distinguishing_features: e.target.value }))}
+                  placeholder="Notable features, scars, tattoos, etc."
+                  rows={3}
+                />
+              </Card>
+
+              <Card className="p-4">
+                <Label>History</Label>
+                <Textarea
+                  value={formData.history}
+                  onChange={(e) => setFormData(prev => ({ ...prev, history: e.target.value }))}
+                  placeholder="Character background and history"
+                  rows={5}
+                />
+              </Card>
+
+              <Card className="p-4">
+                <Label>Notes</Label>
+                <Textarea
+                  value={formData.notes}
+                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                  placeholder="Additional notes"
+                  rows={5}
+                />
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </ScrollArea>
+
+        <DialogFooter className="flex justify-between border-t pt-4">
           <Button
             variant="destructive"
             onClick={handleDelete}
             disabled={deleteLoading}
-            className="flex items-center gap-2"
           >
-            {deleteLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+            {deleteLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
             Delete
           </Button>
           
@@ -312,8 +1000,8 @@ export function EditCharacterDialog({
               Cancel
             </Button>
             <Button onClick={handleSubmit} disabled={loading}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Update Character
+              {loading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Save Changes
             </Button>
           </div>
         </DialogFooter>
