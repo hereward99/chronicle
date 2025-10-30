@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -363,12 +363,13 @@ export function EditCharacterDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-6xl h-[90vh] flex flex-col min-h-0">
         <DialogHeader>
           <DialogTitle>Edit Character Sheet</DialogTitle>
+          <DialogDescription>Update attributes, skills, and details.</DialogDescription>
         </DialogHeader>
         
-        <ScrollArea className="flex-1 h-0 pr-4">
+        <ScrollArea className="flex-1 min-h-0 pr-4">
           <Tabs defaultValue="basic" className="w-full">
             <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="basic">Basic</TabsTrigger>
