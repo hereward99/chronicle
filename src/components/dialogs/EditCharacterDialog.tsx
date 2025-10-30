@@ -363,12 +363,12 @@ export function EditCharacterDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-6xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Edit Character Sheet</DialogTitle>
         </DialogHeader>
         
-        <ScrollArea className="flex-1 pr-4">
+        <ScrollArea className="flex-1 h-0 pr-4">
           <Tabs defaultValue="basic" className="w-full">
             <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="basic">Basic</TabsTrigger>
