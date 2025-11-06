@@ -6,17 +6,19 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Search, Crown, User, Skull, Users, FileText, Image as ImageIcon } from "lucide-react";
+import { Plus, Search, Crown, User, Skull, Users, FileText, Image as ImageIcon, Wand2 } from "lucide-react";
 import { useCharacters, Character } from "@/hooks/useCharacters";
 import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialog";
 import { ViewCharacterDialog } from "@/components/dialogs/ViewCharacterDialog";
 import { EditCharacterDialog } from "@/components/dialogs/EditCharacterDialog";
+import { CharacterWizard } from "@/components/character/CharacterWizard";
 
 export default function Characters() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [viewCharacter, setViewCharacter] = useState<Character | null>(null);
   const [editCharacter, setEditCharacter] = useState<Character | null>(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
   const { characters, loading, updateCharacter, deleteCharacter } = useCharacters();
 
   const filteredCharacters = characters.filter(character => {
@@ -67,12 +69,22 @@ export default function Characters() {
           <h1 className="text-3xl font-bold text-foreground">Characters</h1>
           <p className="text-muted-foreground">Manage your chronicle's characters</p>
         </div>
-        <CreateCharacterDialog>
-          <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
-            <Plus className="w-4 h-4 mr-2" />
-            New Character
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setWizardOpen(true)}
+            className="border-primary/50 hover:bg-primary/10"
+          >
+            <Wand2 className="w-4 h-4 mr-2" />
+            Wizard
           </Button>
-        </CreateCharacterDialog>
+          <CreateCharacterDialog>
+            <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
+              <Plus className="w-4 h-4 mr-2" />
+              Quick Create
+            </Button>
+          </CreateCharacterDialog>
+        </div>
       </div>
 
       {/* Search and Filters */}
@@ -266,6 +278,11 @@ export default function Characters() {
         onOpenChange={(open) => !open && setEditCharacter(null)}
         onUpdate={updateCharacter}
         onDelete={deleteCharacter}
+      />
+
+      <CharacterWizard
+        open={wizardOpen}
+        onOpenChange={setWizardOpen}
       />
     </div>
   );
