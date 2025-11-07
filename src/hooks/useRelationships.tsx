@@ -63,7 +63,7 @@ export function useRelationships(characterId?: string) {
       setRelationships(prev => [data as Relationship, ...prev]);
       toast({
         title: "Relationship created",
-        description: "The relationship has been added.",
+        description: "New relationship has been added.",
       });
       
       return data;
@@ -91,7 +91,7 @@ export function useRelationships(characterId?: string) {
       setRelationships(prev => prev.map(rel => rel.id === id ? data as Relationship : rel));
       toast({
         title: "Relationship updated",
-        description: "The relationship has been updated.",
+        description: "Relationship has been successfully updated.",
       });
       
       return data;
@@ -117,7 +117,7 @@ export function useRelationships(characterId?: string) {
       setRelationships(prev => prev.filter(rel => rel.id !== id));
       toast({
         title: "Relationship deleted",
-        description: "The relationship has been deleted.",
+        description: "Relationship has been successfully deleted.",
       });
     } catch (error: any) {
       toast({
