@@ -217,6 +217,63 @@ export type Database = {
         }
         Relationships: []
       }
+      coterie_members: {
+        Row: {
+          character_id: string
+          coterie_id: string
+          created_at: string
+          id: string
+          role: string | null
+        }
+        Insert: {
+          character_id: string
+          coterie_id: string
+          created_at?: string
+          id?: string
+          role?: string | null
+        }
+        Update: {
+          character_id?: string
+          coterie_id?: string
+          created_at?: string
+          id?: string
+          role?: string | null
+        }
+        Relationships: []
+      }
+      coteries: {
+        Row: {
+          chronicle_id: string
+          created_at: string
+          description: string | null
+          domain: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chronicle_id: string
+          created_at?: string
+          description?: string | null
+          domain?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chronicle_id?: string
+          created_at?: string
+          description?: string | null
+          domain?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notes: {
         Row: {
           category: string | null
