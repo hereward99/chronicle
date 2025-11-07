@@ -13,13 +13,15 @@ import {
   X,
   Skull,
   LogOut,
-  UsersRound
+  UsersRound,
+  Network
 } from "lucide-react";
 
 const navigationItems = [
   { name: "Chronicle", href: "/", icon: Home },
   { name: "Characters", href: "/characters", icon: Users },
   { name: "Coteries", href: "/coteries", icon: UsersRound },
+  { name: "Relationships", href: "/relationships", icon: Network },
   { name: "Stories", href: "/stories", icon: BookOpen },
   { name: "Sessions", href: "/sessions", icon: Scroll },
   { name: "Generator", href: "/generator", icon: Sparkles },

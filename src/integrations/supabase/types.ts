@@ -398,6 +398,48 @@ export type Database = {
           },
         ]
       }
+      relationships: {
+        Row: {
+          character_id: string
+          created_at: string
+          description: string | null
+          id: string
+          intensity: number
+          is_mutual: boolean | null
+          notes: string | null
+          related_character_id: string
+          relationship_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          character_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          intensity?: number
+          is_mutual?: boolean | null
+          notes?: string | null
+          related_character_id: string
+          relationship_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          character_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          intensity?: number
+          is_mutual?: boolean | null
+          notes?: string | null
+          related_character_id?: string
+          relationship_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       sessions: {
         Row: {
           attachments: Json | null

@@ -9,6 +9,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Chronicle from "./pages/Chronicle";
 import Characters from "./pages/Characters";
 import Coteries from "./pages/Coteries";
+import Relationships from "./pages/Relationships";
 import Stories from "./pages/Stories";
 import Sessions from "./pages/Sessions";
 import Generator from "./pages/Generator";
@@ -44,6 +45,13 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <Coteries />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/relationships" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Relationships />
                 </Layout>
               </ProtectedRoute>
             } />
