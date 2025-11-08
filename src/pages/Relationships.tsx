@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useRelationships } from '@/hooks/useRelationships';
+import { useRelationships, Relationship } from '@/hooks/useRelationships';
 import { useCharacters } from '@/hooks/useCharacters';
-import { Plus, Users, Heart, Swords, Handshake, UserCircle } from 'lucide-react';
+import { Plus, Users, Heart, Swords, Handshake, UserCircle, Edit, Trash2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CreateRelationshipDialog } from '@/components/dialogs/CreateRelationshipDialog';
+import { EditRelationshipDialog } from '@/components/dialogs/EditRelationshipDialog';
 
 const relationshipIcons: Record<string, any> = {
   'Ally': Handshake,
@@ -24,9 +26,17 @@ const relationshipColors: Record<string, string> = {
 };
 
 export default function Relationships() {
-  const { relationships, loading } = useRelationships();
+  const { relationships, loading, createRelationship, updateRelationship, deleteRelationship } = useRelationships();
   const { characters } = useCharacters();
   const [selectedCharacter, setSelectedCharacter] = useState<string>('all');
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedRelationship, setSelectedRelationship] = useState<Relationship | null>(null);
+
+  const handleEdit = (relationship: Relationship) => {
+    setSelectedRelationship(relationship);
+    setEditDialogOpen(true);
+  };
 
   const getCharacterName = (id: string) => {
     return characters.find(c => c.id === id)?.name || 'Unknown';
@@ -52,7 +62,7 @@ export default function Relationships() {
             Track connections, alliances, and rivalries between characters
           </p>
         </div>
-        <Button>
+        <Button onClick={() => setCreateDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Add Relationship
         </Button>
@@ -97,7 +107,7 @@ export default function Relationships() {
             <p className="text-sm text-muted-foreground mb-4">
               Start building your character network
             </p>
-            <Button>
+            <Button onClick={() => setCreateDialogOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Create First Relationship
             </Button>
@@ -132,6 +142,13 @@ export default function Relationships() {
                         )}
                       </div>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEdit(relationship)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
                   </div>
                 </CardHeader>
                 {relationship.description && (
@@ -151,6 +168,22 @@ export default function Relationships() {
           })}
         </div>
       )}
+
+      <CreateRelationshipDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        characters={characters}
+        onCreate={createRelationship}
+      />
+
+      <EditRelationshipDialog
+        relationship={selectedRelationship}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        characters={characters}
+        onUpdate={updateRelationship}
+        onDelete={deleteRelationship}
+      />
     </div>
   );
 }
