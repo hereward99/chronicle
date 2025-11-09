@@ -14,11 +14,14 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { Relationship } from '@/hooks/useRelationships';
 import { Character } from '@/hooks/useCharacters';
+import { Faction, CharacterFaction } from '@/hooks/useFactions';
 import { Badge } from '@/components/ui/badge';
 
 interface RelationshipGraphProps {
   relationships: Relationship[];
   characters: Character[];
+  factions?: Faction[];
+  characterFactions?: CharacterFaction[];
   onNodeClick?: (characterId: string) => void;
   onEdgeClick?: (relationship: Relationship) => void;
 }
@@ -57,9 +60,31 @@ const getNodeColor = (clan: string): string => {
 export function RelationshipGraph({ 
   relationships, 
   characters,
+  factions = [],
+  characterFactions = [],
   onNodeClick,
   onEdgeClick 
 }: RelationshipGraphProps) {
+  // Group characters by faction
+  const charactersByFaction = useMemo(() => {
+    const grouped: Record<string, Character[]> = { 'none': [] };
+    
+    characters.forEach(char => {
+      const charFactions = characterFactions.filter(cf => cf.character_id === char.id);
+      if (charFactions.length === 0) {
+        grouped['none'].push(char);
+      } else {
+        charFactions.forEach(cf => {
+          if (!grouped[cf.faction_id]) {
+            grouped[cf.faction_id] = [];
+          }
+          grouped[cf.faction_id].push(char);
+        });
+      }
+    });
+    
+    return grouped;
+  }, [characters, characterFactions]);
   const initialNodes: Node[] = useMemo(() => {
     // Get all unique character IDs from relationships
     const characterIds = new Set<string>();
@@ -68,17 +93,33 @@ export function RelationshipGraph({
       characterIds.add(rel.related_character_id);
     });
 
-    // Create nodes for characters that have relationships
-    const nodes = Array.from(characterIds)
-      .map(id => characters.find(c => c.id === id))
-      .filter((char): char is Character => char !== undefined)
-      .map((char, index) => {
-        const angle = (index / characterIds.size) * 2 * Math.PI;
-        const radius = 300;
-        const x = 400 + radius * Math.cos(angle);
-        const y = 300 + radius * Math.sin(angle);
+    const nodes: Node[] = [];
+    let globalIndex = 0;
 
-        return {
+    // Process each faction group
+    Object.entries(charactersByFaction).forEach(([factionId, factionChars]) => {
+      const relevantChars = factionChars.filter(char => characterIds.has(char.id));
+      if (relevantChars.length === 0) return;
+
+      const faction = factions.find(f => f.id === factionId);
+      const groupSize = relevantChars.length;
+      
+      // Calculate group position based on global index
+      const groupAngle = (globalIndex / Object.keys(charactersByFaction).length) * 2 * Math.PI;
+      const groupRadius = 400;
+      const groupCenterX = 500 + groupRadius * Math.cos(groupAngle);
+      const groupCenterY = 400 + groupRadius * Math.sin(groupAngle);
+
+      // Position characters within their faction group
+      relevantChars.forEach((char, index) => {
+        const localAngle = (index / groupSize) * 2 * Math.PI;
+        const localRadius = Math.min(80, 40 + groupSize * 8);
+        const x = groupCenterX + localRadius * Math.cos(localAngle);
+        const y = groupCenterY + localRadius * Math.sin(localAngle);
+
+        const charFaction = characterFactions.find(cf => cf.character_id === char.id && cf.faction_id === factionId);
+
+        nodes.push({
           id: char.id,
           type: 'default',
           position: { x, y },
@@ -86,28 +127,52 @@ export function RelationshipGraph({
             label: (
               <div className="flex flex-col items-center">
                 <div className="font-semibold text-sm">{char.name}</div>
-                <Badge variant="secondary" className="text-xs mt-1">
-                  {char.clan}
-                </Badge>
+                <div className="flex items-center gap-1 mt-1">
+                  <Badge variant="secondary" className="text-xs">
+                    {char.clan}
+                  </Badge>
+                  {faction && (
+                    <Badge 
+                      variant="outline" 
+                      className="text-xs"
+                      style={{ 
+                        borderColor: faction.color,
+                        color: faction.color 
+                      }}
+                    >
+                      {faction.name}
+                    </Badge>
+                  )}
+                </div>
+                {charFaction?.role && (
+                  <Badge variant="outline" className="text-xs mt-1">
+                    {charFaction.role}
+                  </Badge>
+                )}
               </div>
             ),
             character: char
           },
           style: {
-            background: getNodeColor(char.clan),
-            color: '#fff',
-            border: '2px solid #fff',
+            background: faction ? `${faction.color}15` : getNodeColor(char.clan),
+            color: faction ? faction.color : '#fff',
+            border: faction ? `3px solid ${faction.color}` : '2px solid #fff',
             borderRadius: '8px',
             padding: '12px',
-            minWidth: '120px',
+            minWidth: '140px',
             fontSize: '14px',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+            boxShadow: faction 
+              ? `0 4px 12px -2px ${faction.color}40`
+              : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
           },
-        };
+        });
       });
 
+      globalIndex++;
+    });
+
     return nodes;
-  }, [relationships, characters]);
+  }, [relationships, characters, factions, characterFactions, charactersByFaction]);
 
   const initialEdges: Edge[] = useMemo(() => {
     return relationships.map(rel => ({

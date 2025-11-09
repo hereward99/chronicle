@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      character_factions: {
+        Row: {
+          character_id: string
+          created_at: string
+          faction_id: string
+          id: string
+          role: string | null
+        }
+        Insert: {
+          character_id: string
+          created_at?: string
+          faction_id: string
+          id?: string
+          role?: string | null
+        }
+        Update: {
+          character_id?: string
+          created_at?: string
+          faction_id?: string
+          id?: string
+          role?: string | null
+        }
+        Relationships: []
+      }
       characters: {
         Row: {
           advantages: Json | null
@@ -267,6 +291,39 @@ export type Database = {
           created_at?: string
           description?: string | null
           domain?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      factions: {
+        Row: {
+          chronicle_id: string
+          color: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chronicle_id: string
+          color?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chronicle_id?: string
+          color?: string
+          created_at?: string
+          description?: string | null
           id?: string
           name?: string
           updated_at?: string

@@ -1,16 +1,21 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRelationships, Relationship } from '@/hooks/useRelationships';
 import { useCharacters, Character } from '@/hooks/useCharacters';
-import { Plus, Users, Heart, Swords, Handshake, UserCircle, Edit, Network } from 'lucide-react';
+import { useFactions, Faction } from '@/hooks/useFactions';
+import { useChronicles } from '@/hooks/useChronicles';
+import { Plus, Users, Heart, Swords, Handshake, UserCircle, Edit, Network, Flag, UserPlus } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CreateRelationshipDialog } from '@/components/dialogs/CreateRelationshipDialog';
 import { EditRelationshipDialog } from '@/components/dialogs/EditRelationshipDialog';
 import { RelationshipGraph } from '@/components/relationship/RelationshipGraph';
 import { ViewCharacterDialog } from '@/components/dialogs/ViewCharacterDialog';
+import { CreateFactionDialog } from '@/components/dialogs/CreateFactionDialog';
+import { EditFactionDialog } from '@/components/dialogs/EditFactionDialog';
+import { ManageFactionMembersDialog } from '@/components/dialogs/ManageFactionMembersDialog';
 
 const relationshipIcons: Record<string, any> = {
   'Ally': Handshake,
@@ -31,12 +36,28 @@ const relationshipColors: Record<string, string> = {
 export default function Relationships() {
   const { relationships, loading, createRelationship, updateRelationship, deleteRelationship } = useRelationships();
   const { characters } = useCharacters();
+  const { chronicles } = useChronicles();
+  const defaultChronicle = chronicles[0];
+  const { 
+    factions, 
+    characterFactions, 
+    createFaction, 
+    updateFaction, 
+    deleteFaction,
+    addCharacterToFaction,
+    removeCharacterFromFaction 
+  } = useFactions(defaultChronicle?.id);
+  
   const [selectedCharacter, setSelectedCharacter] = useState<string>('all');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedRelationship, setSelectedRelationship] = useState<Relationship | null>(null);
   const [viewCharacterDialogOpen, setViewCharacterDialogOpen] = useState(false);
   const [viewCharacter, setViewCharacter] = useState<Character | null>(null);
+  const [createFactionDialogOpen, setCreateFactionDialogOpen] = useState(false);
+  const [editFactionDialogOpen, setEditFactionDialogOpen] = useState(false);
+  const [selectedFaction, setSelectedFaction] = useState<Faction | null>(null);
+  const [manageMembersDialogOpen, setManageMembersDialogOpen] = useState(false);
 
   const handleEdit = (relationship: Relationship) => {
     setSelectedRelationship(relationship);
@@ -49,6 +70,16 @@ export default function Relationships() {
       setViewCharacter(character);
       setViewCharacterDialogOpen(true);
     }
+  };
+
+  const handleEditFaction = (faction: Faction) => {
+    setSelectedFaction(faction);
+    setEditFactionDialogOpen(true);
+  };
+
+  const handleManageMembers = (faction: Faction) => {
+    setSelectedFaction(faction);
+    setManageMembersDialogOpen(true);
   };
 
   const getCharacterName = (id: string) => {
@@ -91,6 +122,10 @@ export default function Relationships() {
             <TabsTrigger value="list" className="gap-2">
               <Users className="w-4 h-4" />
               List View
+            </TabsTrigger>
+            <TabsTrigger value="factions" className="gap-2">
+              <Flag className="w-4 h-4" />
+              Factions
             </TabsTrigger>
           </TabsList>
           
@@ -137,6 +172,8 @@ export default function Relationships() {
             <RelationshipGraph
               relationships={filteredRelationships}
               characters={characters}
+              factions={factions}
+              characterFactions={characterFactions}
               onNodeClick={handleNodeClick}
               onEdgeClick={handleEdit}
             />
@@ -229,6 +266,111 @@ export default function Relationships() {
             </div>
           )}
         </TabsContent>
+
+        <TabsContent value="factions" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold">Factions & Groups</h2>
+              <p className="text-sm text-muted-foreground">
+                Organize characters into factions and see group dynamics
+              </p>
+            </div>
+            <Button onClick={() => setCreateFactionDialogOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Create Faction
+            </Button>
+          </div>
+
+          {factions.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Flag className="w-12 h-12 text-muted-foreground mb-4" />
+                <p className="text-lg font-medium mb-2">No factions yet</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Create factions to organize your characters into groups
+                </p>
+                <Button onClick={() => setCreateFactionDialogOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create First Faction
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {factions.map(faction => {
+                const members = characterFactions
+                  .filter(cf => cf.faction_id === faction.id)
+                  .map(cf => characters.find(c => c.id === cf.character_id))
+                  .filter(Boolean) as Character[];
+
+                return (
+                  <Card 
+                    key={faction.id} 
+                    className="hover:shadow-lg transition-shadow"
+                    style={{ borderTop: `4px solid ${faction.color}` }}
+                  >
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="flex items-center gap-2">
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: faction.color }}
+                            />
+                            {faction.name}
+                          </CardTitle>
+                          {faction.description && (
+                            <CardDescription className="mt-2">
+                              {faction.description}
+                            </CardDescription>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditFaction(faction)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">
+                            {members.length} member{members.length !== 1 ? 's' : ''}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleManageMembers(faction)}
+                          >
+                            <UserPlus className="w-4 h-4 mr-2" />
+                            Manage
+                          </Button>
+                        </div>
+                        {members.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {members.slice(0, 5).map(member => (
+                              <Badge key={member.id} variant="secondary" className="text-xs">
+                                {member.name}
+                              </Badge>
+                            ))}
+                            {members.length > 5 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{members.length - 5} more
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </TabsContent>
       </Tabs>
 
       <CreateRelationshipDialog
@@ -252,6 +394,35 @@ export default function Relationships() {
         open={viewCharacterDialogOpen}
         onOpenChange={setViewCharacterDialogOpen}
       />
+
+      {defaultChronicle && (
+        <>
+          <CreateFactionDialog
+            open={createFactionDialogOpen}
+            onOpenChange={setCreateFactionDialogOpen}
+            chronicleId={defaultChronicle.id}
+            onCreate={createFaction}
+          />
+
+          <EditFactionDialog
+            faction={selectedFaction}
+            open={editFactionDialogOpen}
+            onOpenChange={setEditFactionDialogOpen}
+            onUpdate={updateFaction}
+            onDelete={deleteFaction}
+          />
+
+          <ManageFactionMembersDialog
+            faction={selectedFaction}
+            open={manageMembersDialogOpen}
+            onOpenChange={setManageMembersDialogOpen}
+            characters={characters}
+            characterFactions={characterFactions}
+            onAddCharacter={addCharacterToFaction}
+            onRemoveCharacter={removeCharacterFromFaction}
+          />
+        </>
+      )}
     </div>
   );
 }
