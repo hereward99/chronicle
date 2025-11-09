@@ -4,12 +4,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRelationships, Relationship } from '@/hooks/useRelationships';
-import { useCharacters } from '@/hooks/useCharacters';
+import { useCharacters, Character } from '@/hooks/useCharacters';
 import { Plus, Users, Heart, Swords, Handshake, UserCircle, Edit, Network } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CreateRelationshipDialog } from '@/components/dialogs/CreateRelationshipDialog';
 import { EditRelationshipDialog } from '@/components/dialogs/EditRelationshipDialog';
 import { RelationshipGraph } from '@/components/relationship/RelationshipGraph';
+import { ViewCharacterDialog } from '@/components/dialogs/ViewCharacterDialog';
 
 const relationshipIcons: Record<string, any> = {
   'Ally': Handshake,
@@ -34,10 +35,20 @@ export default function Relationships() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedRelationship, setSelectedRelationship] = useState<Relationship | null>(null);
+  const [viewCharacterDialogOpen, setViewCharacterDialogOpen] = useState(false);
+  const [viewCharacter, setViewCharacter] = useState<Character | null>(null);
 
   const handleEdit = (relationship: Relationship) => {
     setSelectedRelationship(relationship);
     setEditDialogOpen(true);
+  };
+
+  const handleNodeClick = (characterId: string) => {
+    const character = characters.find(c => c.id === characterId);
+    if (character) {
+      setViewCharacter(character);
+      setViewCharacterDialogOpen(true);
+    }
   };
 
   const getCharacterName = (id: string) => {
@@ -126,6 +137,7 @@ export default function Relationships() {
             <RelationshipGraph
               relationships={filteredRelationships}
               characters={characters}
+              onNodeClick={handleNodeClick}
               onEdgeClick={handleEdit}
             />
           )}
@@ -233,6 +245,12 @@ export default function Relationships() {
         characters={characters}
         onUpdate={updateRelationship}
         onDelete={deleteRelationship}
+      />
+
+      <ViewCharacterDialog
+        character={viewCharacter}
+        open={viewCharacterDialogOpen}
+        onOpenChange={setViewCharacterDialogOpen}
       />
     </div>
   );

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useEffect } from 'react';
 import ReactFlow, {
   Node,
   Edge,
@@ -9,12 +9,12 @@ import ReactFlow, {
   ConnectionLineType,
   MarkerType,
   Panel,
+  MiniMap,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Relationship } from '@/hooks/useRelationships';
 import { Character } from '@/hooks/useCharacters';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
 
 interface RelationshipGraphProps {
   relationships: Relationship[];
@@ -141,6 +141,12 @@ export function RelationshipGraph({
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
+  // Update nodes and edges when data changes
+  useEffect(() => {
+    setNodes(initialNodes);
+    setEdges(initialEdges);
+  }, [initialNodes, initialEdges, setNodes, setEdges]);
+
   const onNodeClickHandler = useCallback((event: React.MouseEvent, node: Node) => {
     if (onNodeClick) {
       onNodeClick(node.id);
@@ -171,10 +177,23 @@ export function RelationshipGraph({
         onEdgeClick={onEdgeClickHandler}
         connectionLineType={ConnectionLineType.SmoothStep}
         fitView
+        fitViewOptions={{ padding: 0.2 }}
+        minZoom={0.1}
+        maxZoom={2}
         attributionPosition="bottom-left"
+        nodesDraggable={true}
+        nodesConnectable={false}
       >
-        <Background />
-        <Controls />
+        <Background gap={16} />
+        <Controls showInteractive={false} />
+        <MiniMap 
+          nodeColor={(node) => {
+            const char = node.data.character as Character;
+            return getNodeColor(char.clan);
+          }}
+          maskColor="rgb(0, 0, 0, 0.1)"
+          className="bg-background border rounded"
+        />
         <Panel position="top-right" className="bg-card border rounded-lg p-3 shadow-lg">
           <div className="text-sm font-semibold mb-2">Relationship Types</div>
           <div className="space-y-1">
@@ -190,6 +209,12 @@ export function RelationshipGraph({
           </div>
           <div className="text-xs text-muted-foreground mt-3">
             Line thickness = intensity
+          </div>
+          <div className="text-xs text-muted-foreground mt-2">
+            Click nodes to view character
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Click edges to edit relationship
           </div>
         </Panel>
       </ReactFlow>
