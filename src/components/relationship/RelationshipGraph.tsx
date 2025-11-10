@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useEffect } from 'react';
+import { useCallback, useMemo, useEffect, useState } from 'react';
 import ReactFlow, {
   Node,
   Edge,
@@ -10,12 +10,24 @@ import ReactFlow, {
   MarkerType,
   Panel,
   MiniMap,
+  Connection,
+  addEdge,
+  useReactFlow,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Relationship } from '@/hooks/useRelationships';
 import { Character } from '@/hooks/useCharacters';
 import { Faction, CharacterFaction } from '@/hooks/useFactions';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Link2, Info, Maximize2 } from 'lucide-react';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
 
 interface RelationshipGraphProps {
   relationships: Relationship[];
@@ -24,6 +36,7 @@ interface RelationshipGraphProps {
   characterFactions?: CharacterFaction[];
   onNodeClick?: (characterId: string) => void;
   onEdgeClick?: (relationship: Relationship) => void;
+  onCreateRelationship?: (sourceId: string, targetId: string) => void;
 }
 
 const relationshipColors: Record<string, string> = {
@@ -63,8 +76,12 @@ export function RelationshipGraph({
   factions = [],
   characterFactions = [],
   onNodeClick,
-  onEdgeClick 
+  onEdgeClick,
+  onCreateRelationship 
 }: RelationshipGraphProps) {
+  const [connectionMode, setConnectionMode] = useState(false);
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const { fitView } = useReactFlow();
   // Group characters by faction
   const charactersByFaction = useMemo(() => {
     const grouped: Record<string, Character[]> = { 'none': [] };
@@ -119,37 +136,68 @@ export function RelationshipGraph({
 
         const charFaction = characterFactions.find(cf => cf.character_id === char.id && cf.faction_id === factionId);
 
+        const isHovered = hoveredNode === char.id;
+        
         nodes.push({
           id: char.id,
           type: 'default',
           position: { x, y },
           data: { 
             label: (
-              <div className="flex flex-col items-center">
-                <div className="font-semibold text-sm">{char.name}</div>
-                <div className="flex items-center gap-1 mt-1">
-                  <Badge variant="secondary" className="text-xs">
-                    {char.clan}
-                  </Badge>
-                  {faction && (
-                    <Badge 
-                      variant="outline" 
-                      className="text-xs"
-                      style={{ 
-                        borderColor: faction.color,
-                        color: faction.color 
-                      }}
+              <TooltipProvider>
+                <Tooltip open={isHovered}>
+                  <TooltipTrigger asChild>
+                    <div 
+                      className="flex flex-col items-center transition-transform duration-200"
+                      onMouseEnter={() => setHoveredNode(char.id)}
+                      onMouseLeave={() => setHoveredNode(null)}
                     >
-                      {faction.name}
-                    </Badge>
-                  )}
-                </div>
-                {charFaction?.role && (
-                  <Badge variant="outline" className="text-xs mt-1">
-                    {charFaction.role}
-                  </Badge>
-                )}
-              </div>
+                      <div className="font-semibold text-sm">{char.name}</div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Badge variant="secondary" className="text-xs">
+                          {char.clan}
+                        </Badge>
+                        {faction && (
+                          <Badge 
+                            variant="outline" 
+                            className="text-xs"
+                            style={{ 
+                              borderColor: faction.color,
+                              color: faction.color 
+                            }}
+                          >
+                            {faction.name}
+                          </Badge>
+                        )}
+                      </div>
+                      {charFaction?.role && (
+                        <Badge variant="outline" className="text-xs mt-1">
+                          {charFaction.role}
+                        </Badge>
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="max-w-xs">
+                    <div className="space-y-1">
+                      <div className="font-semibold">{char.name}</div>
+                      {char.concept && (
+                        <div className="text-xs text-muted-foreground">{char.concept}</div>
+                      )}
+                      <div className="text-xs">
+                        <span className="font-medium">Type:</span> {char.type}
+                      </div>
+                      <div className="text-xs">
+                        <span className="font-medium">Status:</span> {char.status}
+                      </div>
+                      {connectionMode && (
+                        <div className="text-xs text-primary font-medium pt-1 border-t">
+                          Click to connect characters
+                        </div>
+                      )}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             ),
             character: char
           },
@@ -161,9 +209,14 @@ export function RelationshipGraph({
             padding: '12px',
             minWidth: '140px',
             fontSize: '14px',
-            boxShadow: faction 
+            boxShadow: isHovered
+              ? `0 8px 24px -4px ${faction?.color || getNodeColor(char.clan)}60`
+              : faction 
               ? `0 4px 12px -2px ${faction.color}40`
               : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+            transform: isHovered ? 'scale(1.05)' : 'scale(1)',
+            transition: 'all 0.2s ease-in-out',
+            cursor: connectionMode ? 'crosshair' : 'pointer',
           },
         });
       });
@@ -224,6 +277,24 @@ export function RelationshipGraph({
     }
   }, [onEdgeClick]);
 
+  const onConnect = useCallback((connection: Connection) => {
+    if (connectionMode && onCreateRelationship && connection.source && connection.target) {
+      onCreateRelationship(connection.source, connection.target);
+      setConnectionMode(false);
+    }
+  }, [connectionMode, onCreateRelationship]);
+
+  const onNodeDoubleClick = useCallback((event: React.MouseEvent, node: Node) => {
+    event.preventDefault();
+    if (!connectionMode) {
+      setConnectionMode(true);
+    }
+  }, [connectionMode]);
+
+  const handleFitView = useCallback(() => {
+    fitView({ padding: 0.2, duration: 400 });
+  }, [fitView]);
+
   const getLegendItems = () => {
     return Object.entries(relationshipColors).map(([type, color]) => ({
       type,
@@ -232,57 +303,134 @@ export function RelationshipGraph({
   };
 
   return (
-    <div className="w-full h-[600px] border rounded-lg bg-background">
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onNodeClick={onNodeClickHandler}
-        onEdgeClick={onEdgeClickHandler}
-        connectionLineType={ConnectionLineType.SmoothStep}
-        fitView
-        fitViewOptions={{ padding: 0.2 }}
-        minZoom={0.1}
-        maxZoom={2}
-        attributionPosition="bottom-left"
-        nodesDraggable={true}
-        nodesConnectable={false}
-      >
-        <Background gap={16} />
-        <Controls showInteractive={false} />
-        <MiniMap 
-          nodeColor={(node) => {
-            const char = node.data.character as Character;
-            return getNodeColor(char.clan);
-          }}
-          maskColor="rgb(0, 0, 0, 0.1)"
-          className="bg-background border rounded"
-        />
-        <Panel position="top-right" className="bg-card border rounded-lg p-3 shadow-lg">
-          <div className="text-sm font-semibold mb-2">Relationship Types</div>
-          <div className="space-y-1">
-            {getLegendItems().map(({ type, color }) => (
-              <div key={type} className="flex items-center gap-2">
-                <div 
-                  className="w-8 h-0.5" 
-                  style={{ backgroundColor: color }}
-                />
-                <span className="text-xs">{type}</span>
+    <div className="w-full h-[600px] border rounded-lg bg-background relative">
+      {connectionMode && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg flex items-center gap-2 animate-pulse">
+          <Link2 className="w-4 h-4" />
+          <span className="text-sm font-medium">Connection Mode Active - Click two nodes to connect</span>
+          <Button 
+            size="sm" 
+            variant="secondary" 
+            onClick={() => setConnectionMode(false)}
+            className="ml-2"
+          >
+            Cancel
+          </Button>
+        </div>
+      )}
+      
+      <ContextMenu>
+        <ContextMenuTrigger className="w-full h-full">
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onNodeClick={onNodeClickHandler}
+            onNodeDoubleClick={onNodeDoubleClick}
+            onEdgeClick={onEdgeClickHandler}
+            onConnect={onConnect}
+            connectionLineType={ConnectionLineType.SmoothStep}
+            connectionLineStyle={{ stroke: 'hsl(var(--primary))', strokeWidth: 2 }}
+            fitView
+            fitViewOptions={{ padding: 0.2 }}
+            minZoom={0.1}
+            maxZoom={2}
+            attributionPosition="bottom-left"
+            nodesDraggable={true}
+            nodesConnectable={connectionMode}
+            selectNodesOnDrag={false}
+          >
+            <Background gap={16} />
+            <Controls showInteractive={false} />
+            <MiniMap 
+              nodeColor={(node) => {
+                const char = node.data.character as Character;
+                return getNodeColor(char.clan);
+              }}
+              maskColor="rgb(0, 0, 0, 0.1)"
+              className="bg-background border rounded"
+            />
+            
+            <Panel position="top-left" className="bg-card border rounded-lg p-2 shadow-lg">
+              <div className="flex flex-col gap-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant={connectionMode ? "default" : "outline"}
+                        onClick={() => setConnectionMode(!connectionMode)}
+                        className="gap-2"
+                      >
+                        <Link2 className="w-4 h-4" />
+                        Connect
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Create relationships by connecting nodes</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleFitView}
+                        className="gap-2"
+                      >
+                        <Maximize2 className="w-4 h-4" />
+                        Fit
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Fit all nodes in view</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
-            ))}
-          </div>
-          <div className="text-xs text-muted-foreground mt-3">
-            Line thickness = intensity
-          </div>
-          <div className="text-xs text-muted-foreground mt-2">
-            Click nodes to view character
-          </div>
-          <div className="text-xs text-muted-foreground">
-            Click edges to edit relationship
-          </div>
-        </Panel>
-      </ReactFlow>
+            </Panel>
+            
+            <Panel position="top-right" className="bg-card border rounded-lg p-3 shadow-lg">
+              <div className="text-sm font-semibold mb-2 flex items-center gap-2">
+                <Info className="w-4 h-4" />
+                Legend
+              </div>
+              <div className="space-y-1">
+                {getLegendItems().map(({ type, color }) => (
+                  <div key={type} className="flex items-center gap-2">
+                    <div 
+                      className="w-8 h-0.5" 
+                      style={{ backgroundColor: color }}
+                    />
+                    <span className="text-xs">{type}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="text-xs text-muted-foreground mt-3 space-y-1">
+                <div>• Drag nodes to rearrange</div>
+                <div>• Click to view details</div>
+                <div>• Double-click to connect</div>
+                <div>• Hover for info</div>
+                <div>• Right-click for menu</div>
+              </div>
+            </Panel>
+          </ReactFlow>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem onClick={() => setConnectionMode(true)}>
+            <Link2 className="w-4 h-4 mr-2" />
+            Create Relationship
+          </ContextMenuItem>
+          <ContextMenuItem onClick={handleFitView}>
+            <Maximize2 className="w-4 h-4 mr-2" />
+            Fit View
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
     </div>
   );
 }

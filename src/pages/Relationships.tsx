@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CreateRelationshipDialog } from '@/components/dialogs/CreateRelationshipDialog';
 import { EditRelationshipDialog } from '@/components/dialogs/EditRelationshipDialog';
 import { RelationshipGraph } from '@/components/relationship/RelationshipGraph';
+import { ReactFlowProvider } from 'reactflow';
 import { ViewCharacterDialog } from '@/components/dialogs/ViewCharacterDialog';
 import { CreateFactionDialog } from '@/components/dialogs/CreateFactionDialog';
 import { EditFactionDialog } from '@/components/dialogs/EditFactionDialog';
@@ -80,6 +81,11 @@ export default function Relationships() {
   const handleManageMembers = (faction: Faction) => {
     setSelectedFaction(faction);
     setManageMembersDialogOpen(true);
+  };
+
+  const handleCreateRelationshipFromGraph = (sourceId: string, targetId: string) => {
+    // Pre-populate the create dialog with the selected characters
+    setCreateDialogOpen(true);
   };
 
   const getCharacterName = (id: string) => {
@@ -169,14 +175,17 @@ export default function Relationships() {
               </CardContent>
             </Card>
           ) : (
-            <RelationshipGraph
-              relationships={filteredRelationships}
-              characters={characters}
-              factions={factions}
-              characterFactions={characterFactions}
-              onNodeClick={handleNodeClick}
-              onEdgeClick={handleEdit}
-            />
+            <ReactFlowProvider>
+              <RelationshipGraph
+                relationships={filteredRelationships}
+                characters={characters}
+                factions={factions}
+                characterFactions={characterFactions}
+                onNodeClick={handleNodeClick}
+                onEdgeClick={handleEdit}
+                onCreateRelationship={handleCreateRelationshipFromGraph}
+              />
+            </ReactFlowProvider>
           )}
         </TabsContent>
 
