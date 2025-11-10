@@ -80,7 +80,6 @@ export function RelationshipGraph({
   onCreateRelationship 
 }: RelationshipGraphProps) {
   const [connectionMode, setConnectionMode] = useState(false);
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const { fitView } = useReactFlow();
   // Group characters by faction
   const charactersByFaction = useMemo(() => {
@@ -111,32 +110,36 @@ export function RelationshipGraph({
     });
 
     const nodes: Node[] = [];
+    const factionGroups = Object.entries(charactersByFaction).filter(([_, chars]) => 
+      chars.some(char => characterIds.has(char.id))
+    );
+    
+    const totalGroups = factionGroups.length;
     let globalIndex = 0;
 
     // Process each faction group
-    Object.entries(charactersByFaction).forEach(([factionId, factionChars]) => {
+    factionGroups.forEach(([factionId, factionChars]) => {
       const relevantChars = factionChars.filter(char => characterIds.has(char.id));
       if (relevantChars.length === 0) return;
 
       const faction = factions.find(f => f.id === factionId);
       const groupSize = relevantChars.length;
       
-      // Calculate group position based on global index
-      const groupAngle = (globalIndex / Object.keys(charactersByFaction).length) * 2 * Math.PI;
-      const groupRadius = 400;
-      const groupCenterX = 500 + groupRadius * Math.cos(groupAngle);
+      // Calculate group position based on global index with better spacing
+      const groupAngle = (globalIndex / Math.max(totalGroups, 1)) * 2 * Math.PI;
+      const groupRadius = totalGroups === 1 ? 0 : 500;
+      const groupCenterX = 600 + groupRadius * Math.cos(groupAngle);
       const groupCenterY = 400 + groupRadius * Math.sin(groupAngle);
 
-      // Position characters within their faction group
+      // Position characters within their faction group with better spacing
       relevantChars.forEach((char, index) => {
-        const localAngle = (index / groupSize) * 2 * Math.PI;
-        const localRadius = Math.min(80, 40 + groupSize * 8);
+        const localAngle = (index / Math.max(groupSize, 1)) * 2 * Math.PI;
+        // Increase spacing based on group size
+        const localRadius = groupSize === 1 ? 0 : Math.min(150, 60 + groupSize * 15);
         const x = groupCenterX + localRadius * Math.cos(localAngle);
         const y = groupCenterY + localRadius * Math.sin(localAngle);
 
         const charFaction = characterFactions.find(cf => cf.character_id === char.id && cf.faction_id === factionId);
-
-        const isHovered = hoveredNode === char.id;
         
         nodes.push({
           id: char.id,
@@ -144,62 +147,34 @@ export function RelationshipGraph({
           position: { x, y },
           data: { 
             label: (
-              <TooltipProvider>
-                <Tooltip open={isHovered}>
-                  <TooltipTrigger asChild>
-                    <div 
-                      className="flex flex-col items-center transition-transform duration-200"
-                      onMouseEnter={() => setHoveredNode(char.id)}
-                      onMouseLeave={() => setHoveredNode(null)}
+              <div className="flex flex-col items-center select-none pointer-events-none">
+                <div className="font-semibold text-sm">{char.name}</div>
+                <div className="flex items-center gap-1 mt-1">
+                  <Badge variant="secondary" className="text-xs">
+                    {char.clan}
+                  </Badge>
+                  {faction && (
+                    <Badge 
+                      variant="outline" 
+                      className="text-xs"
+                      style={{ 
+                        borderColor: faction.color,
+                        color: faction.color 
+                      }}
                     >
-                      <div className="font-semibold text-sm">{char.name}</div>
-                      <div className="flex items-center gap-1 mt-1">
-                        <Badge variant="secondary" className="text-xs">
-                          {char.clan}
-                        </Badge>
-                        {faction && (
-                          <Badge 
-                            variant="outline" 
-                            className="text-xs"
-                            style={{ 
-                              borderColor: faction.color,
-                              color: faction.color 
-                            }}
-                          >
-                            {faction.name}
-                          </Badge>
-                        )}
-                      </div>
-                      {charFaction?.role && (
-                        <Badge variant="outline" className="text-xs mt-1">
-                          {charFaction.role}
-                        </Badge>
-                      )}
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="max-w-xs">
-                    <div className="space-y-1">
-                      <div className="font-semibold">{char.name}</div>
-                      {char.concept && (
-                        <div className="text-xs text-muted-foreground">{char.concept}</div>
-                      )}
-                      <div className="text-xs">
-                        <span className="font-medium">Type:</span> {char.type}
-                      </div>
-                      <div className="text-xs">
-                        <span className="font-medium">Status:</span> {char.status}
-                      </div>
-                      {connectionMode && (
-                        <div className="text-xs text-primary font-medium pt-1 border-t">
-                          Click to connect characters
-                        </div>
-                      )}
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                      {faction.name}
+                    </Badge>
+                  )}
+                </div>
+                {charFaction?.role && (
+                  <Badge variant="outline" className="text-xs mt-1">
+                    {charFaction.role}
+                  </Badge>
+                )}
+              </div>
             ),
-            character: char
+            character: char,
+            faction: faction
           },
           style: {
             background: faction ? `${faction.color}15` : getNodeColor(char.clan),
@@ -209,14 +184,9 @@ export function RelationshipGraph({
             padding: '12px',
             minWidth: '140px',
             fontSize: '14px',
-            boxShadow: isHovered
-              ? `0 8px 24px -4px ${faction?.color || getNodeColor(char.clan)}60`
-              : faction 
+            boxShadow: faction 
               ? `0 4px 12px -2px ${faction.color}40`
               : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-            transform: isHovered ? 'scale(1.05)' : 'scale(1)',
-            transition: 'all 0.2s ease-in-out',
-            cursor: connectionMode ? 'crosshair' : 'pointer',
           },
         });
       });
@@ -337,9 +307,10 @@ export function RelationshipGraph({
             minZoom={0.1}
             maxZoom={2}
             attributionPosition="bottom-left"
-            nodesDraggable={true}
+            nodesDraggable={!connectionMode}
             nodesConnectable={connectionMode}
-            selectNodesOnDrag={false}
+            elementsSelectable={true}
+            panOnDrag={connectionMode}
           >
             <Background gap={16} />
             <Controls showInteractive={false} />
