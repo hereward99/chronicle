@@ -1,14 +1,18 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useRelationships, Relationship } from '@/hooks/useRelationships';
 import { useCharacters, Character } from '@/hooks/useCharacters';
 import { useFactions, Faction } from '@/hooks/useFactions';
 import { useChronicles } from '@/hooks/useChronicles';
-import { Plus, Users, Heart, Swords, Handshake, UserCircle, Edit, Network, Flag, UserPlus } from 'lucide-react';
+import { Plus, Users, Heart, Swords, Handshake, UserCircle, Edit, Network, Flag, UserPlus, Search, Filter, X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { CreateRelationshipDialog } from '@/components/dialogs/CreateRelationshipDialog';
 import { EditRelationshipDialog } from '@/components/dialogs/EditRelationshipDialog';
 import { RelationshipGraph } from '@/components/relationship/RelationshipGraph';
@@ -59,6 +63,15 @@ export default function Relationships() {
   const [editFactionDialogOpen, setEditFactionDialogOpen] = useState(false);
   const [selectedFaction, setSelectedFaction] = useState<Faction | null>(null);
   const [manageMembersDialogOpen, setManageMembersDialogOpen] = useState(false);
+  
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [selectedRelTypes, setSelectedRelTypes] = useState<string[]>([]);
+  const [selectedFactions, setSelectedFactions] = useState<string[]>([]);
+  const [selectedCharTypes, setSelectedCharTypes] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [selectedClans, setSelectedClans] = useState<string[]>([]);
 
   const handleEdit = (relationship: Relationship) => {
     setSelectedRelationship(relationship);
@@ -92,11 +105,124 @@ export default function Relationships() {
     return characters.find(c => c.id === id)?.name || 'Unknown';
   };
 
-  const filteredRelationships = selectedCharacter === 'all' 
-    ? relationships 
-    : relationships.filter(r => 
+  // Get unique values for filters
+  const uniqueClans = useMemo(() => 
+    Array.from(new Set(characters.map(c => c.clan))).sort(),
+    [characters]
+  );
+  
+  const relationshipTypes = ['Ally', 'Rival', 'Contact', 'Friend', 'Enemy'];
+  const characterTypes = ['PC', 'NPC'];
+  const characterStatuses = ['Active', 'Inactive', 'Retired', 'Dead'];
+
+  // Advanced filtering logic
+  const filteredRelationships = useMemo(() => {
+    let filtered = relationships;
+
+    // Filter by selected character (existing functionality)
+    if (selectedCharacter !== 'all') {
+      filtered = filtered.filter(r => 
         r.character_id === selectedCharacter || r.related_character_id === selectedCharacter
       );
+    }
+
+    // Filter by relationship type
+    if (selectedRelTypes.length > 0) {
+      filtered = filtered.filter(r => selectedRelTypes.includes(r.relationship_type));
+    }
+
+    // Filter by character search, faction, type, status, or clan
+    if (searchQuery || selectedFactions.length > 0 || selectedCharTypes.length > 0 || 
+        selectedStatuses.length > 0 || selectedClans.length > 0) {
+      filtered = filtered.filter(r => {
+        const char1 = characters.find(c => c.id === r.character_id);
+        const char2 = characters.find(c => c.id === r.related_character_id);
+        
+        if (!char1 || !char2) return false;
+
+        // Search query
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase();
+          const matchesSearch = 
+            char1.name.toLowerCase().includes(query) ||
+            char2.name.toLowerCase().includes(query);
+          if (!matchesSearch) return false;
+        }
+
+        // Faction filter
+        if (selectedFactions.length > 0) {
+          const char1Factions = characterFactions
+            .filter(cf => cf.character_id === char1.id)
+            .map(cf => cf.faction_id);
+          const char2Factions = characterFactions
+            .filter(cf => cf.character_id === char2.id)
+            .map(cf => cf.faction_id);
+          
+          const hasMatchingFaction = 
+            char1Factions.some(f => selectedFactions.includes(f)) ||
+            char2Factions.some(f => selectedFactions.includes(f));
+          
+          if (!hasMatchingFaction) return false;
+        }
+
+        // Character type filter
+        if (selectedCharTypes.length > 0) {
+          const matchesType = 
+            selectedCharTypes.includes(char1.type) ||
+            selectedCharTypes.includes(char2.type);
+          if (!matchesType) return false;
+        }
+
+        // Status filter
+        if (selectedStatuses.length > 0) {
+          const matchesStatus = 
+            selectedStatuses.includes(char1.status) ||
+            selectedStatuses.includes(char2.status);
+          if (!matchesStatus) return false;
+        }
+
+        // Clan filter
+        if (selectedClans.length > 0) {
+          const matchesClan = 
+            selectedClans.includes(char1.clan) ||
+            selectedClans.includes(char2.clan);
+          if (!matchesClan) return false;
+        }
+
+        return true;
+      });
+    }
+
+    return filtered;
+  }, [
+    relationships, 
+    selectedCharacter, 
+    selectedRelTypes, 
+    searchQuery, 
+    selectedFactions, 
+    selectedCharTypes, 
+    selectedStatuses, 
+    selectedClans,
+    characters,
+    characterFactions
+  ]);
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedRelTypes([]);
+    setSelectedFactions([]);
+    setSelectedCharTypes([]);
+    setSelectedStatuses([]);
+    setSelectedClans([]);
+  };
+
+  const activeFilterCount = 
+    (searchQuery ? 1 : 0) +
+    selectedRelTypes.length +
+    selectedFactions.length +
+    selectedCharTypes.length +
+    selectedStatuses.length +
+    selectedClans.length;
 
   const getIntensityLabel = (intensity: number) => {
     const labels = ['Very Weak', 'Weak', 'Moderate', 'Strong', 'Very Strong'];
@@ -118,40 +244,209 @@ export default function Relationships() {
         </Button>
       </div>
 
-      <Tabs defaultValue="graph" className="space-y-4">
-        <div className="flex items-center justify-between">
-          <TabsList>
-            <TabsTrigger value="graph" className="gap-2">
-              <Network className="w-4 h-4" />
-              Graph View
-            </TabsTrigger>
-            <TabsTrigger value="list" className="gap-2">
-              <Users className="w-4 h-4" />
-              List View
-            </TabsTrigger>
-            <TabsTrigger value="factions" className="gap-2">
-              <Flag className="w-4 h-4" />
-              Factions
-            </TabsTrigger>
-          </TabsList>
-          
+      {/* Filter Panel */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Search className="w-5 h-5 text-muted-foreground" />
+              <CardTitle className="text-lg">Search & Filter</CardTitle>
+              {activeFilterCount > 0 && (
+                <Badge variant="secondary">{activeFilterCount} active</Badge>
+              )}
+            </div>
+            {activeFilterCount > 0 && (
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
+                <X className="w-4 h-4 mr-2" />
+                Clear All
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div className="flex items-center gap-4">
-            <Users className="w-5 h-5 text-muted-foreground" />
+            <div className="flex-1">
+              <Input
+                placeholder="Search characters..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full"
+              />
+            </div>
             <Select value={selectedCharacter} onValueChange={setSelectedCharacter}>
-              <SelectTrigger className="w-[280px]">
-                <SelectValue placeholder="Filter by character" />
+              <SelectTrigger className="w-[250px]">
+                <SelectValue placeholder="Focus on character" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Characters</SelectItem>
                 {characters.map(char => (
                   <SelectItem key={char.id} value={char.id}>
-                    {char.name} ({char.clan})
+                    {char.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-        </div>
+
+          <Collapsible open={filterOpen} onOpenChange={setFilterOpen}>
+            <CollapsibleTrigger asChild>
+              <Button variant="outline" className="w-full">
+                <Filter className="w-4 h-4 mr-2" />
+                Advanced Filters
+                {activeFilterCount > 0 && ` (${activeFilterCount})`}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-4 pt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Relationship Type Filter */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Relationship Type</Label>
+                  <div className="space-y-2">
+                    {relationshipTypes.map(type => (
+                      <div key={type} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`rel-${type}`}
+                          checked={selectedRelTypes.includes(type)}
+                          onCheckedChange={(checked) => {
+                            setSelectedRelTypes(
+                              checked 
+                                ? [...selectedRelTypes, type]
+                                : selectedRelTypes.filter(t => t !== type)
+                            );
+                          }}
+                        />
+                        <label htmlFor={`rel-${type}`} className="text-sm cursor-pointer">
+                          {type}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Faction Filter */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Faction</Label>
+                  <div className="space-y-2">
+                    {factions.map(faction => (
+                      <div key={faction.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`faction-${faction.id}`}
+                          checked={selectedFactions.includes(faction.id)}
+                          onCheckedChange={(checked) => {
+                            setSelectedFactions(
+                              checked 
+                                ? [...selectedFactions, faction.id]
+                                : selectedFactions.filter(f => f !== faction.id)
+                            );
+                          }}
+                        />
+                        <label htmlFor={`faction-${faction.id}`} className="text-sm cursor-pointer flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: faction.color }}
+                          />
+                          {faction.name}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Character Type Filter */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Character Type</Label>
+                  <div className="space-y-2">
+                    {characterTypes.map(type => (
+                      <div key={type} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`type-${type}`}
+                          checked={selectedCharTypes.includes(type)}
+                          onCheckedChange={(checked) => {
+                            setSelectedCharTypes(
+                              checked 
+                                ? [...selectedCharTypes, type]
+                                : selectedCharTypes.filter(t => t !== type)
+                            );
+                          }}
+                        />
+                        <label htmlFor={`type-${type}`} className="text-sm cursor-pointer">
+                          {type}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Status Filter */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Status</Label>
+                  <div className="space-y-2">
+                    {characterStatuses.map(status => (
+                      <div key={status} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`status-${status}`}
+                          checked={selectedStatuses.includes(status)}
+                          onCheckedChange={(checked) => {
+                            setSelectedStatuses(
+                              checked 
+                                ? [...selectedStatuses, status]
+                                : selectedStatuses.filter(s => s !== status)
+                            );
+                          }}
+                        />
+                        <label htmlFor={`status-${status}`} className="text-sm cursor-pointer">
+                          {status}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Clan Filter */}
+                <div className="space-y-2 md:col-span-2">
+                  <Label className="text-sm font-medium">Clan</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {uniqueClans.map(clan => (
+                      <div key={clan} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`clan-${clan}`}
+                          checked={selectedClans.includes(clan)}
+                          onCheckedChange={(checked) => {
+                            setSelectedClans(
+                              checked 
+                                ? [...selectedClans, clan]
+                                : selectedClans.filter(c => c !== clan)
+                            );
+                          }}
+                        />
+                        <label htmlFor={`clan-${clan}`} className="text-sm cursor-pointer">
+                          {clan}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        </CardContent>
+      </Card>
+
+      <Tabs defaultValue="graph" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="graph" className="gap-2">
+            <Network className="w-4 h-4" />
+            Graph View
+          </TabsTrigger>
+          <TabsTrigger value="list" className="gap-2">
+            <Users className="w-4 h-4" />
+            List View
+          </TabsTrigger>
+          <TabsTrigger value="factions" className="gap-2">
+            <Flag className="w-4 h-4" />
+            Factions
+          </TabsTrigger>
+        </TabsList>
 
         <TabsContent value="graph" className="space-y-4">
           {loading ? (
