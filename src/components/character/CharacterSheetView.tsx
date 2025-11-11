@@ -198,10 +198,21 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
       {/* Character Header */}
       <Card className="p-6">
         <div className="flex gap-6">
-          <Avatar className="w-24 h-24">
-            <AvatarImage src={character.avatar_url || undefined} />
-            <AvatarFallback className="text-2xl">{character.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-          </Avatar>
+          <div className="flex-shrink-0">
+            {character.avatar_url ? (
+              <div className="w-32 h-32 rounded-lg overflow-hidden border-2 border-border shadow-lg">
+                <img 
+                  src={character.avatar_url} 
+                  alt={character.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <Avatar className="w-32 h-32">
+                <AvatarFallback className="text-3xl">{character.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+              </Avatar>
+            )}
+          </div>
           
           <div className="flex-1 space-y-3">
             <div>

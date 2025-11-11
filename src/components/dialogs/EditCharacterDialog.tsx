@@ -10,9 +10,11 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileUpload } from "@/components/ui/file-upload";
-import { Loader2, Trash2, X, Plus } from "lucide-react";
+import { Loader2, Trash2, X, Plus, Wand2 } from "lucide-react";
 import { Character } from "@/hooks/useCharacters";
 import { useFiles } from "@/hooks/useFiles";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface EditCharacterDialogProps {
   character: Character | null;
@@ -69,7 +71,9 @@ export function EditCharacterDialog({
 }: EditCharacterDialogProps) {
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [generatingPortrait, setGeneratingPortrait] = useState(false);
   const { uploadFile } = useFiles();
+  const { toast } = useToast();
   
   const [formData, setFormData] = useState<Partial<Character>>({
     name: "",
@@ -212,14 +216,9 @@ export function EditCharacterDialog({
     }
   };
 
-  const handleAvatarUpload = async (files: File[]) => {
-    if (!character || files.length === 0) return;
-    
-    const file = files[0];
-    const attachment = await uploadFile(file, 'character-avatars', character.id, 'character');
-    
-    if (attachment) {
-      setFormData(prev => ({ ...prev, avatar_url: attachment.url }));
+  const handleAvatarUpload = (attachments: any[]) => {
+    if (attachments.length > 0) {
+      setFormData(prev => ({ ...prev, avatar_url: attachments[0].url }));
     }
   };
 
@@ -359,6 +358,39 @@ export function EditCharacterDialog({
     }));
   };
 
+  const generatePortrait = async () => {
+    if (!character) return;
+    
+    setGeneratingPortrait(true);
+    try {
+      // Build character description for the AI
+      const description = `${formData.clan} vampire, ${formData.concept || 'mysterious character'}, generation ${formData.generation}. ${formData.appearance || ''} ${formData.distinguishing_features || ''}`.trim();
+      
+      const { data, error } = await supabase.functions.invoke('generate-portrait', {
+        body: { characterDescription: description }
+      });
+
+      if (error) throw error;
+      
+      if (data?.imageUrl) {
+        setFormData(prev => ({ ...prev, avatar_url: data.imageUrl }));
+        toast({
+          title: "Portrait generated",
+          description: "AI-generated portrait has been created for your character.",
+        });
+      }
+    } catch (error: any) {
+      console.error('Error generating portrait:', error);
+      toast({
+        title: "Error generating portrait",
+        description: error.message || "Failed to generate portrait. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingPortrait(false);
+    }
+  };
+
   if (!character) return null;
 
   return (
@@ -485,6 +517,63 @@ export function EditCharacterDialog({
                       onChange={(e) => setFormData(prev => ({ ...prev, coterie: e.target.value }))}
                       placeholder="Name of the coterie"
                     />
+                  </div>
+
+                  <div className="col-span-2">
+                    <Label>Character Portrait</Label>
+                    <div className="space-y-3">
+                      {formData.avatar_url && (
+                        <div className="relative w-48 h-48 mx-auto">
+                          <img 
+                            src={formData.avatar_url} 
+                            alt={formData.name}
+                            className="w-full h-full object-cover rounded-lg border-2 border-border"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute -top-2 -right-2"
+                            onClick={() => setFormData(prev => ({ ...prev, avatar_url: "" }))}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="flex-1"
+                          onClick={generatePortrait}
+                          disabled={generatingPortrait}
+                        >
+                          {generatingPortrait ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Generating...
+                            </>
+                          ) : (
+                            <>
+                              <Wand2 className="mr-2 h-4 w-4" />
+                              Generate Portrait
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      <div className="text-sm text-muted-foreground text-center">
+                        Or upload your own image below
+                      </div>
+                      <FileUpload
+                        bucket="character-avatars"
+                        entityId={character.id}
+                        entityType="character"
+                        attachments={[]}
+                        onAttachmentsChange={handleAvatarUpload}
+                        maxFiles={1}
+                        accept="image/*"
+                      />
+                    </div>
                   </div>
 
                   <div className="col-span-2">
