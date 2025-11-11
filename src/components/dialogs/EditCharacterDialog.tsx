@@ -565,7 +565,7 @@ export function EditCharacterDialog({
                         Or upload your own image below
                       </div>
                       <FileUpload
-                        bucket="character-avatars"
+                        bucket="character-files"
                         entityId={character.id}
                         entityType="character"
                         attachments={[]}
@@ -605,7 +605,7 @@ export function EditCharacterDialog({
               <Card className="p-4">
                 <h3 className="text-lg font-semibold mb-4">Avatar</h3>
                 <FileUpload
-                  bucket="character-avatars"
+                  bucket="character-files"
                   entityId={character.id}
                   entityType="character"
                   attachments={formData.avatar_url ? [{ name: "Avatar", url: formData.avatar_url, type: "image", size: 0, id: "avatar", uploaded_at: "" }] : []}
