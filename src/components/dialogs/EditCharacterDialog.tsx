@@ -487,13 +487,28 @@ export function EditCharacterDialog({
                     />
                   </div>
 
-                  <div>
+                  <div className="col-span-2">
                     <Label>Resonance</Label>
-                    <Input
-                      value={formData.resonance}
-                      onChange={(e) => setFormData(prev => ({ ...prev, resonance: e.target.value }))}
-                      placeholder="e.g., Melancholic, Sanguine"
-                    />
+                    <div className="space-y-2">
+                      <Select 
+                        value={formData.resonance?.split(',')[0]?.trim() || ""} 
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, resonance: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select blood resonance" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Choleric">Choleric (Angry, Violent)</SelectItem>
+                          <SelectItem value="Melancholic">Melancholic (Sad, Fearful)</SelectItem>
+                          <SelectItem value="Phlegmatic">Phlegmatic (Calm, Apathetic)</SelectItem>
+                          <SelectItem value="Sanguine">Sanguine (Happy, Passionate)</SelectItem>
+                          <SelectItem value="Animal">Animal (Beast Blood)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Blood resonance affects discipline usage and provides temporary benefits
+                      </p>
+                    </div>
                   </div>
                 </div>
               </Card>

@@ -4,10 +4,105 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { HelpCircle, Droplet } from "lucide-react";
 
 interface CharacterSheetViewProps {
   character: Character;
 }
+
+// Rules reference data
+const rulesReference = {
+  attributes: {
+    strength: "Physical power and ability to exert force. Used for melee damage and feats of strength.",
+    dexterity: "Agility, reflexes, and hand-eye coordination. Used for ranged attacks and dodging.",
+    stamina: "Endurance and resilience. Determines Health tracker capacity and resisting physical hardship.",
+    charisma: "Charm, magnetism, and force of personality. Used to inspire and lead.",
+    manipulation: "Ability to influence and deceive others. Used for social maneuvering.",
+    composure: "Self-control and emotional stability. Determines Willpower capacity and resisting frenzy.",
+    intelligence: "Reasoning and learning capacity. Used for analysis and knowledge.",
+    wits: "Quick thinking and awareness. Determines initiative and perception.",
+    resolve: "Focus and determination. Used to resist mental influence and maintain concentration."
+  },
+  trackers: {
+    health: "Physical damage capacity. Stamina + 3. Superficial (/) damage heals quickly; Aggravated (×) damage takes time.",
+    willpower: "Mental fortitude. Composure + Resolve. Spend to reroll failures or resist compulsions.",
+    humanity: "Moral compass and connection to morality. Lose when breaking Convictions. At 0, you're a mindless monster.",
+    hunger: "Need for blood. Ranges 0-5. At 5, must make Hunger Frenzy tests. Rises when using disciplines or taking damage.",
+    bloodPotency: "Power of vitae. Affects discipline strength, feeding restrictions, and blood surge capacity.",
+    experience: "Character progression points. Spend to increase traits, learn disciplines, or gain advantages."
+  },
+  disciplines: {
+    general: "Supernatural vampire powers. Each dot unlocks new powers. Some require Blood Potency minimums."
+  },
+  resonance: {
+    general: "The emotional state of blood. Affects discipline usage and can grant temporary benefits.",
+    choleric: "Angry, aggressive, violent emotions. Resonates with Celerity and Potence.",
+    melancholic: "Sad, fearful, depressed emotions. Resonates with Fortitude and Obfuscate.",
+    phlegmatic: "Calm, apathetic, peaceful emotions. Resonates with Auspex and Dominate.",
+    sanguine: "Happy, joyful, passionate emotions. Resonates with Blood Sorcery and Presence.",
+    animal: "Beast blood. Slakes less Hunger but no risk of killing. Resonates with Animalism and Protean."
+  }
+};
+
+const RuleTooltip = ({ title, description, children }: { title: string; description: string; children: React.ReactNode }) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <span className="cursor-help border-b border-dotted border-muted-foreground/50 inline-flex items-center gap-1">
+        {children}
+        <HelpCircle className="h-3 w-3 text-muted-foreground" />
+      </span>
+    </TooltipTrigger>
+    <TooltipContent className="max-w-xs">
+      <p className="font-semibold mb-1">{title}</p>
+      <p className="text-xs">{description}</p>
+    </TooltipContent>
+  </Tooltip>
+);
+
+const ResonanceDisplay = ({ resonance }: { resonance?: string }) => {
+  const resonanceTypes = resonance?.toLowerCase().split(',').map(r => r.trim()) || [];
+  
+  const getResonanceColor = (type: string) => {
+    switch(type) {
+      case 'choleric': return 'bg-red-500/20 text-red-400 border-red-500/30';
+      case 'melancholic': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'phlegmatic': return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'sanguine': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'animal': return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+      default: return 'bg-muted text-muted-foreground border-border';
+    }
+  };
+  
+  if (!resonance || resonanceTypes.length === 0) {
+    return <span className="text-xs text-muted-foreground">No resonance</span>;
+  }
+  
+  return (
+    <div className="flex flex-wrap gap-1">
+      {resonanceTypes.map((type, idx) => (
+        <Tooltip key={idx}>
+          <TooltipTrigger asChild>
+            <Badge 
+              variant="outline" 
+              className={`text-xs capitalize ${getResonanceColor(type)}`}
+            >
+              <Droplet className="h-3 w-3 mr-1" />
+              {type}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            <p className="font-semibold mb-1 capitalize">{type} Resonance</p>
+            <p className="text-xs">
+              {rulesReference.resonance[type as keyof typeof rulesReference.resonance] || 
+               rulesReference.resonance.general}
+            </p>
+          </TooltipContent>
+        </Tooltip>
+      ))}
+    </div>
+  );
+};
 
 const DotRating = ({ current, max = 5, filled = false }: { current: number; max?: number; filled?: boolean }) => {
   return (
@@ -63,6 +158,16 @@ const HealthTracker = ({
 };
 
 export function CharacterSheetView({ character }: CharacterSheetViewProps) {
+  return (
+    <TooltipProvider>
+      <div className="space-y-6">
+        <CharacterSheetContent character={character} />
+      </div>
+    </TooltipProvider>
+  );
+}
+
+function CharacterSheetContent({ character }: CharacterSheetViewProps) {
   const physicalAttributes = [
     { name: "Strength", value: character.strength || 1 },
     { name: "Dexterity", value: character.dexterity || 1 },
@@ -89,7 +194,7 @@ export function CharacterSheetView({ character }: CharacterSheetViewProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <>
       {/* Character Header */}
       <Card className="p-6">
         <div className="flex gap-6">
@@ -123,6 +228,13 @@ export function CharacterSheetView({ character }: CharacterSheetViewProps) {
                 </div>
               )}
             </div>
+            
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-sm text-muted-foreground">Resonance:</span>
+              </div>
+              <ResonanceDisplay resonance={character.resonance} />
+            </div>
           </div>
         </div>
       </Card>
@@ -144,7 +256,9 @@ export function CharacterSheetView({ character }: CharacterSheetViewProps) {
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium">Health</span>
+                  <RuleTooltip title="Health" description={rulesReference.trackers.health}>
+                    <span className="text-sm font-medium">Health</span>
+                  </RuleTooltip>
                   <span className="text-xs text-muted-foreground">
                     {(character.health_aggravated || 0) + (character.health_superficial || 0)}/{character.health_max || 3} damage
                   </span>
@@ -158,7 +272,9 @@ export function CharacterSheetView({ character }: CharacterSheetViewProps) {
 
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium">Willpower</span>
+                  <RuleTooltip title="Willpower" description={rulesReference.trackers.willpower}>
+                    <span className="text-sm font-medium">Willpower</span>
+                  </RuleTooltip>
                   <span className="text-xs text-muted-foreground">
                     {(character.willpower_aggravated || 0) + (character.willpower_superficial || 0)}/{character.willpower_max || 3} damage
                   </span>
@@ -172,7 +288,9 @@ export function CharacterSheetView({ character }: CharacterSheetViewProps) {
 
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium">Humanity</span>
+                  <RuleTooltip title="Humanity" description={rulesReference.trackers.humanity}>
+                    <span className="text-sm font-medium">Humanity</span>
+                  </RuleTooltip>
                   <span className="text-xs text-muted-foreground">{character.humanity || 7}/10</span>
                 </div>
                 <DotRating current={character.humanity || 7} max={10} />
@@ -180,7 +298,9 @@ export function CharacterSheetView({ character }: CharacterSheetViewProps) {
 
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium">Hunger</span>
+                  <RuleTooltip title="Hunger" description={rulesReference.trackers.hunger}>
+                    <span className="text-sm font-medium">Hunger</span>
+                  </RuleTooltip>
                   <span className="text-xs text-muted-foreground">{character.hunger || 1}/5</span>
                 </div>
                 <DotRating current={character.hunger || 1} max={5} filled />
@@ -188,7 +308,9 @@ export function CharacterSheetView({ character }: CharacterSheetViewProps) {
 
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium">Blood Potency</span>
+                  <RuleTooltip title="Blood Potency" description={rulesReference.trackers.bloodPotency}>
+                    <span className="text-sm font-medium">Blood Potency</span>
+                  </RuleTooltip>
                   <span className="text-xs text-muted-foreground">{character.blood_potency || 0}</span>
                 </div>
                 <DotRating current={character.blood_potency || 0} max={10} />
@@ -196,7 +318,9 @@ export function CharacterSheetView({ character }: CharacterSheetViewProps) {
 
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium">Experience</span>
+                  <RuleTooltip title="Experience" description={rulesReference.trackers.experience}>
+                    <span className="text-sm font-medium">Experience</span>
+                  </RuleTooltip>
                   <span className="text-xs text-muted-foreground">
                     {(character.experience_total || 0) - (character.experience_spent || 0)} unspent
                   </span>
@@ -215,7 +339,12 @@ export function CharacterSheetView({ character }: CharacterSheetViewProps) {
                 <div className="space-y-2">
                   {physicalAttributes.map((attr) => (
                     <div key={attr.name} className="flex justify-between items-center">
-                      <span className="text-sm">{attr.name}</span>
+                      <RuleTooltip 
+                        title={attr.name} 
+                        description={rulesReference.attributes[attr.name.toLowerCase() as keyof typeof rulesReference.attributes]}
+                      >
+                        <span className="text-sm">{attr.name}</span>
+                      </RuleTooltip>
                       <DotRating current={attr.value} />
                     </div>
                   ))}
@@ -227,7 +356,12 @@ export function CharacterSheetView({ character }: CharacterSheetViewProps) {
                 <div className="space-y-2">
                   {socialAttributes.map((attr) => (
                     <div key={attr.name} className="flex justify-between items-center">
-                      <span className="text-sm">{attr.name}</span>
+                      <RuleTooltip 
+                        title={attr.name} 
+                        description={rulesReference.attributes[attr.name.toLowerCase() as keyof typeof rulesReference.attributes]}
+                      >
+                        <span className="text-sm">{attr.name}</span>
+                      </RuleTooltip>
                       <DotRating current={attr.value} />
                     </div>
                   ))}
@@ -239,7 +373,12 @@ export function CharacterSheetView({ character }: CharacterSheetViewProps) {
                 <div className="space-y-2">
                   {mentalAttributes.map((attr) => (
                     <div key={attr.name} className="flex justify-between items-center">
-                      <span className="text-sm">{attr.name}</span>
+                      <RuleTooltip 
+                        title={attr.name} 
+                        description={rulesReference.attributes[attr.name.toLowerCase() as keyof typeof rulesReference.attributes]}
+                      >
+                        <span className="text-sm">{attr.name}</span>
+                      </RuleTooltip>
                       <DotRating current={attr.value} />
                     </div>
                   ))}
@@ -283,7 +422,9 @@ export function CharacterSheetView({ character }: CharacterSheetViewProps) {
         {/* Disciplines Tab */}
         <TabsContent value="disciplines" className="space-y-6">
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Disciplines</h3>
+            <RuleTooltip title="Disciplines" description={rulesReference.disciplines.general}>
+              <h3 className="text-lg font-semibold mb-4">Disciplines</h3>
+            </RuleTooltip>
             {character.disciplines && character.disciplines.length > 0 ? (
               <div className="space-y-4">
                 {character.disciplines.map((disc, idx) => (
@@ -489,6 +630,6 @@ export function CharacterSheetView({ character }: CharacterSheetViewProps) {
           )}
         </TabsContent>
       </Tabs>
-    </div>
+    </>
   );
 }
