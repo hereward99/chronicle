@@ -1,20 +1,22 @@
 import { Navigation } from "./Navigation";
 import { useChronicles } from "@/hooks/useChronicles";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export function Layout({ children }: LayoutProps) {
-  const { createDefaultChronicle, currentChronicle, chronicles } = useChronicles();
+  const { createDefaultChronicle, currentChronicle, chronicles, loading } = useChronicles();
+  const hasCreatedChronicle = useRef(false);
 
   useEffect(() => {
-    // Create a default chronicle if the user has none
-    if (!currentChronicle && chronicles.length === 0) {
+    // Create a default chronicle if the user has none (only once, after loading completes)
+    if (!loading && !currentChronicle && chronicles.length === 0 && !hasCreatedChronicle.current) {
+      hasCreatedChronicle.current = true;
       createDefaultChronicle();
     }
-  }, [createDefaultChronicle, currentChronicle, chronicles.length]);
+  }, [loading, currentChronicle, chronicles.length]);
 
   return (
     <div className="min-h-screen bg-background">
