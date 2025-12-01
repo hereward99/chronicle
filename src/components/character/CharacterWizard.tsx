@@ -144,6 +144,13 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
       const healthMax = characterData.stamina + 3;
       const willpowerMax = characterData.composure + characterData.resolve;
 
+      // Normalize skill keys to lowercase with underscores (e.g., "Animal Ken" -> "animal_ken")
+      const normalizedSkills: Record<string, { rating: number; specialty?: string }> = {};
+      for (const [skillName, skillData] of Object.entries(characterData.skills)) {
+        const normalizedKey = skillName.toLowerCase().replace(/\s+/g, '_');
+        normalizedSkills[normalizedKey] = skillData;
+      }
+
       await createCharacter({
         name: characterData.name,
         clan: characterData.characterType === "vampire" ? characterData.clan : characterData.characterType.charAt(0).toUpperCase() + characterData.characterType.slice(1),
@@ -168,8 +175,8 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
         wits: characterData.wits,
         resolve: characterData.resolve,
         
-        // Skills
-        skills: characterData.skills,
+        // Skills (normalized keys)
+        skills: normalizedSkills,
         
         // Disciplines (only for vampires)
         disciplines: characterData.characterType === "vampire" ? characterData.disciplines : [],
