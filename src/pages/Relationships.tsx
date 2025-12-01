@@ -41,8 +41,7 @@ const relationshipColors: Record<string, string> = {
 export default function Relationships() {
   const { relationships, loading, createRelationship, updateRelationship, deleteRelationship } = useRelationships();
   const { characters } = useCharacters();
-  const { chronicles } = useChronicles();
-  const defaultChronicle = chronicles[0];
+  const { currentChronicle } = useChronicles();
   const { 
     factions, 
     characterFactions, 
@@ -51,7 +50,7 @@ export default function Relationships() {
     deleteFaction,
     addCharacterToFaction,
     removeCharacterFromFaction 
-  } = useFactions(defaultChronicle?.id);
+  } = useFactions(currentChronicle?.id);
   
   const [selectedCharacter, setSelectedCharacter] = useState<string>('all');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -699,12 +698,12 @@ export default function Relationships() {
         onOpenChange={setViewCharacterDialogOpen}
       />
 
-      {defaultChronicle && (
+      {currentChronicle && (
         <>
           <CreateFactionDialog
             open={createFactionDialogOpen}
             onOpenChange={setCreateFactionDialogOpen}
-            chronicleId={defaultChronicle.id}
+            chronicleId={currentChronicle.id}
             onCreate={createFaction}
           />
 
