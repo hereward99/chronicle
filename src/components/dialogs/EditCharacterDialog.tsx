@@ -134,8 +134,30 @@ export function EditCharacterDialog({
     resonance: "",
   });
 
+  // Auto-compute health_max and willpower_max when attributes change
+  useEffect(() => {
+    const stamina = formData.stamina || 1;
+    const composure = formData.composure || 1;
+    const resolve = formData.resolve || 1;
+    
+    const computedHealthMax = stamina + 3;
+    const computedWillpowerMax = composure + resolve;
+    
+    if (formData.health_max !== computedHealthMax || formData.willpower_max !== computedWillpowerMax) {
+      setFormData(prev => ({
+        ...prev,
+        health_max: computedHealthMax,
+        willpower_max: computedWillpowerMax,
+      }));
+    }
+  }, [formData.stamina, formData.composure, formData.resolve]);
+
   useEffect(() => {
     if (character) {
+      const stamina = character.stamina || 1;
+      const composure = character.composure || 1;
+      const resolve = character.resolve || 1;
+      
       setFormData({
         name: character.name,
         clan: character.clan,
@@ -168,10 +190,10 @@ export function EditCharacterDialog({
         touchstones: character.touchstones || [],
         ambition: character.ambition || "",
         desire: character.desire || "",
-        health_max: character.health_max || 3,
+        health_max: stamina + 3,
         health_superficial: character.health_superficial || 0,
         health_aggravated: character.health_aggravated || 0,
-        willpower_max: character.willpower_max || 3,
+        willpower_max: composure + resolve,
         willpower_superficial: character.willpower_superficial || 0,
         willpower_aggravated: character.willpower_aggravated || 0,
         humanity: character.humanity || 7,

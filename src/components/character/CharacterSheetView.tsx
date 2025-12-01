@@ -168,6 +168,10 @@ export function CharacterSheetView({ character }: CharacterSheetViewProps) {
 }
 
 function CharacterSheetContent({ character }: CharacterSheetViewProps) {
+  // Auto-compute Health and Willpower from attributes
+  const computedHealthMax = (character.stamina || 1) + 3;
+  const computedWillpowerMax = (character.composure || 1) + (character.resolve || 1);
+
   const physicalAttributes = [
     { name: "Strength", value: character.strength || 1 },
     { name: "Dexterity", value: character.dexterity || 1 },
@@ -271,11 +275,11 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                     <span className="text-sm font-medium">Health</span>
                   </RuleTooltip>
                   <span className="text-xs text-muted-foreground">
-                    {(character.health_aggravated || 0) + (character.health_superficial || 0)}/{character.health_max || 3} damage
+                    {(character.health_aggravated || 0) + (character.health_superficial || 0)}/{computedHealthMax} damage
                   </span>
                 </div>
                 <HealthTracker 
-                  max={character.health_max || 3}
+                  max={computedHealthMax}
                   superficial={character.health_superficial}
                   aggravated={character.health_aggravated}
                 />
@@ -287,11 +291,11 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                     <span className="text-sm font-medium">Willpower</span>
                   </RuleTooltip>
                   <span className="text-xs text-muted-foreground">
-                    {(character.willpower_aggravated || 0) + (character.willpower_superficial || 0)}/{character.willpower_max || 3} damage
+                    {(character.willpower_aggravated || 0) + (character.willpower_superficial || 0)}/{computedWillpowerMax} damage
                   </span>
                 </div>
                 <HealthTracker 
-                  max={character.willpower_max || 3}
+                  max={computedWillpowerMax}
                   superficial={character.willpower_superficial}
                   aggravated={character.willpower_aggravated}
                 />
