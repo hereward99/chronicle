@@ -14,7 +14,8 @@ import {
   Skull,
   LogOut,
   UsersRound,
-  Network
+  Network,
+  Settings
 } from "lucide-react";
 
 const navigationItems = [
@@ -25,6 +26,7 @@ const navigationItems = [
   { name: "Stories", href: "/stories", icon: BookOpen },
   { name: "Sessions", href: "/sessions", icon: Scroll },
   { name: "Generator", href: "/generator", icon: Sparkles },
+  { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 export function Navigation() {

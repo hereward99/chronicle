@@ -13,6 +13,7 @@ import Relationships from "./pages/Relationships";
 import Stories from "./pages/Stories";
 import Sessions from "./pages/Sessions";
 import Generator from "./pages/Generator";
+import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -74,6 +75,11 @@ const App = () => (
                 <Layout>
                   <Generator />
                 </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <Settings />
               </ProtectedRoute>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
