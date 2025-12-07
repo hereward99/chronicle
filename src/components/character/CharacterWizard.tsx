@@ -46,6 +46,94 @@ const DISCIPLINES = [
   "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Thin-Blood Alchemy"
 ];
 
+// VTM 5e Core Powers by Discipline and Level
+const DISCIPLINE_POWERS: Record<string, Record<number, string[]>> = {
+  "Animalism": {
+    1: ["Bond Famulus", "Sense the Beast"],
+    2: ["Feral Whispers"],
+    3: ["Animal Succulence", "Quell the Beast"],
+    4: ["Subsume the Spirit", "Unliving Hive"],
+    5: ["Drawing Out the Beast"],
+  },
+  "Auspex": {
+    1: ["Heightened Senses", "Sense the Unseen"],
+    2: ["Premonition"],
+    3: ["Scry the Soul", "Share the Senses"],
+    4: ["Spirit's Touch"],
+    5: ["Clairvoyance", "Possession", "Telepathy"],
+  },
+  "Blood Sorcery": {
+    1: ["Corrosive Vitae", "A Taste for Blood"],
+    2: ["Extinguish Vitae"],
+    3: ["Blood of Potency", "Scorpion's Touch"],
+    4: ["Theft of Vitae"],
+    5: ["Baal's Caress", "Cauldron of Blood"],
+  },
+  "Celerity": {
+    1: ["Cat's Grace", "Rapid Reflexes"],
+    2: ["Fleetness"],
+    3: ["Blink", "Traversal"],
+    4: ["Draught of Elegance", "Unerring Aim"],
+    5: ["Lightning Strike", "Split Second"],
+  },
+  "Dominate": {
+    1: ["Cloud Memory", "Compel"],
+    2: ["Mesmerize"],
+    3: ["Dementation", "The Forgetful Mind"],
+    4: ["Submerged Directive"],
+    5: ["Mass Manipulation", "Terminal Decree"],
+  },
+  "Fortitude": {
+    1: ["Resilience", "Unswayable Mind"],
+    2: ["Toughness"],
+    3: ["Defy Bane", "Fortify the Inner Facade"],
+    4: ["Draught of Endurance"],
+    5: ["Flesh of Marble", "Prowess from Pain"],
+  },
+  "Obfuscate": {
+    1: ["Cloak of Shadows", "Silence of Death"],
+    2: ["Unseen Passage"],
+    3: ["Ghost in the Machine", "Mask of a Thousand Faces"],
+    4: ["Conceal", "Vanish"],
+    5: ["Cloak the Gathering", "Imposter's Guise"],
+  },
+  "Oblivion": {
+    1: ["Ashes to Ashes", "Oblivion's Sight", "Shadow Cloak", "The Binding Fetter"],
+    2: ["Arms of Ahriman", "Shadow Cast", "Where the Shroud Thins"],
+    3: ["Aura of Decay", "Passion Feast", "Shadow Perspective", "Touch of Oblivion"],
+    4: ["Necrotic Plague", "Stygian Shroud", "Tenebrous Avatar"],
+    5: ["Withering Spirit", "Skuld Fulfilled", "Shadow Step"],
+  },
+  "Potence": {
+    1: ["Lethal Body", "Soaring Leap"],
+    2: ["Prowess"],
+    3: ["Brutal Feed", "Uncanny Grip"],
+    4: ["Draught of Might"],
+    5: ["Earthshock", "Fist of Caine"],
+  },
+  "Presence": {
+    1: ["Awe", "Daunt"],
+    2: ["Lingering Kiss"],
+    3: ["Dread Gaze", "Entrancement"],
+    4: ["Irresistible Voice", "Summon"],
+    5: ["Majesty", "Star Magnetism"],
+  },
+  "Protean": {
+    1: ["Eyes of the Beast", "Weight of the Feather"],
+    2: ["Feral Weapons"],
+    3: ["Earth Meld", "Shapechange"],
+    4: ["Metamorphosis"],
+    5: ["Mist Form", "The Unfettered Heart"],
+  },
+  "Thin-Blood Alchemy": {
+    1: ["Far Reach", "Haze"],
+    2: ["Envelop", "Profane Hieros Gamos"],
+    3: ["Airborne Momentum", "Defractionate"],
+    4: ["Awaken the Sleeper"],
+    5: ["Cauldron of Rebirth"],
+  },
+};
+
 interface CharacterWizardProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -85,8 +173,8 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
     // Skills
     skills: {} as Record<string, { rating: number; specialty?: string }>,
     
-    // Disciplines
-    disciplines: [] as Array<{ name: string; level: number }>,
+    // Disciplines & Powers
+    disciplines: [] as Array<{ name: string; level: number; powers: string[] }>,
     
     // Advantages & Flaws
     advantages: [] as Array<{ name: string; type: string; rating?: number }>,
@@ -178,8 +266,15 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
         // Skills (normalized keys)
         skills: normalizedSkills,
         
-        // Disciplines (only for vampires)
-        disciplines: characterData.characterType === "vampire" ? characterData.disciplines : [],
+        // Disciplines (only for vampires) - extract powers into separate array
+        disciplines: characterData.characterType === "vampire" 
+          ? characterData.disciplines.map(d => ({ name: d.name, level: d.level })) 
+          : [],
+        powers: characterData.characterType === "vampire"
+          ? characterData.disciplines.flatMap(d => 
+              d.powers.map(p => ({ discipline: d.name, name: p }))
+            )
+          : [],
         
         // Advantages & Flaws
         advantages: characterData.advantages,
@@ -547,14 +642,14 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
             {characterData.characterType === "vampire" ? (
               <>
                 <div className="flex items-center justify-between mb-4">
-                  <Label>Disciplines</Label>
+                  <Label>Disciplines & Powers</Label>
                   <Button
                     type="button"
                     size="sm"
                     onClick={() => {
                       setCharacterData(prev => ({
                         ...prev,
-                        disciplines: [...prev.disciplines, { name: "", level: 1 }]
+                        disciplines: [...prev.disciplines, { name: "", level: 1, powers: [] }]
                       }));
                     }}
                   >
@@ -562,57 +657,188 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
                   </Button>
                 </div>
 
-                {characterData.disciplines.map((disc, idx) => (
-                  <Card key={idx} className="p-4 space-y-3">
-                    <div className="flex gap-2">
-                      <Select
-                        value={disc.name}
-                        onValueChange={(value) => {
-                          const newDisciplines = [...characterData.disciplines];
-                          newDisciplines[idx].name = value;
-                          setCharacterData(prev => ({ ...prev, disciplines: newDisciplines }));
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select discipline" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {DISCIPLINES.map((d) => (
-                            <SelectItem key={d} value={d}>{d}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => {
-                          setCharacterData(prev => ({
-                            ...prev,
-                            disciplines: prev.disciplines.filter((_, i) => i !== idx)
-                          }));
-                        }}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Label>Level</Label>
-                      <Input
-                        type="number"
-                        min="1"
-                        max="5"
-                        value={disc.level}
-                        onChange={(e) => {
-                          const newDisciplines = [...characterData.disciplines];
-                          newDisciplines[idx].level = parseInt(e.target.value) || 1;
-                          setCharacterData(prev => ({ ...prev, disciplines: newDisciplines }));
-                        }}
-                        className="w-20"
-                      />
-                    </div>
-                  </Card>
-                ))}
+                {characterData.disciplines.map((disc, idx) => {
+                  // Get available powers for the selected discipline up to its level
+                  const availablePowers: string[] = [];
+                  if (disc.name && DISCIPLINE_POWERS[disc.name]) {
+                    for (let lvl = 1; lvl <= disc.level; lvl++) {
+                      const powersAtLevel = DISCIPLINE_POWERS[disc.name][lvl] || [];
+                      availablePowers.push(...powersAtLevel);
+                    }
+                  }
+
+                  return (
+                    <Card key={idx} className="p-4 space-y-3">
+                      <div className="flex gap-2">
+                        <Select
+                          value={disc.name}
+                          onValueChange={(value) => {
+                            const newDisciplines = [...characterData.disciplines];
+                            newDisciplines[idx].name = value;
+                            newDisciplines[idx].powers = []; // Reset powers when discipline changes
+                            setCharacterData(prev => ({ ...prev, disciplines: newDisciplines }));
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select discipline" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {DISCIPLINES.map((d) => (
+                              <SelectItem key={d} value={d}>{d}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => {
+                            setCharacterData(prev => ({
+                              ...prev,
+                              disciplines: prev.disciplines.filter((_, i) => i !== idx)
+                            }));
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Label>Level</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="5"
+                          value={disc.level}
+                          onChange={(e) => {
+                            const newLevel = Math.min(5, Math.max(1, parseInt(e.target.value) || 1));
+                            const newDisciplines = [...characterData.disciplines];
+                            newDisciplines[idx].level = newLevel;
+                            // Filter out powers that are now above the new level
+                            if (disc.name && DISCIPLINE_POWERS[disc.name]) {
+                              const validPowers: string[] = [];
+                              for (let lvl = 1; lvl <= newLevel; lvl++) {
+                                validPowers.push(...(DISCIPLINE_POWERS[disc.name][lvl] || []));
+                              }
+                              newDisciplines[idx].powers = disc.powers.filter(p => 
+                                validPowers.includes(p) || !Object.values(DISCIPLINE_POWERS[disc.name] || {}).flat().includes(p)
+                              );
+                            }
+                            setCharacterData(prev => ({ ...prev, disciplines: newDisciplines }));
+                          }}
+                          className="w-20"
+                        />
+                      </div>
+
+                      {disc.name && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-sm text-muted-foreground">Powers</Label>
+                          </div>
+                          
+                          {/* Selected powers */}
+                          <div className="flex flex-wrap gap-2">
+                            {disc.powers.map((power, powerIdx) => (
+                              <Badge key={powerIdx} variant="secondary" className="flex items-center gap-1">
+                                {power}
+                                <button
+                                  type="button"
+                                  className="ml-1 hover:text-destructive"
+                                  onClick={() => {
+                                    const newDisciplines = [...characterData.disciplines];
+                                    newDisciplines[idx].powers = disc.powers.filter((_, i) => i !== powerIdx);
+                                    setCharacterData(prev => ({ ...prev, disciplines: newDisciplines }));
+                                  }}
+                                >
+                                  ×
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+
+                          {/* Power selector dropdown */}
+                          <div className="flex gap-2">
+                            <Select
+                              value=""
+                              onValueChange={(value) => {
+                                if (value === "__custom__") {
+                                  // Will be handled by custom input
+                                  return;
+                                }
+                                if (value && !disc.powers.includes(value)) {
+                                  const newDisciplines = [...characterData.disciplines];
+                                  newDisciplines[idx].powers = [...disc.powers, value];
+                                  setCharacterData(prev => ({ ...prev, disciplines: newDisciplines }));
+                                }
+                              }}
+                            >
+                              <SelectTrigger className="flex-1">
+                                <SelectValue placeholder="Add a power..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {[1, 2, 3, 4, 5].filter(lvl => lvl <= disc.level).map(lvl => {
+                                  const powersAtLevel = DISCIPLINE_POWERS[disc.name]?.[lvl] || [];
+                                  const unselectedPowers = powersAtLevel.filter(p => !disc.powers.includes(p));
+                                  if (unselectedPowers.length === 0) return null;
+                                  return (
+                                    <div key={lvl}>
+                                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                                        Level {lvl}
+                                      </div>
+                                      {unselectedPowers.map(power => (
+                                        <SelectItem key={power} value={power}>
+                                          {power}
+                                        </SelectItem>
+                                      ))}
+                                    </div>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {/* Custom power input */}
+                          <div className="flex gap-2">
+                            <Input
+                              placeholder="Add custom power..."
+                              id={`custom-power-${idx}`}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  const input = e.target as HTMLInputElement;
+                                  const customPower = input.value.trim();
+                                  if (customPower && !disc.powers.includes(customPower)) {
+                                    const newDisciplines = [...characterData.disciplines];
+                                    newDisciplines[idx].powers = [...disc.powers, customPower];
+                                    setCharacterData(prev => ({ ...prev, disciplines: newDisciplines }));
+                                    input.value = '';
+                                  }
+                                }
+                              }}
+                            />
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                const input = document.getElementById(`custom-power-${idx}`) as HTMLInputElement;
+                                const customPower = input?.value.trim();
+                                if (customPower && !disc.powers.includes(customPower)) {
+                                  const newDisciplines = [...characterData.disciplines];
+                                  newDisciplines[idx].powers = [...disc.powers, customPower];
+                                  setCharacterData(prev => ({ ...prev, disciplines: newDisciplines }));
+                                  input.value = '';
+                                }
+                              }}
+                            >
+                              Add
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </Card>
+                  );
+                })}
 
                 {characterData.disciplines.length === 0 && (
                   <p className="text-sm text-muted-foreground text-center py-8">
