@@ -15,7 +15,8 @@ import {
   LogOut,
   UsersRound,
   Network,
-  Settings
+  Settings,
+  FileDown
 } from "lucide-react";
 
 const navigationItems = [
@@ -26,6 +27,7 @@ const navigationItems = [
   { name: "Stories", href: "/stories", icon: BookOpen },
   { name: "Sessions", href: "/sessions", icon: Scroll },
   { name: "Generator", href: "/generator", icon: Sparkles },
+  { name: "Import", href: "/import", icon: FileDown },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
