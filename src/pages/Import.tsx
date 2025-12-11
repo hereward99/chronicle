@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, Upload, FileJson, Users, BookOpen, Calendar, Scroll } from "lucide-react";
+import { Download, Upload, FileJson, Users, BookOpen, Calendar, Scroll, Check, Loader2, AlertCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useImport, ImportType } from "@/hooks/useImport";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Template structures matching the database schema
 const TEMPLATES = {
@@ -126,7 +128,22 @@ const BATCH_TEMPLATES = {
   sessions: [TEMPLATES.session]
 };
 
+interface ImportCardConfig {
+  type: ImportType;
+  batchType: keyof typeof BATCH_TEMPLATES;
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  filename: string;
+  batchFilename: string;
+  requiresChronicle: boolean;
+}
+
 export default function Import() {
+  const { importing, parseAndImport, currentChronicle } = useImport();
+  const [importResults, setImportResults] = useState<Record<string, { success: boolean; message: string } | null>>({});
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
   const downloadTemplate = (type: keyof typeof TEMPLATES, filename: string) => {
     const template = TEMPLATES[type];
     const blob = new Blob([JSON.stringify(template, null, 2)], { type: "application/json" });
@@ -153,43 +170,59 @@ export default function Import() {
     URL.revokeObjectURL(url);
   };
 
-  const templateCards = [
+  const handleFileSelect = async (importType: ImportType, file: File) => {
+    const result = await parseAndImport(file, importType);
+    setImportResults((prev) => ({
+      ...prev,
+      [importType]: { success: result.success, message: result.message },
+    }));
+  };
+
+  const triggerFileInput = (type: ImportType) => {
+    fileInputRefs.current[type]?.click();
+  };
+
+  const templateCards: ImportCardConfig[] = [
     {
-      type: "chronicle" as const,
-      batchType: "chronicles" as const,
+      type: "chronicle",
+      batchType: "chronicles",
       title: "Chronicle",
       description: "The overarching campaign or game setting",
       icon: BookOpen,
       filename: "chronicle-template.json",
-      batchFilename: "chronicles-template.json"
+      batchFilename: "chronicles-template.json",
+      requiresChronicle: false,
     },
     {
-      type: "character" as const,
-      batchType: "characters" as const,
+      type: "character",
+      batchType: "characters",
       title: "Character",
       description: "Full VTM 5e character sheet with attributes, skills, disciplines, and more",
       icon: Users,
       filename: "character-template.json",
-      batchFilename: "characters-template.json"
+      batchFilename: "characters-template.json",
+      requiresChronicle: true,
     },
     {
-      type: "story" as const,
-      batchType: "stories" as const,
+      type: "story",
+      batchType: "stories",
       title: "Story/Plot",
       description: "Story arcs, plots, and ongoing narratives",
       icon: Scroll,
       filename: "story-template.json",
-      batchFilename: "stories-template.json"
+      batchFilename: "stories-template.json",
+      requiresChronicle: true,
     },
     {
-      type: "session" as const,
-      batchType: "sessions" as const,
+      type: "session",
+      batchType: "sessions",
       title: "Session",
       description: "Game session logs with summaries and XP awards",
       icon: Calendar,
       filename: "session-template.json",
-      batchFilename: "sessions-template.json"
-    }
+      batchFilename: "sessions-template.json",
+      requiresChronicle: true,
+    },
   ];
 
   return (
@@ -205,7 +238,7 @@ export default function Import() {
         <Tabs defaultValue="templates" className="w-full">
           <TabsList>
             <TabsTrigger value="templates">Download Templates</TabsTrigger>
-            <TabsTrigger value="import" disabled>Import Data (Coming Soon)</TabsTrigger>
+            <TabsTrigger value="import">Import Data</TabsTrigger>
           </TabsList>
 
           <TabsContent value="templates" className="space-y-6 mt-6">
@@ -219,7 +252,7 @@ export default function Import() {
               <CardContent className="space-y-3 text-sm text-muted-foreground">
                 <p>1. <strong>Download a template</strong> - Choose single item or batch format</p>
                 <p>2. <strong>Use an AI to populate it</strong> - Give the template to ChatGPT, Claude, or another AI with your content</p>
-                <p>3. <strong>Import the JSON</strong> - Upload your populated file back here (import feature coming soon)</p>
+                <p>3. <strong>Import the JSON</strong> - Go to the Import Data tab and upload your populated file</p>
                 <p className="text-xs mt-4 p-3 bg-muted/50 rounded-lg">
                   <strong>Tip:</strong> For batch imports, the template contains an array. Simply add more items following the same structure.
                 </p>
@@ -281,11 +314,94 @@ Please return only the completed JSON, maintaining the exact structure.`}
             </Card>
           </TabsContent>
 
-          <TabsContent value="import">
-            <Card>
-              <CardContent className="p-12 text-center text-muted-foreground">
-                <Upload className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Import functionality coming soon</p>
+          <TabsContent value="import" className="space-y-6 mt-6">
+            {!currentChronicle && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Please select a chronicle from the Chronicle page before importing characters, stories, or sessions.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {currentChronicle && (
+              <Alert>
+                <Check className="h-4 w-4" />
+                <AlertDescription>
+                  Importing to chronicle: <strong>{currentChronicle.name}</strong>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {templateCards.map((card) => {
+                const result = importResults[card.type];
+                const isDisabled = card.requiresChronicle && !currentChronicle;
+
+                return (
+                  <Card 
+                    key={card.type} 
+                    className={`bg-card border-border transition-colors ${isDisabled ? 'opacity-50' : 'hover:border-primary/50'}`}
+                  >
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <card.icon className="h-5 w-5 text-primary" />
+                        Import {card.title}
+                      </CardTitle>
+                      <CardDescription>
+                        {card.requiresChronicle 
+                          ? `Upload ${card.title.toLowerCase()} JSON to add to current chronicle`
+                          : `Upload ${card.title.toLowerCase()} JSON to create new`
+                        }
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <input
+                        ref={(el) => (fileInputRefs.current[card.type] = el)}
+                        type="file"
+                        accept=".json,application/json"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileSelect(card.type, file);
+                          e.target.value = "";
+                        }}
+                      />
+                      <Button 
+                        variant="default"
+                        size="sm"
+                        onClick={() => triggerFileInput(card.type)}
+                        disabled={importing || isDisabled}
+                        className="w-full"
+                      >
+                        {importing ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <Upload className="h-4 w-4 mr-2" />
+                        )}
+                        Choose File
+                      </Button>
+                      
+                      {result && (
+                        <p className={`text-xs ${result.success ? 'text-green-500' : 'text-destructive'}`}>
+                          {result.message}
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            <Card className="bg-muted/30 border-dashed">
+              <CardHeader>
+                <CardTitle className="text-lg">Import Tips</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm text-muted-foreground">
+                <p>• Upload either a single item JSON or a batch array</p>
+                <p>• Characters, stories, and sessions will be added to your current chronicle</p>
+                <p>• Health and Willpower are auto-calculated from attributes</p>
+                <p>• Invalid fields will use default values</p>
               </CardContent>
             </Card>
           </TabsContent>
