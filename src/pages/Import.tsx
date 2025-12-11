@@ -2,11 +2,13 @@ import { useState, useRef } from "react";
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, Upload, FileJson, Users, BookOpen, Calendar, Scroll, Check, Loader2, AlertCircle } from "lucide-react";
+import { Download, Upload, FileJson, Users, BookOpen, Calendar, Scroll, Check, Loader2, AlertCircle, Save } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useImport, ImportType } from "@/hooks/useImport";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useChronicles } from "@/hooks/useChronicles";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 // Template structures matching the database schema
 const TEMPLATES = {
   chronicle: {
@@ -141,8 +143,111 @@ interface ImportCardConfig {
 
 export default function Import() {
   const { importing, parseAndImport, currentChronicle } = useImport();
+  const { currentChronicle: chronicleForExport } = useChronicles();
+  const { toast } = useToast();
   const [importResults, setImportResults] = useState<Record<string, { success: boolean; message: string } | null>>({});
+  const [exporting, setExporting] = useState(false);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+  const handleExport = async () => {
+    if (!chronicleForExport) {
+      toast({
+        title: "No chronicle selected",
+        description: "Please select a chronicle first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setExporting(true);
+    try {
+      const chronicleId = chronicleForExport.id;
+
+      const [
+        chronicleRes,
+        charactersRes,
+        relationshipsRes,
+        factionsRes,
+        characterFactionsRes,
+        coteriesRes,
+        coterieMembersRes,
+        sessionsRes,
+        plotsRes,
+        plotCharactersRes,
+        notesRes,
+      ] = await Promise.all([
+        supabase.from('chronicles').select('*').eq('id', chronicleId).single(),
+        supabase.from('characters').select('*').eq('chronicle_id', chronicleId),
+        supabase.from('relationships').select('*'),
+        supabase.from('factions').select('*').eq('chronicle_id', chronicleId),
+        supabase.from('character_factions').select('*'),
+        supabase.from('coteries').select('*').eq('chronicle_id', chronicleId),
+        supabase.from('coterie_members').select('*'),
+        supabase.from('sessions').select('*').eq('chronicle_id', chronicleId),
+        supabase.from('plots').select('*').eq('chronicle_id', chronicleId),
+        supabase.from('plot_characters').select('*'),
+        supabase.from('notes').select('*').eq('chronicle_id', chronicleId),
+      ]);
+
+      const characterIds = new Set((charactersRes.data || []).map(c => c.id));
+      const filteredRelationships = (relationshipsRes.data || []).filter(
+        r => characterIds.has(r.character_id) || characterIds.has(r.related_character_id)
+      );
+      const filteredCharacterFactions = (characterFactionsRes.data || []).filter(
+        cf => characterIds.has(cf.character_id)
+      );
+
+      const coterieIds = new Set((coteriesRes.data || []).map(c => c.id));
+      const filteredCoterieMembers = (coterieMembersRes.data || []).filter(
+        cm => coterieIds.has(cm.coterie_id)
+      );
+
+      const plotIds = new Set((plotsRes.data || []).map(p => p.id));
+      const filteredPlotCharacters = (plotCharactersRes.data || []).filter(
+        pc => plotIds.has(pc.plot_id)
+      );
+
+      const backupData = {
+        version: '1.0',
+        exportedAt: new Date().toISOString(),
+        chronicle: chronicleRes.data,
+        characters: charactersRes.data || [],
+        relationships: filteredRelationships,
+        factions: factionsRes.data || [],
+        characterFactions: filteredCharacterFactions,
+        coteries: coteriesRes.data || [],
+        coterieMembers: filteredCoterieMembers,
+        sessions: sessionsRes.data || [],
+        plots: plotsRes.data || [],
+        plotCharacters: filteredPlotCharacters,
+        notes: notesRes.data || [],
+      };
+
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `chronicle-backup-${chronicleForExport.name.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Export successful",
+        description: `Exported ${backupData.characters.length} characters, ${backupData.relationships.length} relationships, and more.`,
+      });
+    } catch (error: any) {
+      console.error('Export error:', error);
+      toast({
+        title: "Export failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const downloadTemplate = (type: keyof typeof TEMPLATES, filename: string) => {
     const template = TEMPLATES[type];
@@ -235,11 +340,84 @@ export default function Import() {
           </p>
         </div>
 
-        <Tabs defaultValue="templates" className="w-full">
+        <Tabs defaultValue="export" className="w-full">
           <TabsList>
+            <TabsTrigger value="export">Export Backup</TabsTrigger>
             <TabsTrigger value="templates">Download Templates</TabsTrigger>
             <TabsTrigger value="import">Import Data</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="export" className="space-y-6 mt-6">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Save className="h-5 w-5 text-primary" />
+                  Backup Chronicle Data
+                </CardTitle>
+                <CardDescription>
+                  Export all your chronicle data as a JSON file for safekeeping or transfer
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="text-sm text-muted-foreground space-y-2">
+                  <p>This backup includes:</p>
+                  <ul className="list-disc list-inside space-y-1 ml-2">
+                    <li>Chronicle details</li>
+                    <li>All characters with full sheets</li>
+                    <li>Relationships between characters</li>
+                    <li>Factions and faction memberships</li>
+                    <li>Coteries and members</li>
+                    <li>Sessions and plots</li>
+                    <li>Notes</li>
+                  </ul>
+                </div>
+
+                {!chronicleForExport ? (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Please select a chronicle first to export its data.
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <Alert>
+                    <Check className="h-4 w-4" />
+                    <AlertDescription>
+                      Ready to export: <strong>{chronicleForExport.name}</strong>
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                <Button 
+                  onClick={handleExport} 
+                  disabled={exporting || !chronicleForExport}
+                  className="w-full sm:w-auto"
+                >
+                  {exporting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Exporting...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="mr-2 h-4 w-4" />
+                      Export Chronicle Backup
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-muted/30 border-dashed">
+              <CardHeader>
+                <CardTitle className="text-lg">Restore from Backup</CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                <p>To restore from a backup file, go to <strong>Settings</strong> and use the Import Data feature. 
+                This will create a new chronicle with "(Restored)" suffix to prevent overwriting existing data.</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="templates" className="space-y-6 mt-6">
             <Card className="bg-card/50 border-primary/20">
