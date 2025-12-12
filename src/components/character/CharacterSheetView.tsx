@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { HelpCircle, Droplet } from "lucide-react";
+import { CharacterAttachmentsGallery } from "./CharacterAttachmentsGallery";
 
 interface CharacterSheetViewProps {
   character: Character;
@@ -643,6 +644,9 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
               <Badge>{character.resonance}</Badge>
             </Card>
           )}
+
+          {/* Attachments Gallery */}
+          <CharacterAttachmentsGallery attachments={character.attachments as any} />
         </TabsContent>
       </Tabs>
     </>
