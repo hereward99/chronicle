@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -18,12 +18,17 @@ export default function Coteries() {
   const [selectedCoterie, setSelectedCoterie] = useState<Coterie | null>(null);
   const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
 
-  useState(() => {
-    coteries.forEach(async (coterie) => {
-      const members = await getCoterieMembers(coterie.id);
-      setMemberCounts(prev => ({ ...prev, [coterie.id]: members.length }));
-    });
-  });
+  useEffect(() => {
+    const fetchMemberCounts = async () => {
+      for (const coterie of coteries) {
+        const members = await getCoterieMembers(coterie.id);
+        setMemberCounts(prev => ({ ...prev, [coterie.id]: members.length }));
+      }
+    };
+    if (coteries.length > 0) {
+      fetchMemberCounts();
+    }
+  }, [coteries]);
 
   const getCoterieCharacters = (coterieId: string) => {
     return characters.filter(char => 
