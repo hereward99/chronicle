@@ -5,72 +5,46 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sparkles, Copy, RefreshCw, Users, BookOpen, MapPin, Scroll } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Generator() {
   const [prompt, setPrompt] = useState("");
   const [generatedContent, setGeneratedContent] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState("scene");
+  const { toast } = useToast();
 
   const generateContent = async () => {
     if (!prompt.trim()) return;
     
     setIsGenerating(true);
-    // Simulate AI generation
-    setTimeout(() => {
-      const mockContent = {
-        scene: `The ancient Elysium stands in stark contrast to the modern city outside. Gothic arches stretch toward a vaulted ceiling lost in shadow, while flickering candles cast dancing shadows across weathered stone walls. The Prince's throne, carved from a single block of obsidian, dominates the far end of the hall.
+    setGeneratedContent(null);
 
-Tonight, the usual gathering feels different. Whispered conversations die as new arrivals enter, their footsteps echoing ominously. The tension is palpable - something is about to change in the Domain forever.
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-content', {
+        body: { prompt, contentType: activeTab }
+      });
 
-The scent of old blood and ancient secrets permeates the air, while the soft rustle of expensive fabric hints at the gathered Kindred's attempts to maintain their facade of civilization.`,
-        npc: `**Baron Magdalena Cross**
-*Clan:* Ventrue
-*Generation:* 9th
-*Position:* Harpy of the Domain
+      if (error) {
+        throw new Error(error.message || 'Failed to generate content');
+      }
 
-**Description:** An elegant woman in her apparent thirties, Magdalena maintains the appearance of old money aristocracy. Her platinum blonde hair is always perfectly styled, and she favors vintage couture that speaks to her mortal life in the 1920s.
+      if (data?.error) {
+        throw new Error(data.error);
+      }
 
-**Personality:** Sharp-tongued and calculating, Magdalena wields social influence like a blade. She collects secrets like others collect art, and her knowledge of the Domain's scandals makes her both feared and respected.
-
-**Goals:** Maintain her position as Harpy while slowly undermining the current Prince's authority. She believes the Domain needs stronger leadership.
-
-**Notable Quote:** "Reputation, darling, is the only currency that never loses its value."`,
-        story: `**The Masquerade Breach**
-
-A mortal blogger has been posting increasingly accurate "fiction" about vampiric society, describing specific Kindred, their havens, and recent events with disturbing precision. The posts are gaining viral attention on social media.
-
-**The Hook:** The coterie is tasked by the Prince to investigate and eliminate this threat to the Masquerade before it attracts the attention of the Second Inquisition.
-
-**Complications:**
-- The blogger appears to have supernatural protection
-- Each investigation attempt results in the blogger posting more accurate information
-- Other Kindred begin to suspect a traitor within the Domain
-- The blogger's identity remains mysteriously hidden despite digital investigation
-
-**Potential Revelations:**
-- The blogger is a thin-blood with unique disciplines
-- A Malkavian is feeding information through the Network
-- The blogger is actually already dead, but something else is posting`,
-        location: `**The Crimson Room**
-*Haven Type:* Private Club / Feeding Ground
-
-Located beneath the prestigious Blackwood Hotel, the Crimson Room serves as both an exclusive nightclub and a carefully maintained feeding ground. Red velvet drapes and dim lighting create an atmosphere of intimate luxury.
-
-**Features:**
-- VIP sections with soundproof booths
-- A carefully curated mortal clientele who believe they're part of an exclusive secret society
-- Hidden passages connecting to the hotel's penthouse suites
-- A wine cellar that stores both vintages and more exotic refreshments
-
-**Security:** Electronic locks keyed to specific Kindred, mortal staff who are lightly blood bound, and an understanding with local authorities.
-
-**Notable NPCs:** Viktor the bartender (ghoul), various mortal "members" who serve as willing vessels.`
-      };
-      
-      setGeneratedContent(mockContent[activeTab as keyof typeof mockContent]);
+      setGeneratedContent(data.content);
+    } catch (error) {
+      console.error('Generation error:', error);
+      toast({
+        title: "Generation Failed",
+        description: error instanceof Error ? error.message : "Failed to generate content. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
   };
 
   const copyToClipboard = () => {
