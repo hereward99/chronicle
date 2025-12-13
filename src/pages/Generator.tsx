@@ -4,22 +4,37 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Copy, RefreshCw, Users, BookOpen, MapPin, Scroll } from "lucide-react";
+import { Sparkles, Copy, RefreshCw, Users, BookOpen, MapPin, Scroll, Save, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useChronicles } from "@/hooks/useChronicles";
+import { useCharacters } from "@/hooks/useCharacters";
+import { usePlots } from "@/hooks/usePlots";
+
+interface GeneratedData {
+  content: string;
+  parsed: any | null;
+  contentType: string;
+}
 
 export default function Generator() {
   const [prompt, setPrompt] = useState("");
-  const [generatedContent, setGeneratedContent] = useState<string | null>(null);
+  const [generatedData, setGeneratedData] = useState<GeneratedData | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState("scene");
   const { toast } = useToast();
+  const { currentChronicle } = useChronicles();
+  const { createCharacter } = useCharacters();
+  const { createPlot } = usePlots();
 
   const generateContent = async () => {
     if (!prompt.trim()) return;
     
     setIsGenerating(true);
-    setGeneratedContent(null);
+    setGeneratedData(null);
+    setSaved(false);
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-content', {
@@ -34,7 +49,11 @@ export default function Generator() {
         throw new Error(data.error);
       }
 
-      setGeneratedContent(data.content);
+      setGeneratedData({
+        content: data.content,
+        parsed: data.parsed,
+        contentType: data.contentType || activeTab
+      });
     } catch (error) {
       console.error('Generation error:', error);
       toast({
@@ -47,9 +66,106 @@ export default function Generator() {
     }
   };
 
+  const saveToChronicle = async () => {
+    if (!generatedData?.parsed || !currentChronicle) {
+      toast({
+        title: "Cannot Save",
+        description: currentChronicle ? "No valid content to save." : "Please select a chronicle first.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { contentType, parsed } = generatedData;
+
+      if (contentType === "npc") {
+        // Save as character
+        await createCharacter({
+          chronicle_id: currentChronicle.id,
+          name: parsed.name || "Generated NPC",
+          clan: parsed.clan || "Caitiff",
+          type: "NPC",
+          status: parsed.status || "Active",
+          generation: parsed.generation,
+          concept: parsed.concept,
+          sire: parsed.sire,
+          coterie: parsed.coterie || null,
+          avatar_url: parsed.avatar_url || null,
+          predator_type: parsed.predator_type,
+          ambition: parsed.ambition,
+          desire: parsed.desire,
+          resonance: parsed.resonance,
+          appearance: parsed.appearance,
+          distinguishing_features: parsed.distinguishing_features,
+          history: parsed.history,
+          notes: parsed.notes,
+          strength: parsed.strength,
+          dexterity: parsed.dexterity,
+          stamina: parsed.stamina,
+          charisma: parsed.charisma,
+          manipulation: parsed.manipulation,
+          composure: parsed.composure,
+          intelligence: parsed.intelligence,
+          wits: parsed.wits,
+          resolve: parsed.resolve,
+          skills: parsed.skills,
+          disciplines: parsed.disciplines,
+          advantages: parsed.advantages,
+          flaws: parsed.flaws,
+          convictions: parsed.convictions,
+          touchstones: parsed.touchstones,
+          loresheets: parsed.loresheets,
+          blood_potency: parsed.blood_potency,
+          humanity: parsed.humanity,
+          hunger: parsed.hunger,
+          experience_total: parsed.experience_total,
+          experience_spent: parsed.experience_spent,
+          health_max: (parsed.stamina || 2) + 3,
+          willpower_max: (parsed.composure || 2) + (parsed.resolve || 2),
+        });
+
+        toast({
+          title: "NPC Saved",
+          description: `${parsed.name} has been added to your characters.`
+        });
+      } else {
+        // Save as plot/story (scene, story, location)
+        await createPlot({
+          chronicle_id: currentChronicle.id,
+          title: parsed.title || "Generated Content",
+          description: parsed.description || "",
+          status: parsed.status || "Active",
+          priority: parsed.priority || "Medium"
+        });
+
+        toast({
+          title: "Story Saved",
+          description: `"${parsed.title}" has been added to your stories.`
+        });
+      }
+
+      setSaved(true);
+    } catch (error) {
+      console.error('Save error:', error);
+      toast({
+        title: "Save Failed",
+        description: error instanceof Error ? error.message : "Failed to save content.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const copyToClipboard = () => {
-    if (generatedContent) {
-      navigator.clipboard.writeText(generatedContent);
+    if (generatedData?.content) {
+      navigator.clipboard.writeText(generatedData.content);
+      toast({
+        title: "Copied",
+        description: "Content copied to clipboard."
+      });
     }
   };
 
@@ -59,6 +175,13 @@ export default function Generator() {
     { id: "story", label: "Story Hook", icon: BookOpen },
     { id: "location", label: "Location", icon: Scroll }
   ];
+
+  const getSaveButtonText = () => {
+    if (saved) return "Saved";
+    if (isSaving) return "Saving...";
+    if (activeTab === "npc") return "Add to Characters";
+    return "Add to Stories";
+  };
 
   return (
     <div className="space-y-6">
@@ -71,7 +194,7 @@ export default function Generator() {
       </div>
 
       {/* Generator Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={(tab) => { setActiveTab(tab); setSaved(false); }}>
         <TabsList className="bg-secondary border-border grid w-full grid-cols-4">
           {generatorTypes.map((type) => {
             const Icon = type.icon;
@@ -121,14 +244,14 @@ export default function Generator() {
                   {/* Example Prompts */}
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-muted-foreground">Example prompts:</p>
-                    <div className="space-y-1">
+                    <div className="flex flex-wrap gap-1">
                       {type.id === "scene" && (
                         <>
                           <Badge variant="outline" className="text-xs cursor-pointer hover:bg-secondary" 
                                  onClick={() => setPrompt("A tense Elysium gathering where accusations fly")}>
                             Tense Elysium gathering
                           </Badge>
-                          <Badge variant="outline" className="text-xs cursor-pointer hover:bg-secondary ml-2"
+                          <Badge variant="outline" className="text-xs cursor-pointer hover:bg-secondary"
                                  onClick={() => setPrompt("A feeding scene in a crowded nightclub")}>
                             Nightclub feeding scene
                           </Badge>
@@ -140,9 +263,33 @@ export default function Generator() {
                                  onClick={() => setPrompt("A cunning Nosferatu information broker")}>
                             Nosferatu broker
                           </Badge>
-                          <Badge variant="outline" className="text-xs cursor-pointer hover:bg-secondary ml-2"
+                          <Badge variant="outline" className="text-xs cursor-pointer hover:bg-secondary"
                                  onClick={() => setPrompt("A young Toreador artist struggling with the Beast")}>
                             Struggling Toreador
+                          </Badge>
+                        </>
+                      )}
+                      {type.id === "story" && (
+                        <>
+                          <Badge variant="outline" className="text-xs cursor-pointer hover:bg-secondary"
+                                 onClick={() => setPrompt("A mysterious elder arrives in the city with a dangerous agenda")}>
+                            Mysterious elder
+                          </Badge>
+                          <Badge variant="outline" className="text-xs cursor-pointer hover:bg-secondary"
+                                 onClick={() => setPrompt("Second Inquisition hunters are closing in on the local Kindred")}>
+                            Inquisition threat
+                          </Badge>
+                        </>
+                      )}
+                      {type.id === "location" && (
+                        <>
+                          <Badge variant="outline" className="text-xs cursor-pointer hover:bg-secondary"
+                                 onClick={() => setPrompt("An underground Elysium in an abandoned subway station")}>
+                            Underground Elysium
+                          </Badge>
+                          <Badge variant="outline" className="text-xs cursor-pointer hover:bg-secondary"
+                                 onClick={() => setPrompt("A penthouse haven overlooking the city")}>
+                            Penthouse haven
                           </Badge>
                         </>
                       )}
@@ -156,15 +303,33 @@ export default function Generator() {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-foreground">Generated Content</CardTitle>
-                    {generatedContent && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        onClick={copyToClipboard}
-                        className="border-border hover:bg-secondary"
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
+                    {generatedData?.content && (
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={copyToClipboard}
+                          className="border-border hover:bg-secondary"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        {generatedData?.parsed && currentChronicle && (
+                          <Button 
+                            size="sm" 
+                            variant={saved ? "secondary" : "default"}
+                            onClick={saveToChronicle}
+                            disabled={isSaving || saved}
+                            className={saved ? "" : "bg-gradient-blood hover:opacity-90"}
+                          >
+                            {saved ? (
+                              <Check className="h-4 w-4 mr-1" />
+                            ) : (
+                              <Save className="h-4 w-4 mr-1" />
+                            )}
+                            {getSaveButtonText()}
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </CardHeader>
@@ -176,11 +341,18 @@ export default function Generator() {
                         <p className="text-muted-foreground">Generating your content...</p>
                       </div>
                     </div>
-                  ) : generatedContent ? (
-                    <div className="prose prose-invert max-w-none">
-                      <pre className="whitespace-pre-wrap text-sm text-foreground font-body leading-relaxed">
-                        {generatedContent}
-                      </pre>
+                  ) : generatedData?.content ? (
+                    <div className="space-y-4">
+                      {!currentChronicle && generatedData.parsed && (
+                        <div className="text-sm text-amber-500 bg-amber-500/10 p-2 rounded">
+                          Select a chronicle to save this content.
+                        </div>
+                      )}
+                      <div className="prose prose-invert max-w-none max-h-[500px] overflow-y-auto">
+                        <pre className="whitespace-pre-wrap text-sm text-foreground font-body leading-relaxed bg-muted/30 p-4 rounded-lg">
+                          {generatedData.content}
+                        </pre>
+                      </div>
                     </div>
                   ) : (
                     <div className="text-center py-12">
