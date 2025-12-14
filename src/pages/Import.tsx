@@ -471,25 +471,144 @@ export default function Import() {
               ))}
             </div>
 
-            <Card className="bg-muted/30 border-dashed">
-              <CardHeader>
-                <CardTitle className="text-lg">Example AI Prompt</CardTitle>
-                <CardDescription>Copy this prompt to use with your AI of choice</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <pre className="text-xs bg-background p-4 rounded-lg overflow-x-auto whitespace-pre-wrap">
-{`I have this JSON template for a Vampire: The Masquerade 5th Edition character. 
-Please fill it out for a character with these details:
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-foreground">AI Prompts by Template Type</h3>
+              <p className="text-sm text-muted-foreground">Copy the relevant prompt for your template type. Each includes field restrictions.</p>
+              
+              <Card className="bg-muted/30 border-dashed">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <BookOpen className="h-5 w-5 text-primary" />
+                    Chronicle Prompt
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <pre className="text-xs bg-background p-4 rounded-lg overflow-x-auto whitespace-pre-wrap">
+{`Create a Vampire: The Masquerade 5th Edition chronicle in JSON format.
 
-[Describe your character here - their concept, clan, background, personality, etc.]
+FIELD RESTRICTIONS:
+- name: Required, max 200 characters
+- description: Optional, max 2000 characters  
+- setting: Optional, max 200 characters (city/location name)
 
-Here's the template to fill:
-[Paste the downloaded template here]
+[Describe your chronicle - the city, themes, factions, major conflicts, and setting details]
 
-Please return only the completed JSON, maintaining the exact structure.`}
-                </pre>
-              </CardContent>
-            </Card>
+Here's the template:
+[Paste the downloaded chronicle template here]
+
+Return ONLY the completed JSON, maintaining the exact structure.`}
+                  </pre>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-muted/30 border-dashed">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Users className="h-5 w-5 text-primary" />
+                    Character Prompt
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <pre className="text-xs bg-background p-4 rounded-lg overflow-x-auto whitespace-pre-wrap">
+{`Create a Vampire: The Masquerade 5th Edition character in JSON format.
+
+FIELD RESTRICTIONS:
+- name: Required, max 200 characters
+- clan: Required (Brujah, Gangrel, Malkavian, Nosferatu, Toreador, Tremere, Ventrue, Caitiff, Thin-Blood, Lasombra, Tzimisce, Ravnos, Salubri, Hecata, Ministry, Banu Haqim)
+- generation: Number 4-16 (default 13)
+- type: "PC" or "NPC" (default "PC")
+- status: "Active", "Inactive", "Retired", or "Dead" (default "Active")
+- concept: Max 500 characters
+- sire, predator_type, resonance: Max 200 characters each
+- ambition, desire: Max 500 characters each
+- appearance, distinguishing_features, history, notes: Max 5000 characters each
+
+ATTRIBUTES (all 1-5, default 1):
+- Physical: strength, dexterity, stamina
+- Social: charisma, manipulation, composure  
+- Mental: intelligence, wits, resolve
+
+SKILLS (all 0-5, in skills object):
+- Physical: athletics, brawl, craft, drive, firearms, melee, larceny, stealth, survival
+- Social: animal_ken, etiquette, insight, intimidation, leadership, performance, persuasion, streetwise, subterfuge
+- Mental: academics, awareness, finance, investigation, medicine, occult, politics, science, technology
+
+DISCIPLINES: Array of {name, level (1-5), powers: []}
+ADVANTAGES/FLAWS: Array of {name, rating (1-5), description}
+CONVICTIONS: Array of strings (max 3 items, each max 200 chars)
+TOUCHSTONES: Array of {name, description, conviction}
+LORESHEETS: Array of {name, dots (1-5), benefits: []}
+
+TRACKERS:
+- blood_potency: 0-10 (default 0)
+- humanity: 0-10 (default 7)
+- hunger: 0-5 (default 1)
+- experience_total, experience_spent: Numbers (default 0)
+
+[Describe your character - concept, clan, background, personality, goals]
+
+Here's the template:
+[Paste the downloaded character template here]
+
+Return ONLY the completed JSON, maintaining the exact structure.`}
+                  </pre>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-muted/30 border-dashed">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Scroll className="h-5 w-5 text-primary" />
+                    Story/Plot Prompt
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <pre className="text-xs bg-background p-4 rounded-lg overflow-x-auto whitespace-pre-wrap">
+{`Create a Vampire: The Masquerade 5th Edition story/plot in JSON format.
+
+FIELD RESTRICTIONS:
+- title: Required, max 200 characters
+- description: Optional, max 10000 characters (use this for the full plot details, NPCs, locations, events)
+- status: "Active", "Planned", "Completed", or "Critical" (default "Active")
+- priority: "Low", "Medium", "High", or "Critical" (default "Medium")
+
+[Describe your story - the hook, major NPCs, locations, conflicts, and how it might unfold]
+
+Here's the template:
+[Paste the downloaded story template here]
+
+Return ONLY the completed JSON, maintaining the exact structure.`}
+                  </pre>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-muted/30 border-dashed">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Calendar className="h-5 w-5 text-primary" />
+                    Session Prompt
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <pre className="text-xs bg-background p-4 rounded-lg overflow-x-auto whitespace-pre-wrap">
+{`Create a Vampire: The Masquerade 5th Edition session log in JSON format.
+
+FIELD RESTRICTIONS:
+- title: Required, max 200 characters (e.g., "Session 1: The Gathering Storm")
+- summary: Optional, max 10000 characters (detailed session recap with events, decisions, NPC interactions)
+- date_played: Date in YYYY-MM-DD format (e.g., "2024-01-15")
+- experience_awarded: Number 0-10 (typical: 1-3 per session)
+
+[Describe what happened in the session - key events, player decisions, NPC encounters, combat, dramatic moments]
+
+Here's the template:
+[Paste the downloaded session template here]
+
+Return ONLY the completed JSON, maintaining the exact structure.`}
+                  </pre>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="import" className="space-y-6 mt-6">
