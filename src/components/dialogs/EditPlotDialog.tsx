@@ -17,7 +17,7 @@ import { Trash2 } from "lucide-react";
 
 const plotSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
-  description: z.string().max(2000, "Description must be less than 2000 characters").optional(),
+  description: z.string().max(10000, "Description must be less than 10000 characters").optional(),
   status: z.enum(["Active", "Planned", "Completed", "Critical"]),
   priority: z.enum(["Low", "Medium", "High", "Critical"]),
 });
@@ -191,7 +191,7 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               placeholder="Describe the story, its themes, and key elements... (optional)"
               className="bg-input border-border min-h-24 resize-none"
-              maxLength={2000}
+              maxLength={10000}
             />
           </div>
 
