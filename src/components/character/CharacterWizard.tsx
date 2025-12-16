@@ -25,13 +25,13 @@ const STEPS = [
 ];
 
 const CLANS = [
-  "Banu Haqim", "Brujah", "Gangrel", "Hecata", "Lasombra", "Malkavian",
+  "Human", "Banu Haqim", "Brujah", "Gangrel", "Hecata", "Lasombra", "Malkavian",
   "Ministry", "Nosferatu", "Ravnos", "Salubri", "Toreador", "Tremere",
   "Tzimisce", "Ventrue", "Caitiff", "Thin-Blood"
 ];
 
 const PREDATOR_TYPES = [
-  "Alleycat", "Bagger", "Blood Leech", "Cleaver", "Consensualist",
+  "None", "Alleycat", "Bagger", "Blood Leech", "Cleaver", "Consensualist",
   "Farmer", "Osiris", "Sandman", "Scene Queen", "Siren"
 ];
 

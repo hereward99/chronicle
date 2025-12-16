@@ -227,8 +227,12 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
             
             <div className="flex flex-wrap gap-2">
               <Badge variant="outline">{character.clan}</Badge>
-              <Badge variant="outline">Generation {character.generation || 13}</Badge>
-              {character.predator_type && <Badge variant="outline">{character.predator_type}</Badge>}
+              {character.clan !== "Human" && (
+                <Badge variant="outline">Generation {character.generation || 13}</Badge>
+              )}
+              {character.predator_type && character.predator_type !== "None" && (
+                <Badge variant="outline">{character.predator_type}</Badge>
+              )}
               <Badge variant={character.type === "PC" ? "default" : "secondary"}>{character.type}</Badge>
             </div>
 
@@ -245,12 +249,14 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
               )}
             </div>
             
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm text-muted-foreground">Resonance:</span>
+            {character.clan !== "Human" && (
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm text-muted-foreground">Resonance:</span>
+                </div>
+                <ResonanceDisplay resonance={character.resonance} />
               </div>
-              <ResonanceDisplay resonance={character.resonance} />
-            </div>
+            )}
           </div>
         </div>
       </Card>
@@ -312,25 +318,29 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                 <DotRating current={character.humanity || 7} max={10} />
               </div>
 
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <RuleTooltip title="Hunger" description={rulesReference.trackers.hunger}>
-                    <span className="text-sm font-medium">Hunger</span>
-                  </RuleTooltip>
-                  <span className="text-xs text-muted-foreground">{character.hunger || 1}/5</span>
+              {character.clan !== "Human" && (
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <RuleTooltip title="Hunger" description={rulesReference.trackers.hunger}>
+                      <span className="text-sm font-medium">Hunger</span>
+                    </RuleTooltip>
+                    <span className="text-xs text-muted-foreground">{character.hunger || 1}/5</span>
+                  </div>
+                  <DotRating current={character.hunger || 1} max={5} filled />
                 </div>
-                <DotRating current={character.hunger || 1} max={5} filled />
-              </div>
+              )}
 
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <RuleTooltip title="Blood Potency" description={rulesReference.trackers.bloodPotency}>
-                    <span className="text-sm font-medium">Blood Potency</span>
-                  </RuleTooltip>
-                  <span className="text-xs text-muted-foreground">{character.blood_potency || 0}</span>
+              {character.clan !== "Human" && (
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <RuleTooltip title="Blood Potency" description={rulesReference.trackers.bloodPotency}>
+                      <span className="text-sm font-medium">Blood Potency</span>
+                    </RuleTooltip>
+                    <span className="text-xs text-muted-foreground">{character.blood_potency || 0}</span>
+                  </div>
+                  <DotRating current={character.blood_potency || 0} max={10} />
                 </div>
-                <DotRating current={character.blood_potency || 0} max={10} />
-              </div>
+              )}
 
               <div>
                 <div className="flex justify-between items-center mb-2">

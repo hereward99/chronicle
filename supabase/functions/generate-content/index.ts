@@ -96,13 +96,14 @@ Return ONLY valid JSON matching this exact structure (no markdown, no explanatio
 ${JSON.stringify(characterTemplate, null, 2)}
 
 Requirements:
-- Use a valid clan: Brujah, Gangrel, Malkavian, Nosferatu, Toreador, Tremere, Ventrue, Caitiff, Thin-Blood, Lasombra, Tzimisce, Hecata, Ravnos, Salubri, Ministry, or Banu Haqim
+- Use a valid clan: Human (for mortals), Brujah, Gangrel, Malkavian, Nosferatu, Toreador, Tremere, Ventrue, Caitiff, Thin-Blood, Lasombra, Tzimisce, Hecata, Ravnos, Salubri, Ministry, or Banu Haqim
+- For Human characters: set generation to null, omit sire/predator_type/resonance/disciplines/hunger/blood_potency
 - Attributes 1-5 (average human is 2)
 - Skills 0-5 (0 is untrained)
-- Include 1-3 disciplines with appropriate powers for the clan
-- predator_type options: Alleycat, Bagger, Blood Leech, Cleaver, Consensualist, Farmer, Graverobber, Osiris, Sandman, Scene Queen, Siren
-- resonance options: Choleric, Melancholic, Phlegmatic, Sanguine, Animal, or empty string
-- Generation typically 12-16 for modern vampires
+- Include 1-3 disciplines with appropriate powers for the clan (vampires only)
+- predator_type options: None (for humans), Alleycat, Bagger, Blood Leech, Cleaver, Consensualist, Farmer, Graverobber, Osiris, Sandman, Scene Queen, Siren
+- resonance options: Choleric, Melancholic, Phlegmatic, Sanguine, Animal, or empty string (vampires only)
+- Generation typically 12-16 for modern vampires (null for humans)
 - Include meaningful history, appearance, and personality in notes
 - Add at least one conviction and touchstone`,
 
