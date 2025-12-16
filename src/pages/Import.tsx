@@ -514,12 +514,15 @@ Return ONLY the completed JSON, maintaining the exact structure.`}
 
 FIELD RESTRICTIONS:
 - name: Required, max 200 characters
-- clan: Required (Brujah, Gangrel, Malkavian, Nosferatu, Toreador, Tremere, Ventrue, Caitiff, Thin-Blood, Lasombra, Tzimisce, Ravnos, Salubri, Hecata, Ministry, Banu Haqim)
-- generation: Number 4-16 (default 13)
+- clan: Required (Human, Brujah, Gangrel, Malkavian, Nosferatu, Toreador, Tremere, Ventrue, Caitiff, Thin-Blood, Lasombra, Tzimisce, Ravnos, Salubri, Hecata, Ministry, Banu Haqim)
+  - Use "Human" for mortal characters (no generation, predator_type, hunger, blood_potency, resonance, or disciplines)
+- generation: Number 4-16 (default 13) - OMIT for Human characters
 - type: "PC" or "NPC" (default "PC")
 - status: "Active", "Inactive", "Retired", or "Dead" (default "Active")
 - concept: Max 500 characters
-- sire, predator_type, resonance: Max 200 characters each
+- sire: Max 200 characters - OMIT for Human characters
+- predator_type: "None", "Alleycat", "Bagger", etc. - Use "None" or OMIT for Human characters
+- resonance: Max 200 characters - OMIT for Human characters
 - ambition, desire: Max 500 characters each
 - appearance, distinguishing_features, history, notes: Max 5000 characters each
 
@@ -533,16 +536,16 @@ SKILLS (all 0-5, in skills object):
 - Social: animal_ken, etiquette, insight, intimidation, leadership, performance, persuasion, streetwise, subterfuge
 - Mental: academics, awareness, finance, investigation, medicine, occult, politics, science, technology
 
-DISCIPLINES: Array of {name, level (1-5), powers: []}
+DISCIPLINES: Array of {name, level (1-5), powers: []} - OMIT for Human characters
 ADVANTAGES/FLAWS: Array of {name, rating (1-5), description}
 CONVICTIONS: Array of strings (max 3 items, each max 200 chars)
 TOUCHSTONES: Array of {name, description, conviction}
 LORESHEETS: Array of {name, dots (1-5), benefits: []}
 
 TRACKERS:
-- blood_potency: 0-10 (default 0)
+- blood_potency: 0-10 (default 0) - OMIT for Human characters
 - humanity: 0-10 (default 7)
-- hunger: 0-5 (default 1)
+- hunger: 0-5 (default 1) - OMIT for Human characters
 - experience_total, experience_spent: Numbers (default 0)
 
 [Describe your character - concept, clan, background, personality, goals]

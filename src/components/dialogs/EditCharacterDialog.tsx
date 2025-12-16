@@ -33,7 +33,7 @@ const clans = [
 const statuses = ["Active", "Inactive", "Dead", "Missing", "Ally", "Enemy"];
 
 const predatorTypes = [
-  "Alleycat", "Bagger", "Blood Leech", "Cleaver", "Consensualist", 
+  "None", "Alleycat", "Bagger", "Blood Leech", "Cleaver", "Consensualist", 
   "Farmer", "Osiris", "Sandman", "Scene Queen", "Siren", "Extortionist", "Graverobber"
 ];
 
