@@ -227,7 +227,7 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
             
             <div className="flex flex-wrap gap-2">
               <Badge variant="outline">{character.clan}</Badge>
-              {character.clan !== "Human" && (
+              {character.clan !== "Human" && character.clan !== "Ghoul" && (
                 <Badge variant="outline">Generation {character.generation || 13}</Badge>
               )}
               {character.predator_type && character.predator_type !== "None" && (
