@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Copy, RefreshCw, Users, BookOpen, MapPin, Scroll, Save, Check } from "lucide-react";
+import { Sparkles, Copy, RefreshCw, Users, BookOpen, MapPin, Scroll, Save, Check, Bot, Cloud } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useChronicles } from "@/hooks/useChronicles";
 import { useCharacters } from "@/hooks/useCharacters";
 import { usePlots } from "@/hooks/usePlots";
+import { useGeneratorSettings } from "@/hooks/useGeneratorSettings";
+import { generateWithOllama } from "@/lib/ollama";
 
 interface GeneratedData {
   content: string;
@@ -28,6 +30,7 @@ export default function Generator() {
   const { currentChronicle } = useChronicles();
   const { createCharacter } = useCharacters();
   const { createPlot } = usePlots();
+  const { settings: generatorSettings } = useGeneratorSettings();
 
   const generateContent = async () => {
     if (!prompt.trim()) return;
@@ -37,16 +40,31 @@ export default function Generator() {
     setSaved(false);
 
     try {
-      const { data, error } = await supabase.functions.invoke('generate-content', {
-        body: { prompt, contentType: activeTab }
-      });
+      let data;
 
-      if (error) {
-        throw new Error(error.message || 'Failed to generate content');
-      }
+      if (generatorSettings.useLocalLLM) {
+        // Use local Ollama
+        data = await generateWithOllama(
+          prompt,
+          activeTab,
+          generatorSettings.ollamaUrl,
+          generatorSettings.ollamaModel
+        );
+      } else {
+        // Use cloud AI via edge function
+        const { data: edgeData, error } = await supabase.functions.invoke('generate-content', {
+          body: { prompt, contentType: activeTab }
+        });
 
-      if (data?.error) {
-        throw new Error(data.error);
+        if (error) {
+          throw new Error(error.message || 'Failed to generate content');
+        }
+
+        if (edgeData?.error) {
+          throw new Error(edgeData.error);
+        }
+
+        data = edgeData;
       }
 
       setGeneratedData({
@@ -56,9 +74,17 @@ export default function Generator() {
       });
     } catch (error) {
       console.error('Generation error:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to generate content. Please try again.";
+      
+      // Provide helpful hints for common Ollama errors
+      let description = errorMessage;
+      if (generatorSettings.useLocalLLM && errorMessage.includes('Failed to fetch')) {
+        description = "Cannot connect to Ollama. Make sure it's running with CORS enabled: OLLAMA_ORIGINS=* ollama serve";
+      }
+      
       toast({
         title: "Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate content. Please try again.",
+        description,
         variant: "destructive"
       });
     } finally {
@@ -189,7 +215,22 @@ export default function Generator() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Content Generator</h1>
-          <p className="text-muted-foreground">Generate scenes, NPCs, and stories for your chronicle</p>
+          <p className="text-muted-foreground flex items-center gap-2">
+            Generate scenes, NPCs, and stories for your chronicle
+            <Badge variant="outline" className="text-xs">
+              {generatorSettings.useLocalLLM ? (
+                <>
+                  <Bot className="h-3 w-3 mr-1" />
+                  Ollama ({generatorSettings.ollamaModel})
+                </>
+              ) : (
+                <>
+                  <Cloud className="h-3 w-3 mr-1" />
+                  Cloud AI
+                </>
+              )}
+            </Badge>
+          </p>
         </div>
       </div>
 

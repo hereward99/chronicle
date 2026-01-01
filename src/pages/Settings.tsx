@@ -2,10 +2,14 @@ import { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useChronicles } from '@/hooks/useChronicles';
-import { Download, Upload, Loader2, AlertTriangle } from 'lucide-react';
+import { useGeneratorSettings } from '@/hooks/useGeneratorSettings';
+import { Download, Upload, Loader2, AlertTriangle, Bot } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   AlertDialog,
@@ -37,6 +41,7 @@ interface BackupData {
 export default function Settings() {
   const { toast } = useToast();
   const { currentChronicle } = useChronicles();
+  const { settings: generatorSettings, updateSettings: updateGeneratorSettings } = useGeneratorSettings();
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
@@ -389,6 +394,62 @@ export default function Settings() {
         <h1 className="text-3xl font-bold mb-8">Settings</h1>
 
         <div className="space-y-6">
+          {/* AI Generator Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bot className="h-5 w-5" />
+                AI Generator
+              </CardTitle>
+              <CardDescription>
+                Configure how content is generated for characters, stories, and scenes.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="use-local-llm">Use Local LLM (Ollama)</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Generate content using a local Ollama instance instead of cloud AI.
+                  </p>
+                </div>
+                <Switch
+                  id="use-local-llm"
+                  checked={generatorSettings.useLocalLLM}
+                  onCheckedChange={(checked) => updateGeneratorSettings({ useLocalLLM: checked })}
+                />
+              </div>
+
+              {generatorSettings.useLocalLLM && (
+                <div className="space-y-4 pt-4 border-t border-border">
+                  <div className="space-y-2">
+                    <Label htmlFor="ollama-url">Ollama URL</Label>
+                    <Input
+                      id="ollama-url"
+                      placeholder="http://localhost:11434"
+                      value={generatorSettings.ollamaUrl}
+                      onChange={(e) => updateGeneratorSettings({ ollamaUrl: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Make sure Ollama is running with CORS enabled: <code className="bg-muted px-1 rounded">OLLAMA_ORIGINS=* ollama serve</code>
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="ollama-model">Model Name</Label>
+                    <Input
+                      id="ollama-model"
+                      placeholder="llama3.2"
+                      value={generatorSettings.ollamaModel}
+                      onChange={(e) => updateGeneratorSettings({ ollamaModel: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      The model must be pulled in Ollama: <code className="bg-muted px-1 rounded">ollama pull llama3.2</code>
+                    </p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
