@@ -25,7 +25,7 @@ const STEPS = [
 ];
 
 const CLANS = [
-  "Human", "Banu Haqim", "Brujah", "Gangrel", "Hecata", "Lasombra", "Malkavian",
+  "Human", "Ghoul", "Banu Haqim", "Brujah", "Gangrel", "Hecata", "Lasombra", "Malkavian",
   "Ministry", "Nosferatu", "Ravnos", "Salubri", "Toreador", "Tremere",
   "Tzimisce", "Ventrue", "Caitiff", "Thin-Blood"
 ];
