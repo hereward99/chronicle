@@ -1,12 +1,14 @@
 import { Character } from "@/hooks/useCharacters";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { HelpCircle, Droplet } from "lucide-react";
+import { HelpCircle, Droplet, Download } from "lucide-react";
 import { CharacterAttachmentsGallery } from "./CharacterAttachmentsGallery";
+import { exportCharacterToPDF } from "@/lib/pdfExport";
 
 interface CharacterSheetViewProps {
   character: Character;
@@ -203,7 +205,7 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
       {/* Character Header */}
       <Card className="p-6">
         <div className="flex gap-6">
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 flex flex-col items-center gap-2">
             {character.avatar_url ? (
               <div className="w-32 h-32 rounded-lg overflow-hidden border-2 border-border shadow-lg">
                 <img 
@@ -217,6 +219,15 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                 <AvatarFallback className="text-3xl">{character.name.substring(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
             )}
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => exportCharacterToPDF(character)}
+              className="w-full"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export PDF
+            </Button>
           </div>
           
           <div className="flex-1 space-y-3">
