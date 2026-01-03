@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Calendar, Users, Clock, MapPin, Loader2, FileText, Image as ImageIcon } from "lucide-react";
+import { Plus, Search, Calendar, Users, Clock, MapPin, Loader2, FileText, Image as ImageIcon, Download } from "lucide-react";
 import { CreateSessionDialog } from "@/components/dialogs/CreateSessionDialog";
 import { useSessions } from "@/hooks/useSessions";
+import { exportSessionToPDF } from "@/lib/pdfExport";
 
 const Sessions = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -87,11 +88,20 @@ const Sessions = () => {
                       {formatDate(session.date_played)}
                     </CardDescription>
                   </div>
-                  {session.experience_awarded && (
-                    <Badge variant="secondary" className="w-fit">
-                      {session.experience_awarded} XP awarded
-                    </Badge>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {session.experience_awarded && (
+                      <Badge variant="secondary" className="w-fit">
+                        {session.experience_awarded} XP awarded
+                      </Badge>
+                    )}
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => exportSessionToPDF(session)}
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">

@@ -4,9 +4,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plot } from "@/hooks/usePlots";
 import { useCharacters } from "@/hooks/useCharacters";
 import { usePlotCharacters } from "@/hooks/usePlotCharacters";
-import { BookOpen, Clock, Users, Flag, FileText, Image as ImageIcon } from "lucide-react";
+import { BookOpen, Clock, Users, Flag, FileText, Image as ImageIcon, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
+import { exportPlotToPDF } from "@/lib/pdfExport";
 interface ViewPlotDialogProps {
   plot: Plot | null;
   open: boolean;
@@ -65,11 +65,19 @@ export function ViewPlotDialog({ plot, open, onOpenChange }: ViewPlotDialogProps
     ) || [];
   };
 
+  const handleExportPDF = () => {
+    exportPlotToPDF(plot, assignedCharacters.map(c => ({ name: c.name, clan: c.clan })));
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] bg-gradient-subtle border-border">
-        <DialogHeader>
+        <DialogHeader className="flex flex-row items-center justify-between pr-8">
           <DialogTitle className="text-2xl text-foreground">{plot.title}</DialogTitle>
+          <Button variant="outline" size="sm" onClick={handleExportPDF}>
+            <Download className="h-4 w-4 mr-2" />
+            Export PDF
+          </Button>
         </DialogHeader>
         
         <ScrollArea className="max-h-[calc(90vh-120px)] pr-4">
