@@ -417,48 +417,61 @@ export async function exportCharacterToPDF(character: {
   addLabelValue(pdf, 'Experience', `${character.experience_total || 0} total (${expUnspent} unspent)`, trackerY, pageWidth / 2);
   y += 5;
   
-  // Skills
+  // Skills - grouped by category
   if (character.skills && Object.keys(character.skills).length > 0) {
-    y = checkNewPage(pdf, y, 40);
+    y = checkNewPage(pdf, y, 50);
     y = addSection(pdf, 'Skills', y);
     y += 4;
     
     const skills = character.skills as Record<string, { rating: number; specialty?: string }>;
-    const skillEntries = Object.entries(skills).filter(([_, s]) => s.rating > 0);
     
-    const midPoint = Math.ceil(skillEntries.length / 2);
-    const leftSkills = skillEntries.slice(0, midPoint);
-    const rightSkills = skillEntries.slice(midPoint);
+    // Define skill categories
+    const skillCategories: Record<string, string[]> = {
+      Physical: ['athletics', 'brawl', 'craft', 'drive', 'firearms', 'larceny', 'melee', 'stealth', 'survival'],
+      Social: ['animal_ken', 'etiquette', 'insight', 'intimidation', 'leadership', 'performance', 'persuasion', 'streetwise', 'subterfuge'],
+      Mental: ['academics', 'awareness', 'finance', 'investigation', 'medicine', 'occult', 'politics', 'science', 'technology'],
+    };
     
+    const colWidth = (pageWidth - 40) / 3;
     const skillStartY = y;
-    leftSkills.forEach(([name, skill]) => {
-      const displayName = name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-      const label = skill.specialty 
-        ? `${displayName} (${skill.specialty}):`
-        : `${displayName}:`;
-      pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
-      pdf.setFontSize(8);
-      pdf.text(label, 20, y);
-      const textWidth = pdf.getTextWidth(label);
-      drawDots(pdf, 20 + textWidth + 3, y, skill.rating, 5, 1);
-      y += 4;
+    
+    Object.entries(skillCategories).forEach(([category, skillNames], colIndex) => {
+      const x = 20 + colIndex * colWidth;
+      let skillY = skillStartY;
+      
+      // Category header
+      pdf.setTextColor(COLORS.primary.r, COLORS.primary.g, COLORS.primary.b);
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(category, x, skillY);
+      skillY += 5;
+      
+      // Skills in this category
+      skillNames.forEach(skillName => {
+        const skill = skills[skillName];
+        if (skill && skill.rating > 0) {
+          const displayName = skillName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          const label = skill.specialty 
+            ? `${displayName} (${skill.specialty}):`
+            : `${displayName}:`;
+          pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
+          pdf.setFontSize(8);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text(label, x, skillY);
+          const textWidth = pdf.getTextWidth(label);
+          drawDots(pdf, x + textWidth + 3, skillY, skill.rating, 5, 1);
+          skillY += 4;
+        }
+      });
     });
     
-    let rightY = skillStartY;
-    rightSkills.forEach(([name, skill]) => {
-      const displayName = name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-      const label = skill.specialty 
-        ? `${displayName} (${skill.specialty}):`
-        : `${displayName}:`;
-      pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
-      pdf.setFontSize(8);
-      pdf.text(label, pageWidth / 2, rightY);
-      const textWidth = pdf.getTextWidth(label);
-      drawDots(pdf, pageWidth / 2 + textWidth + 3, rightY, skill.rating, 5, 1);
-      rightY += 4;
-    });
-    
-    y = Math.max(y, rightY) + 5;
+    // Calculate max height used by any column
+    const maxSkillsInCategory = Math.max(
+      ...Object.values(skillCategories).map(names => 
+        names.filter(name => skills[name]?.rating > 0).length
+      )
+    );
+    y = skillStartY + 5 + (maxSkillsInCategory * 4) + 5;
   }
   
   // Disciplines and Powers
