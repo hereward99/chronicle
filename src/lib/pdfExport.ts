@@ -15,6 +15,29 @@ interface PDFOptions {
   subtitle?: string;
 }
 
+// Draw dots (filled and empty circles) for ratings
+function drawDots(pdf: jsPDF, x: number, y: number, filled: number, max: number = 5, dotRadius: number = 1.2): number {
+  const spacing = 3.5;
+  
+  for (let i = 0; i < max; i++) {
+    const dotX = x + (i * spacing);
+    const dotY = y - 1;
+    
+    if (i < filled) {
+      // Filled dot
+      pdf.setFillColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
+      pdf.circle(dotX, dotY, dotRadius, 'F');
+    } else {
+      // Empty dot (ring)
+      pdf.setDrawColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+      pdf.setLineWidth(0.3);
+      pdf.circle(dotX, dotY, dotRadius, 'S');
+    }
+  }
+  
+  return x + (max * spacing);
+}
+
 function createThemedPDF(options: PDFOptions): jsPDF {
   const pdf = new jsPDF('p', 'mm', 'a4');
   const pageWidth = pdf.internal.pageSize.getWidth();
@@ -328,7 +351,9 @@ export function exportCharacterToPDF(character: {
       pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
       pdf.setFontSize(9);
       pdf.setFont('helvetica', 'normal');
-      pdf.text(`${attr.name}: ${'●'.repeat(attr.value)}${'○'.repeat(5 - attr.value)}`, x, attrY);
+      pdf.text(`${attr.name}:`, x, attrY);
+      const textWidth = pdf.getTextWidth(`${attr.name}: `);
+      drawDots(pdf, x + textWidth, attrY, attr.value, 5);
       attrY += 5;
     });
   });
@@ -366,24 +391,28 @@ export function exportCharacterToPDF(character: {
     const skillStartY = y;
     leftSkills.forEach(([name, skill]) => {
       const displayName = name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-      const text = skill.specialty 
-        ? `${displayName} (${skill.specialty}): ${'●'.repeat(skill.rating)}${'○'.repeat(5 - skill.rating)}`
-        : `${displayName}: ${'●'.repeat(skill.rating)}${'○'.repeat(5 - skill.rating)}`;
+      const label = skill.specialty 
+        ? `${displayName} (${skill.specialty}):`
+        : `${displayName}:`;
       pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
       pdf.setFontSize(8);
-      pdf.text(text, 20, y);
+      pdf.text(label, 20, y);
+      const textWidth = pdf.getTextWidth(label + ' ');
+      drawDots(pdf, 20 + textWidth, y, skill.rating, 5, 1);
       y += 4;
     });
     
     let rightY = skillStartY;
     rightSkills.forEach(([name, skill]) => {
       const displayName = name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-      const text = skill.specialty 
-        ? `${displayName} (${skill.specialty}): ${'●'.repeat(skill.rating)}${'○'.repeat(5 - skill.rating)}`
-        : `${displayName}: ${'●'.repeat(skill.rating)}${'○'.repeat(5 - skill.rating)}`;
+      const label = skill.specialty 
+        ? `${displayName} (${skill.specialty}):`
+        : `${displayName}:`;
       pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
       pdf.setFontSize(8);
-      pdf.text(text, pageWidth / 2, rightY);
+      pdf.text(label, pageWidth / 2, rightY);
+      const textWidth = pdf.getTextWidth(label + ' ');
+      drawDots(pdf, pageWidth / 2 + textWidth, rightY, skill.rating, 5, 1);
       rightY += 4;
     });
     
@@ -399,7 +428,9 @@ export function exportCharacterToPDF(character: {
     (character.disciplines as { name: string; level: number }[]).forEach(disc => {
       pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
       pdf.setFontSize(9);
-      pdf.text(`${disc.name}: ${'●'.repeat(disc.level)}${'○'.repeat(5 - disc.level)}`, 20, y);
+      pdf.text(`${disc.name}:`, 20, y);
+      const textWidth = pdf.getTextWidth(`${disc.name}: `);
+      drawDots(pdf, 20 + textWidth, y, disc.level, 5);
       y += 5;
     });
     y += 3;
@@ -460,7 +491,10 @@ export function exportCharacterToPDF(character: {
         pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
         pdf.setFontSize(8);
         const rating = adv.rating || 1;
-        pdf.text(`• ${adv.name} (${adv.type}) ${'●'.repeat(rating)}`, 25, y);
+        const label = `• ${adv.name} (${adv.type})`;
+        pdf.text(label, 25, y);
+        const textWidth = pdf.getTextWidth(label + ' ');
+        drawDots(pdf, 25 + textWidth, y, rating, 5, 1);
         y += 4;
       });
       y += 2;
@@ -475,7 +509,10 @@ export function exportCharacterToPDF(character: {
         pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
         pdf.setFontSize(8);
         const rating = flaw.rating || 1;
-        pdf.text(`• ${flaw.name} ${'●'.repeat(rating)}`, 25, y);
+        const label = `• ${flaw.name}`;
+        pdf.text(label, 25, y);
+        const textWidth = pdf.getTextWidth(label + ' ');
+        drawDots(pdf, 25 + textWidth, y, rating, 5, 1);
         y += 4;
       });
     }
