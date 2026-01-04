@@ -352,8 +352,8 @@ export function exportCharacterToPDF(character: {
       pdf.setFontSize(9);
       pdf.setFont('helvetica', 'normal');
       pdf.text(`${attr.name}:`, x, attrY);
-      const textWidth = pdf.getTextWidth(`${attr.name}: `);
-      drawDots(pdf, x + textWidth, attrY, attr.value, 5);
+      const textWidth = pdf.getTextWidth(`${attr.name}:`);
+      drawDots(pdf, x + textWidth + 3, attrY, attr.value, 5);
       attrY += 5;
     });
   });
@@ -397,8 +397,8 @@ export function exportCharacterToPDF(character: {
       pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
       pdf.setFontSize(8);
       pdf.text(label, 20, y);
-      const textWidth = pdf.getTextWidth(label + ' ');
-      drawDots(pdf, 20 + textWidth, y, skill.rating, 5, 1);
+      const textWidth = pdf.getTextWidth(label);
+      drawDots(pdf, 20 + textWidth + 3, y, skill.rating, 5, 1);
       y += 4;
     });
     
@@ -411,8 +411,8 @@ export function exportCharacterToPDF(character: {
       pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
       pdf.setFontSize(8);
       pdf.text(label, pageWidth / 2, rightY);
-      const textWidth = pdf.getTextWidth(label + ' ');
-      drawDots(pdf, pageWidth / 2 + textWidth, rightY, skill.rating, 5, 1);
+      const textWidth = pdf.getTextWidth(label);
+      drawDots(pdf, pageWidth / 2 + textWidth + 3, rightY, skill.rating, 5, 1);
       rightY += 4;
     });
     
@@ -429,8 +429,8 @@ export function exportCharacterToPDF(character: {
       pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
       pdf.setFontSize(9);
       pdf.text(`${disc.name}:`, 20, y);
-      const textWidth = pdf.getTextWidth(`${disc.name}: `);
-      drawDots(pdf, 20 + textWidth, y, disc.level, 5);
+      const textWidth = pdf.getTextWidth(`${disc.name}:`);
+      drawDots(pdf, 20 + textWidth + 3, y, disc.level, 5);
       y += 5;
     });
     y += 3;
@@ -493,8 +493,8 @@ export function exportCharacterToPDF(character: {
         const rating = adv.rating || 1;
         const label = `• ${adv.name} (${adv.type})`;
         pdf.text(label, 25, y);
-        const textWidth = pdf.getTextWidth(label + ' ');
-        drawDots(pdf, 25 + textWidth, y, rating, 5, 1);
+        const textWidth = pdf.getTextWidth(label);
+        drawDots(pdf, 25 + textWidth + 3, y, rating, 5, 1);
         y += 4;
       });
       y += 2;
@@ -511,8 +511,8 @@ export function exportCharacterToPDF(character: {
         const rating = flaw.rating || 1;
         const label = `• ${flaw.name}`;
         pdf.text(label, 25, y);
-        const textWidth = pdf.getTextWidth(label + ' ');
-        drawDots(pdf, 25 + textWidth, y, rating, 5, 1);
+        const textWidth = pdf.getTextWidth(label);
+        drawDots(pdf, 25 + textWidth + 3, y, rating, 5, 1);
         y += 4;
       });
     }
