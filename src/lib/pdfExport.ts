@@ -237,8 +237,24 @@ export function exportSessionToPDF(session: {
   pdf.save(`${session.title.replace(/[^a-z0-9]/gi, '_')}_session.pdf`);
 }
 
+// Helper to load image and convert to base64
+async function loadImageAsBase64(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
 // Export a Character to PDF
-export function exportCharacterToPDF(character: {
+export async function exportCharacterToPDF(character: {
   name: string;
   clan: string;
   type: string;
@@ -254,6 +270,7 @@ export function exportCharacterToPDF(character: {
   appearance?: string | null;
   history?: string | null;
   notes?: string | null;
+  avatar_url?: string | null;
   strength?: number | null;
   dexterity?: number | null;
   stamina?: number | null;
@@ -281,8 +298,33 @@ export function exportCharacterToPDF(character: {
     subtitle: `${character.clan} • ${character.type}`
   });
   
-  let y = 35;
   const pageWidth = pdf.internal.pageSize.getWidth();
+  let y = 35;
+  
+  // Add portrait if available
+  if (character.avatar_url) {
+    try {
+      const imageData = await loadImageAsBase64(character.avatar_url);
+      if (imageData) {
+        const portraitSize = 30;
+        const portraitX = pageWidth - 20 - portraitSize;
+        const portraitY = 30;
+        
+        // Draw border/frame for portrait
+        pdf.setFillColor(COLORS.card.r, COLORS.card.g, COLORS.card.b);
+        pdf.roundedRect(portraitX - 1.5, portraitY - 1.5, portraitSize + 3, portraitSize + 3, 2, 2, 'F');
+        pdf.setDrawColor(COLORS.primary.r, COLORS.primary.g, COLORS.primary.b);
+        pdf.setLineWidth(0.5);
+        pdf.roundedRect(portraitX - 1.5, portraitY - 1.5, portraitSize + 3, portraitSize + 3, 2, 2, 'S');
+        
+        // Add the portrait image
+        pdf.addImage(imageData, 'JPEG', portraitX, portraitY, portraitSize, portraitSize);
+      }
+    } catch (e) {
+      // Silently fail if image can't be loaded
+      console.warn('Failed to load portrait for PDF:', e);
+    }
+  }
   const isVampire = character.clan !== 'Human' && character.clan !== 'Ghoul';
   
   // Badges row

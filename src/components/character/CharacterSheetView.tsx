@@ -222,7 +222,7 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => exportCharacterToPDF(character)}
+              onClick={() => { exportCharacterToPDF(character); }}
               className="w-full"
             >
               <Download className="h-4 w-4 mr-2" />
