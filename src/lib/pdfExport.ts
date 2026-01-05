@@ -474,31 +474,41 @@ export async function exportCharacterToPDF(character: {
     y = skillStartY + 5 + (maxSkillsInCategory * 4) + 5;
   }
   
-  // Disciplines and Powers
+  // Disciplines and Powers - grouped together
   if (isVampire && character.disciplines && (character.disciplines as any[]).length > 0) {
     y = checkNewPage(pdf, y, 30);
-    y = addSection(pdf, 'Disciplines', y);
+    y = addSection(pdf, 'Disciplines & Powers', y);
     y += 4;
     
+    const powers = (character.powers as { name: string; discipline: string; level: number }[]) || [];
+    
     (character.disciplines as { name: string; level: number }[]).forEach(disc => {
+      // Discipline name with dots
       pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
       pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'bold');
       pdf.text(`${disc.name}:`, 20, y);
       const textWidth = pdf.getTextWidth(`${disc.name}:`);
       drawDots(pdf, 20 + textWidth + 3, y, disc.level, 5);
       y += 5;
+      
+      // Powers for this discipline
+      const disciplinePowers = powers.filter(p => 
+        p.discipline.toLowerCase() === disc.name.toLowerCase()
+      );
+      
+      if (disciplinePowers.length > 0) {
+        pdf.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'normal');
+        disciplinePowers.forEach(power => {
+          pdf.text(`• ${power.name} (Level ${power.level})`, 25, y);
+          y += 4;
+        });
+      }
+      y += 2;
     });
     y += 3;
-    
-    if (character.powers && (character.powers as any[]).length > 0) {
-      pdf.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
-      pdf.setFontSize(8);
-      (character.powers as { name: string; discipline: string; level: number }[]).forEach(power => {
-        pdf.text(`• ${power.name} (${power.discipline} ${power.level})`, 25, y);
-        y += 4;
-      });
-      y += 3;
-    }
   }
   
   // Beliefs
