@@ -37,6 +37,45 @@ export function useImport() {
     return { success: successCount > 0, message: `Imported ${successCount} chronicle(s)`, count: successCount };
   };
 
+  // Helper function to extract powers from disciplines if they're embedded
+  const extractPowersFromDisciplines = (char: any): any[] => {
+    // If char already has a powers array with proper format, use it
+    if (char.powers && Array.isArray(char.powers) && char.powers.length > 0) {
+      // Check if powers are already in the correct format (objects with discipline field)
+      if (typeof char.powers[0] === 'object' && char.powers[0].discipline) {
+        return char.powers;
+      }
+    }
+    
+    // Extract powers from disciplines array
+    const extractedPowers: any[] = [];
+    if (char.disciplines && Array.isArray(char.disciplines)) {
+      for (const disc of char.disciplines) {
+        if (disc.powers && Array.isArray(disc.powers)) {
+          for (const power of disc.powers) {
+            if (typeof power === 'string') {
+              // Power is just a name string - convert to object format
+              extractedPowers.push({
+                name: power,
+                discipline: disc.name,
+                level: disc.level || 1
+              });
+            } else if (typeof power === 'object' && power.name) {
+              // Power is already an object, ensure it has discipline
+              extractedPowers.push({
+                ...power,
+                discipline: power.discipline || disc.name,
+                level: power.level || disc.level || 1
+              });
+            }
+          }
+        }
+      }
+    }
+    
+    return extractedPowers;
+  };
+
   const importCharacters = async (data: any[], mode: ImportMode = "create"): Promise<ImportResult> => {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw new Error("Not authenticated");
@@ -55,6 +94,9 @@ export function useImport() {
       const resolve = char.resolve || 1;
       const healthMax = stamina + 3;
       const willpowerMax = composure + resolve;
+      
+      // Extract powers from disciplines if needed
+      const powers = extractPowersFromDisciplines(char);
 
       if (mode === "update") {
         // Try to find existing character by name in this chronicle
@@ -102,7 +144,10 @@ export function useImport() {
           }
           if (char.skills !== undefined) updateData.skills = char.skills;
           if (char.disciplines !== undefined) updateData.disciplines = char.disciplines;
-          if (char.powers !== undefined) updateData.powers = char.powers;
+          // Always update powers with extracted powers if disciplines are provided
+          if (char.disciplines !== undefined || char.powers !== undefined) {
+            updateData.powers = powers.length > 0 ? powers : (char.powers || []);
+          }
           if (char.advantages !== undefined) updateData.advantages = char.advantages;
           if (char.flaws !== undefined) updateData.flaws = char.flaws;
           if (char.convictions !== undefined) updateData.convictions = char.convictions;
@@ -154,7 +199,7 @@ export function useImport() {
         resolve: resolve,
         skills: char.skills || {},
         disciplines: char.disciplines || [],
-        powers: char.powers || [],
+        powers: powers.length > 0 ? powers : (char.powers || []),
         advantages: char.advantages || [],
         flaws: char.flaws || [],
         convictions: char.convictions || [],
