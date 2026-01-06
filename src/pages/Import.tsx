@@ -2,9 +2,9 @@ import { useState, useRef } from "react";
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, Upload, FileJson, Users, BookOpen, Calendar, Scroll, Check, Loader2, AlertCircle, Save } from "lucide-react";
+import { Download, Upload, FileJson, Users, BookOpen, Calendar, Scroll, Check, Loader2, AlertCircle, Save, RefreshCw } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useImport, ImportType } from "@/hooks/useImport";
+import { useImport, ImportType, ImportMode } from "@/hooks/useImport";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useChronicles } from "@/hooks/useChronicles";
 import { supabase } from "@/integrations/supabase/client";
@@ -275,16 +275,17 @@ export default function Import() {
     URL.revokeObjectURL(url);
   };
 
-  const handleFileSelect = async (importType: ImportType, file: File) => {
-    const result = await parseAndImport(file, importType);
+  const handleFileSelect = async (importType: ImportType, file: File, mode: ImportMode = "create") => {
+    const result = await parseAndImport(file, importType, mode);
     setImportResults((prev) => ({
       ...prev,
-      [importType]: { success: result.success, message: result.message },
+      [importType + (mode === "update" ? "_update" : "")]: { success: result.success, message: result.message },
     }));
   };
 
-  const triggerFileInput = (type: ImportType) => {
-    fileInputRefs.current[type]?.click();
+  const triggerFileInput = (type: ImportType, mode: ImportMode = "create") => {
+    const key = type + (mode === "update" ? "_update" : "");
+    fileInputRefs.current[key]?.click();
   };
 
   const templateCards: ImportCardConfig[] = [
@@ -663,14 +664,14 @@ Return ONLY the completed JSON, maintaining the exact structure.`}
                         className="hidden"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
-                          if (file) handleFileSelect(card.type, file);
+                          if (file) handleFileSelect(card.type, file, "create");
                           e.target.value = "";
                         }}
                       />
                       <Button 
                         variant="default"
                         size="sm"
-                        onClick={() => triggerFileInput(card.type)}
+                        onClick={() => triggerFileInput(card.type, "create")}
                         disabled={importing || isDisabled}
                         className="w-full"
                       >
@@ -679,8 +680,43 @@ Return ONLY the completed JSON, maintaining the exact structure.`}
                         ) : (
                           <Upload className="h-4 w-4 mr-2" />
                         )}
-                        Choose File
+                        Import New
                       </Button>
+                      
+                      {card.type === "character" && (
+                        <>
+                          <input
+                            ref={(el) => (fileInputRefs.current[card.type + "_update"] = el)}
+                            type="file"
+                            accept=".json,application/json"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleFileSelect(card.type, file, "update");
+                              e.target.value = "";
+                            }}
+                          />
+                          <Button 
+                            variant="outline"
+                            size="sm"
+                            onClick={() => triggerFileInput(card.type, "update")}
+                            disabled={importing || isDisabled}
+                            className="w-full"
+                          >
+                            {importing ? (
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                              <RefreshCw className="h-4 w-4 mr-2" />
+                            )}
+                            Re-import (Update by Name)
+                          </Button>
+                          {importResults[card.type + "_update"] && (
+                            <p className={`text-xs ${importResults[card.type + "_update"]?.success ? 'text-green-500' : 'text-destructive'}`}>
+                              {importResults[card.type + "_update"]?.message}
+                            </p>
+                          )}
+                        </>
+                      )}
                       
                       {result && (
                         <p className={`text-xs ${result.success ? 'text-green-500' : 'text-destructive'}`}>
@@ -700,6 +736,7 @@ Return ONLY the completed JSON, maintaining the exact structure.`}
               <CardContent className="space-y-2 text-sm text-muted-foreground">
                 <p>• Upload either a single item JSON or a batch array</p>
                 <p>• Characters, stories, and sessions will be added to your current chronicle</p>
+                <p>• <strong>Re-import (Update)</strong> matches characters by name and updates their details</p>
                 <p>• Health and Willpower are auto-calculated from attributes</p>
                 <p>• Invalid fields will use default values</p>
               </CardContent>
