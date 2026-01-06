@@ -4,11 +4,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useChronicles } from "@/hooks/useChronicles";
 
 export type ImportType = "chronicle" | "character" | "story" | "session";
+export type ImportMode = "create" | "update";
 
 interface ImportResult {
   success: boolean;
   message: string;
   count: number;
+  updatedCount?: number;
 }
 
 export function useImport() {
@@ -35,7 +37,7 @@ export function useImport() {
     return { success: successCount > 0, message: `Imported ${successCount} chronicle(s)`, count: successCount };
   };
 
-  const importCharacters = async (data: any[]): Promise<ImportResult> => {
+  const importCharacters = async (data: any[], mode: ImportMode = "create"): Promise<ImportResult> => {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw new Error("Not authenticated");
 
@@ -44,6 +46,8 @@ export function useImport() {
     }
 
     let successCount = 0;
+    let updatedCount = 0;
+
     for (const char of data) {
       // Calculate health and willpower from attributes
       const stamina = char.stamina || 1;
@@ -52,6 +56,75 @@ export function useImport() {
       const healthMax = stamina + 3;
       const willpowerMax = composure + resolve;
 
+      if (mode === "update") {
+        // Try to find existing character by name in this chronicle
+        const { data: existingChars } = await supabase
+          .from("characters")
+          .select("id")
+          .eq("chronicle_id", currentChronicle.id)
+          .eq("name", char.name)
+          .limit(1);
+
+        if (existingChars && existingChars.length > 0) {
+          // Update existing character - only update fields that are provided
+          const updateData: Record<string, any> = {};
+          
+          // Only update fields that exist in the import data
+          if (char.clan !== undefined) updateData.clan = char.clan;
+          if (char.generation !== undefined) updateData.generation = char.generation;
+          if (char.type !== undefined) updateData.type = char.type;
+          if (char.status !== undefined) updateData.status = char.status;
+          if (char.concept !== undefined) updateData.concept = char.concept;
+          if (char.sire !== undefined) updateData.sire = char.sire;
+          if (char.predator_type !== undefined) updateData.predator_type = char.predator_type;
+          if (char.ambition !== undefined) updateData.ambition = char.ambition;
+          if (char.desire !== undefined) updateData.desire = char.desire;
+          if (char.resonance !== undefined) updateData.resonance = char.resonance;
+          if (char.appearance !== undefined) updateData.appearance = char.appearance;
+          if (char.distinguishing_features !== undefined) updateData.distinguishing_features = char.distinguishing_features;
+          if (char.history !== undefined) updateData.history = char.history;
+          if (char.notes !== undefined) updateData.notes = char.notes;
+          if (char.strength !== undefined) updateData.strength = char.strength;
+          if (char.dexterity !== undefined) updateData.dexterity = char.dexterity;
+          if (char.stamina !== undefined) {
+            updateData.stamina = char.stamina;
+            updateData.health_max = char.stamina + 3;
+          }
+          if (char.charisma !== undefined) updateData.charisma = char.charisma;
+          if (char.manipulation !== undefined) updateData.manipulation = char.manipulation;
+          if (char.composure !== undefined) updateData.composure = char.composure;
+          if (char.intelligence !== undefined) updateData.intelligence = char.intelligence;
+          if (char.wits !== undefined) updateData.wits = char.wits;
+          if (char.resolve !== undefined) updateData.resolve = char.resolve;
+          // Recalculate willpower if either composure or resolve changed
+          if (char.composure !== undefined || char.resolve !== undefined) {
+            updateData.willpower_max = (char.composure || composure) + (char.resolve || resolve);
+          }
+          if (char.skills !== undefined) updateData.skills = char.skills;
+          if (char.disciplines !== undefined) updateData.disciplines = char.disciplines;
+          if (char.powers !== undefined) updateData.powers = char.powers;
+          if (char.advantages !== undefined) updateData.advantages = char.advantages;
+          if (char.flaws !== undefined) updateData.flaws = char.flaws;
+          if (char.convictions !== undefined) updateData.convictions = char.convictions;
+          if (char.touchstones !== undefined) updateData.touchstones = char.touchstones;
+          if (char.loresheets !== undefined) updateData.loresheets = char.loresheets;
+          if (char.blood_potency !== undefined) updateData.blood_potency = char.blood_potency;
+          if (char.humanity !== undefined) updateData.humanity = char.humanity;
+          if (char.hunger !== undefined) updateData.hunger = char.hunger;
+          if (char.experience_total !== undefined) updateData.experience_total = char.experience_total;
+          if (char.experience_spent !== undefined) updateData.experience_spent = char.experience_spent;
+
+          const { error } = await supabase
+            .from("characters")
+            .update(updateData)
+            .eq("id", existingChars[0].id);
+
+          if (!error) updatedCount++;
+          continue;
+        }
+      }
+
+      // Create new character
       const { error } = await supabase.from("characters").insert({
         user_id: userData.user.id,
         chronicle_id: currentChronicle.id,
@@ -100,6 +173,18 @@ export function useImport() {
         experience_spent: char.experience_spent || 0,
       });
       if (!error) successCount++;
+    }
+
+    if (mode === "update") {
+      const messages: string[] = [];
+      if (updatedCount > 0) messages.push(`Updated ${updatedCount} character(s)`);
+      if (successCount > 0) messages.push(`Created ${successCount} new character(s)`);
+      return { 
+        success: updatedCount > 0 || successCount > 0, 
+        message: messages.join(", ") || "No characters matched",
+        count: successCount,
+        updatedCount
+      };
     }
 
     return { success: successCount > 0, message: `Imported ${successCount} character(s)`, count: successCount };
@@ -153,7 +238,7 @@ export function useImport() {
     return { success: successCount > 0, message: `Imported ${successCount} session(s)`, count: successCount };
   };
 
-  const parseAndImport = async (file: File, importType: ImportType): Promise<ImportResult> => {
+  const parseAndImport = async (file: File, importType: ImportType, mode: ImportMode = "create"): Promise<ImportResult> => {
     setImporting(true);
     try {
       const text = await file.text();
@@ -172,7 +257,7 @@ export function useImport() {
           result = await importChronicles(dataArray);
           break;
         case "character":
-          result = await importCharacters(dataArray);
+          result = await importCharacters(dataArray, mode);
           break;
         case "story":
           result = await importStories(dataArray);
@@ -185,7 +270,7 @@ export function useImport() {
       }
 
       toast({
-        title: "Import successful",
+        title: mode === "update" ? "Update successful" : "Import successful",
         description: result.message,
       });
 
@@ -193,7 +278,7 @@ export function useImport() {
     } catch (error: any) {
       const message = error.message || "Failed to import data";
       toast({
-        title: "Import failed",
+        title: mode === "update" ? "Update failed" : "Import failed",
         description: message,
         variant: "destructive",
       });
