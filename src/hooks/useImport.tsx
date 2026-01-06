@@ -81,6 +81,7 @@ export function useImport() {
         resolve: resolve,
         skills: char.skills || {},
         disciplines: char.disciplines || [],
+        powers: char.powers || [],
         advantages: char.advantages || [],
         flaws: char.flaws || [],
         convictions: char.convictions || [],
