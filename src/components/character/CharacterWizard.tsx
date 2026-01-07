@@ -7,12 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { useCharacters } from "@/hooks/useCharacters";
+import { useCharacters, DicePoolConfig, SimpleDicePool, GeneralDicePool, StandardDicePool, ExceptionalPool } from "@/hooks/useCharacters";
 import { useChronicles } from "@/hooks/useChronicles";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, ChevronRight, Check, Wand2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Info } from "lucide-react";
 const STEPS = [
   "Character Type",
   "Basic Info",
@@ -159,6 +160,20 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
     sire: "",
     coterie: "",
     
+    // Dice Pool Options (for NPCs)
+    useDicePools: false,
+    skipAttributes: false,
+    dicePoolType: "simple" as "simple" | "general" | "standard",
+    dicePoolSimple: { type: "simple" as const, difficulty: 3 },
+    dicePoolGeneral: { type: "general" as const, primary: 6, secondary: 4 },
+    dicePoolStandard: { 
+      type: "standard" as const, 
+      physical: 4, 
+      social: 4, 
+      mental: 4, 
+      exceptional: [] as ExceptionalPool[] 
+    },
+    
     // Attributes
     strength: 1,
     dexterity: 1,
@@ -239,6 +254,22 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
         normalizedSkills[normalizedKey] = skillData;
       }
 
+      // Determine dice pool configuration
+      let dicePoolConfig: DicePoolConfig | null = null;
+      if (characterData.useDicePools && characterData.pcOrNpc === "NPC") {
+        switch (characterData.dicePoolType) {
+          case "simple":
+            dicePoolConfig = characterData.dicePoolSimple;
+            break;
+          case "general":
+            dicePoolConfig = characterData.dicePoolGeneral;
+            break;
+          case "standard":
+            dicePoolConfig = characterData.dicePoolStandard;
+            break;
+        }
+      }
+
       await createCharacter({
         name: characterData.name,
         clan: characterData.characterType === "vampire" ? characterData.clan : characterData.characterType.charAt(0).toUpperCase() + characterData.characterType.slice(1),
@@ -252,6 +283,11 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
         avatar_url: null,
         predator_type: characterData.characterType === "vampire" ? characterData.predatorType : null,
         
+        // Dice Pools
+        use_dice_pools: characterData.useDicePools && characterData.pcOrNpc === "NPC",
+        skip_attributes: characterData.skipAttributes && characterData.pcOrNpc === "NPC",
+        dice_pools: dicePoolConfig,
+        
         // Attributes
         strength: characterData.strength,
         dexterity: characterData.dexterity,
@@ -263,8 +299,8 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
         wits: characterData.wits,
         resolve: characterData.resolve,
         
-        // Skills (normalized keys)
-        skills: normalizedSkills,
+        // Skills (normalized keys) - only if not using dice pools
+        skills: characterData.useDicePools ? {} : normalizedSkills,
         
         // Disciplines (only for vampires) - extract powers into separate array
         disciplines: characterData.characterType === "vampire" 
@@ -325,6 +361,12 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
       status: "Active",
       sire: "",
       coterie: "",
+      useDicePools: false,
+      skipAttributes: false,
+      dicePoolType: "simple",
+      dicePoolSimple: { type: "simple", difficulty: 3 },
+      dicePoolGeneral: { type: "general", primary: 6, secondary: 4 },
+      dicePoolStandard: { type: "standard", physical: 4, social: 4, mental: 4, exceptional: [] },
       strength: 1,
       dexterity: 1,
       stamina: 1,
@@ -385,7 +427,13 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
                         ? "border-primary bg-primary/10"
                         : "hover:border-primary/50"
                     }`}
-                    onClick={() => setCharacterData(prev => ({ ...prev, pcOrNpc: role as any }))}
+                    onClick={() => setCharacterData(prev => ({ 
+                      ...prev, 
+                      pcOrNpc: role as any,
+                      // Reset dice pool options when switching to PC
+                      useDicePools: role === "PC" ? false : prev.useDicePools,
+                      skipAttributes: role === "PC" ? false : prev.skipAttributes
+                    }))}
                   >
                     <div className="text-center">
                       <div className="font-semibold">{role === "PC" ? "Player Character" : "Non-Player Character"}</div>
@@ -394,6 +442,244 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
                 ))}
               </div>
             </div>
+
+            {/* Dice Pool Options for NPCs */}
+            {characterData.pcOrNpc === "NPC" && (
+              <div className="space-y-4 border-t pt-4">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="useDicePools"
+                    checked={characterData.useDicePools}
+                    onChange={(e) => setCharacterData(prev => ({ ...prev, useDicePools: e.target.checked }))}
+                    className="h-4 w-4"
+                  />
+                  <Label htmlFor="useDicePools" className="cursor-pointer">
+                    Use Dice Pools instead of Skills (for Storyteller Characters)
+                  </Label>
+                </div>
+
+                {characterData.useDicePools && (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="skipAttributes"
+                        checked={characterData.skipAttributes}
+                        onChange={(e) => setCharacterData(prev => ({ ...prev, skipAttributes: e.target.checked }))}
+                        className="h-4 w-4"
+                      />
+                      <Label htmlFor="skipAttributes" className="cursor-pointer">
+                        Skip Attributes (for simple antagonists)
+                      </Label>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Dice Pool Format</Label>
+                      <div className="grid grid-cols-3 gap-3">
+                        {[
+                          { id: "simple", label: "Simple", desc: "Difficulty only (Core)" },
+                          { id: "general", label: "General", desc: "Primary/Secondary (6/4)" },
+                          { id: "standard", label: "Standard", desc: "Physical/Social/Mental + Exceptional" }
+                        ].map((format) => (
+                          <Card
+                            key={format.id}
+                            className={`p-3 cursor-pointer transition-all ${
+                              characterData.dicePoolType === format.id
+                                ? "border-primary bg-primary/10"
+                                : "hover:border-primary/50"
+                            }`}
+                            onClick={() => setCharacterData(prev => ({ ...prev, dicePoolType: format.id as any }))}
+                          >
+                            <div className="text-center">
+                              <div className="font-semibold text-sm">{format.label}</div>
+                              <div className="text-xs text-muted-foreground">{format.desc}</div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Dice Pool Configuration */}
+                    {characterData.dicePoolType === "simple" && (
+                      <div className="space-y-2">
+                        <Label>Difficulty (players roll against this; SPC rolls 2× this)</Label>
+                        <div className="flex items-center gap-3">
+                          <Input
+                            type="number"
+                            min="1"
+                            max="10"
+                            value={characterData.dicePoolSimple.difficulty}
+                            onChange={(e) => setCharacterData(prev => ({
+                              ...prev,
+                              dicePoolSimple: { ...prev.dicePoolSimple, difficulty: parseInt(e.target.value) || 3 }
+                            }))}
+                            className="w-24"
+                          />
+                          <span className="text-sm text-muted-foreground">
+                            (SPC rolls {characterData.dicePoolSimple.difficulty * 2} dice)
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {characterData.dicePoolType === "general" && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Primary Pool (areas of expertise)</Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            max="15"
+                            value={characterData.dicePoolGeneral.primary}
+                            onChange={(e) => setCharacterData(prev => ({
+                              ...prev,
+                              dicePoolGeneral: { ...prev.dicePoolGeneral, primary: parseInt(e.target.value) || 6 }
+                            }))}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Secondary Pool (mediocre areas)</Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            max="15"
+                            value={characterData.dicePoolGeneral.secondary}
+                            onChange={(e) => setCharacterData(prev => ({
+                              ...prev,
+                              dicePoolGeneral: { ...prev.dicePoolGeneral, secondary: parseInt(e.target.value) || 4 }
+                            }))}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {characterData.dicePoolType === "standard" && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <Label>Physical Pool</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="15"
+                              value={characterData.dicePoolStandard.physical}
+                              onChange={(e) => setCharacterData(prev => ({
+                                ...prev,
+                                dicePoolStandard: { ...prev.dicePoolStandard, physical: parseInt(e.target.value) || 4 }
+                              }))}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Social Pool</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="15"
+                              value={characterData.dicePoolStandard.social}
+                              onChange={(e) => setCharacterData(prev => ({
+                                ...prev,
+                                dicePoolStandard: { ...prev.dicePoolStandard, social: parseInt(e.target.value) || 4 }
+                              }))}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Mental Pool</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="15"
+                              value={characterData.dicePoolStandard.mental}
+                              onChange={(e) => setCharacterData(prev => ({
+                                ...prev,
+                                dicePoolStandard: { ...prev.dicePoolStandard, mental: parseInt(e.target.value) || 4 }
+                              }))}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <Label>Exceptional Pools</Label>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setCharacterData(prev => ({
+                                ...prev,
+                                dicePoolStandard: {
+                                  ...prev.dicePoolStandard,
+                                  exceptional: [...prev.dicePoolStandard.exceptional, { name: "", pool: 7 }]
+                                }
+                              }))}
+                            >
+                              Add Exceptional
+                            </Button>
+                          </div>
+                          {characterData.dicePoolStandard.exceptional.map((exc, idx) => (
+                            <div key={idx} className="flex gap-2 items-center">
+                              <Input
+                                placeholder="Skill or Discipline name"
+                                value={exc.name}
+                                onChange={(e) => {
+                                  const newExc = [...characterData.dicePoolStandard.exceptional];
+                                  newExc[idx] = { ...newExc[idx], name: e.target.value };
+                                  setCharacterData(prev => ({
+                                    ...prev,
+                                    dicePoolStandard: { ...prev.dicePoolStandard, exceptional: newExc }
+                                  }));
+                                }}
+                                className="flex-1"
+                              />
+                              <Input
+                                type="number"
+                                min="1"
+                                max="15"
+                                value={exc.pool}
+                                onChange={(e) => {
+                                  const newExc = [...characterData.dicePoolStandard.exceptional];
+                                  newExc[idx] = { ...newExc[idx], pool: parseInt(e.target.value) || 7 };
+                                  setCharacterData(prev => ({
+                                    ...prev,
+                                    dicePoolStandard: { ...prev.dicePoolStandard, exceptional: newExc }
+                                  }));
+                                }}
+                                className="w-20"
+                              />
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => {
+                                  setCharacterData(prev => ({
+                                    ...prev,
+                                    dicePoolStandard: {
+                                      ...prev.dicePoolStandard,
+                                      exceptional: prev.dicePoolStandard.exceptional.filter((_, i) => i !== idx)
+                                    }
+                                  }));
+                                }}
+                              >
+                                ×
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <Alert>
+                      <Info className="h-4 w-4" />
+                      <AlertDescription>
+                        <strong>Sizing Pools:</strong> Standard Dice Pools usually range from 4–8. 
+                        Secondary Attributes (Health/Willpower) range from 5–8. 
+                        Exceptional Dice Pools can go as high as 10–11 for very powerful characters.
+                      </AlertDescription>
+                    </Alert>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         );
 

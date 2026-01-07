@@ -158,6 +158,10 @@ export function useImport() {
           if (char.hunger !== undefined) updateData.hunger = char.hunger;
           if (char.experience_total !== undefined) updateData.experience_total = char.experience_total;
           if (char.experience_spent !== undefined) updateData.experience_spent = char.experience_spent;
+          // Dice pool fields
+          if (char.use_dice_pools !== undefined) updateData.use_dice_pools = char.use_dice_pools;
+          if (char.skip_attributes !== undefined) updateData.skip_attributes = char.skip_attributes;
+          if (char.dice_pools !== undefined) updateData.dice_pools = char.dice_pools;
 
           const { error } = await supabase
             .from("characters")
@@ -216,6 +220,9 @@ export function useImport() {
         willpower_aggravated: 0,
         experience_total: char.experience_total || 0,
         experience_spent: char.experience_spent || 0,
+        use_dice_pools: char.use_dice_pools || false,
+        skip_attributes: char.skip_attributes || false,
+        dice_pools: char.dice_pools || null,
       });
       if (!error) successCount++;
     }
