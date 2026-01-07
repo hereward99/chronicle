@@ -2,6 +2,33 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
+// Dice Pool types for Storyteller Characters
+export interface SimpleDicePool {
+  type: 'simple';
+  difficulty: number; // Difficulty to beat / rolls 2x this for pool
+}
+
+export interface GeneralDicePool {
+  type: 'general';
+  primary: number;   // Pool for areas of expertise
+  secondary: number; // Pool for mediocre/poor areas
+}
+
+export interface ExceptionalPool {
+  name: string;
+  pool: number;
+}
+
+export interface StandardDicePool {
+  type: 'standard';
+  physical: number;
+  social: number;
+  mental: number;
+  exceptional: ExceptionalPool[];
+}
+
+export type DicePoolConfig = SimpleDicePool | GeneralDicePool | StandardDicePool;
+
 export interface Character {
   id: string;
   name: string;
@@ -18,6 +45,11 @@ export interface Character {
   created_at: string;
   updated_at: string;
   attachments?: any[];
+  
+  // Dice Pools (for Storyteller Characters)
+  use_dice_pools?: boolean;
+  skip_attributes?: boolean;
+  dice_pools?: DicePoolConfig | null;
   
   // Physical Attributes
   strength?: number;
@@ -90,7 +122,7 @@ export function useCharacters() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setCharacters((data as Character[] || []).map(char => ({
+      setCharacters((data as unknown as Character[] || []).map(char => ({
         ...char,
         attachments: char.attachments || []
       })));
@@ -112,13 +144,13 @@ export function useCharacters() {
 
       const { data, error } = await supabase
         .from('characters')
-        .insert([{ ...character, user_id: user.id }])
+        .insert([{ ...character, user_id: user.id } as any])
         .select()
         .single();
 
       if (error) throw error;
       
-      setCharacters(prev => [data as Character, ...prev]);
+      setCharacters(prev => [data as unknown as Character, ...prev]);
       toast({
         title: "Character created",
         description: `${character.name} has been added to your chronicle.`,
@@ -139,14 +171,14 @@ export function useCharacters() {
     try {
       const { data, error } = await supabase
         .from('characters')
-        .update(updates)
+        .update(updates as any)
         .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
       
-      setCharacters(prev => prev.map(char => char.id === id ? data as Character : char));
+      setCharacters(prev => prev.map(char => char.id === id ? data as unknown as Character : char));
       toast({
         title: "Character updated",
         description: "Character has been successfully updated.",

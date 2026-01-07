@@ -1,4 +1,4 @@
-import { Character } from "@/hooks/useCharacters";
+import { Character, DicePoolConfig, SimpleDicePool, GeneralDicePool, StandardDicePool } from "@/hooks/useCharacters";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { HelpCircle, Droplet, Download } from "lucide-react";
+import { HelpCircle, Droplet, Download, Dices } from "lucide-react";
 import { CharacterAttachmentsGallery } from "./CharacterAttachmentsGallery";
 import { exportCharacterToPDF } from "@/lib/pdfExport";
 
@@ -158,6 +158,84 @@ const HealthTracker = ({
       })}
     </div>
   );
+};
+
+// Dice Pools Display Component
+const DicePoolsDisplay = ({ dicePools }: { dicePools: DicePoolConfig }) => {
+  if (dicePools.type === 'simple') {
+    return (
+      <div className="space-y-4">
+        <div className="p-4 bg-muted/50 rounded-lg">
+          <div className="text-center">
+            <div className="text-sm text-muted-foreground mb-2">Simple Antagonist</div>
+            <div className="text-4xl font-bold text-primary">{dicePools.difficulty}</div>
+            <div className="text-sm text-muted-foreground mt-2">Difficulty</div>
+          </div>
+        </div>
+        <div className="text-sm text-muted-foreground text-center">
+          Players roll against Difficulty {dicePools.difficulty}. This character rolls <strong>{dicePools.difficulty * 2} dice</strong>.
+        </div>
+      </div>
+    );
+  }
+
+  if (dicePools.type === 'general') {
+    return (
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="p-4 bg-muted/50 rounded-lg text-center">
+            <div className="text-sm text-muted-foreground mb-2">Primary</div>
+            <div className="text-3xl font-bold text-primary">{dicePools.primary}</div>
+            <div className="text-xs text-muted-foreground mt-1">Areas of Expertise</div>
+          </div>
+          <div className="p-4 bg-muted/50 rounded-lg text-center">
+            <div className="text-sm text-muted-foreground mb-2">Secondary</div>
+            <div className="text-3xl font-bold text-muted-foreground">{dicePools.secondary}</div>
+            <div className="text-xs text-muted-foreground mt-1">Other Areas</div>
+          </div>
+        </div>
+        <div className="text-sm text-muted-foreground text-center">
+          Format: {dicePools.primary}/{dicePools.secondary}
+        </div>
+      </div>
+    );
+  }
+
+  if (dicePools.type === 'standard') {
+    return (
+      <div className="space-y-4">
+        <div className="grid grid-cols-3 gap-4">
+          <div className="p-4 bg-muted/50 rounded-lg text-center">
+            <div className="text-sm text-muted-foreground mb-2">Physical</div>
+            <div className="text-3xl font-bold text-primary">{dicePools.physical}</div>
+          </div>
+          <div className="p-4 bg-muted/50 rounded-lg text-center">
+            <div className="text-sm text-muted-foreground mb-2">Social</div>
+            <div className="text-3xl font-bold text-primary">{dicePools.social}</div>
+          </div>
+          <div className="p-4 bg-muted/50 rounded-lg text-center">
+            <div className="text-sm text-muted-foreground mb-2">Mental</div>
+            <div className="text-3xl font-bold text-primary">{dicePools.mental}</div>
+          </div>
+        </div>
+        {dicePools.exceptional && dicePools.exceptional.length > 0 && (
+          <div className="space-y-2">
+            <div className="text-sm font-semibold">Exceptional Pools</div>
+            <div className="grid grid-cols-2 gap-2">
+              {dicePools.exceptional.map((exc, idx) => (
+                <div key={idx} className="flex justify-between items-center p-2 bg-primary/10 rounded border border-primary/20">
+                  <span className="text-sm font-medium">{exc.name}</span>
+                  <span className="text-lg font-bold text-primary">{exc.pool}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return null;
 };
 
 export function CharacterSheetView({ character }: CharacterSheetViewProps) {
@@ -424,36 +502,46 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
             </div>
           </Card>
 
-          {/* Skills */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Skills</h3>
-            <div className="grid grid-cols-3 gap-6">
-              {Object.entries(skillCategories).map(([category, skillList]) => (
-                <div key={category}>
-                  <h4 className="text-sm font-semibold text-muted-foreground mb-3">{category}</h4>
-                  <div className="space-y-2">
-                    {skillList.map((skillKey) => {
-                      const skill = character.skills?.[skillKey];
-                      const rating = skill?.rating || 0;
-                      const displayName = skillKey.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                      
-                      return (
-                        <div key={skillKey} className="flex justify-between items-center">
-                          <div className="flex-1">
-                            <span className="text-sm">{displayName}</span>
-                            {skill?.specialty && (
-                              <span className="text-xs text-muted-foreground ml-1">({skill.specialty})</span>
-                            )}
+          {/* Skills or Dice Pools */}
+          {character.use_dice_pools && character.dice_pools ? (
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Dices className="h-5 w-5" />
+                Dice Pools
+              </h3>
+              <DicePoolsDisplay dicePools={character.dice_pools} />
+            </Card>
+          ) : (
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Skills</h3>
+              <div className="grid grid-cols-3 gap-6">
+                {Object.entries(skillCategories).map(([category, skillList]) => (
+                  <div key={category}>
+                    <h4 className="text-sm font-semibold text-muted-foreground mb-3">{category}</h4>
+                    <div className="space-y-2">
+                      {skillList.map((skillKey) => {
+                        const skill = character.skills?.[skillKey];
+                        const rating = skill?.rating || 0;
+                        const displayName = skillKey.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                        
+                        return (
+                          <div key={skillKey} className="flex justify-between items-center">
+                            <div className="flex-1">
+                              <span className="text-sm">{displayName}</span>
+                              {skill?.specialty && (
+                                <span className="text-xs text-muted-foreground ml-1">({skill.specialty})</span>
+                              )}
+                            </div>
+                            {rating > 0 && <DotRating current={rating} />}
                           </div>
-                          {rating > 0 && <DotRating current={rating} />}
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </Card>
+                ))}
+              </div>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Disciplines Tab */}

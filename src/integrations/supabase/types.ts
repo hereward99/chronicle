@@ -57,6 +57,7 @@ export type Database = {
           created_at: string
           desire: string | null
           dexterity: number | null
+          dice_pools: Json | null
           disciplines: Json | null
           distinguishing_features: string | null
           experience_spent: number | null
@@ -81,12 +82,14 @@ export type Database = {
           resonance: string | null
           sire: string | null
           skills: Json | null
+          skip_attributes: boolean | null
           stamina: number | null
           status: string
           strength: number | null
           touchstones: Json | null
           type: string
           updated_at: string
+          use_dice_pools: boolean | null
           user_id: string
           willpower_aggravated: number | null
           willpower_max: number | null
@@ -111,6 +114,7 @@ export type Database = {
           created_at?: string
           desire?: string | null
           dexterity?: number | null
+          dice_pools?: Json | null
           disciplines?: Json | null
           distinguishing_features?: string | null
           experience_spent?: number | null
@@ -135,12 +139,14 @@ export type Database = {
           resonance?: string | null
           sire?: string | null
           skills?: Json | null
+          skip_attributes?: boolean | null
           stamina?: number | null
           status?: string
           strength?: number | null
           touchstones?: Json | null
           type?: string
           updated_at?: string
+          use_dice_pools?: boolean | null
           user_id: string
           willpower_aggravated?: number | null
           willpower_max?: number | null
@@ -165,6 +171,7 @@ export type Database = {
           created_at?: string
           desire?: string | null
           dexterity?: number | null
+          dice_pools?: Json | null
           disciplines?: Json | null
           distinguishing_features?: string | null
           experience_spent?: number | null
@@ -189,12 +196,14 @@ export type Database = {
           resonance?: string | null
           sire?: string | null
           skills?: Json | null
+          skip_attributes?: boolean | null
           stamina?: number | null
           status?: string
           strength?: number | null
           touchstones?: Json | null
           type?: string
           updated_at?: string
+          use_dice_pools?: boolean | null
           user_id?: string
           willpower_aggravated?: number | null
           willpower_max?: number | null
