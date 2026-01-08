@@ -1,4 +1,4 @@
-import { Character, DicePoolConfig, SimpleDicePool, GeneralDicePool, StandardDicePool } from "@/hooks/useCharacters";
+import { Character, DicePoolConfig, SimpleDicePool, GeneralDicePool, StandardDicePool, CombinedDicePool } from "@/hooks/useCharacters";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -223,6 +223,57 @@ const DicePoolsDisplay = ({ dicePools }: { dicePools: DicePoolConfig }) => {
             <div className="text-sm font-semibold">Exceptional Pools</div>
             <div className="grid grid-cols-2 gap-2">
               {dicePools.exceptional.map((exc, idx) => (
+                <div key={idx} className="flex justify-between items-center p-2 bg-primary/10 rounded border border-primary/20">
+                  <span className="text-sm font-medium">{exc.name}</span>
+                  <span className="text-lg font-bold text-primary">{exc.pool}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (dicePools.type === 'combined') {
+    const combined = dicePools as CombinedDicePool;
+    return (
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <div className="text-sm font-semibold">General Difficulties</div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-3 bg-muted/50 rounded-lg text-center">
+              <div className="text-xs text-muted-foreground">Primary</div>
+              <div className="text-2xl font-bold text-primary">{combined.general.primary}</div>
+            </div>
+            <div className="p-3 bg-muted/50 rounded-lg text-center">
+              <div className="text-xs text-muted-foreground">Secondary</div>
+              <div className="text-2xl font-bold text-muted-foreground">{combined.general.secondary}</div>
+            </div>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <div className="text-sm font-semibold">Standard Pools</div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="p-3 bg-muted/50 rounded-lg text-center">
+              <div className="text-xs text-muted-foreground">Physical</div>
+              <div className="text-xl font-bold text-primary">{combined.standard.physical}</div>
+            </div>
+            <div className="p-3 bg-muted/50 rounded-lg text-center">
+              <div className="text-xs text-muted-foreground">Social</div>
+              <div className="text-xl font-bold text-primary">{combined.standard.social}</div>
+            </div>
+            <div className="p-3 bg-muted/50 rounded-lg text-center">
+              <div className="text-xs text-muted-foreground">Mental</div>
+              <div className="text-xl font-bold text-primary">{combined.standard.mental}</div>
+            </div>
+          </div>
+        </div>
+        {combined.standard.exceptional && combined.standard.exceptional.length > 0 && (
+          <div className="space-y-2">
+            <div className="text-sm font-semibold">Exceptional Pools</div>
+            <div className="grid grid-cols-2 gap-2">
+              {combined.standard.exceptional.map((exc, idx) => (
                 <div key={idx} className="flex justify-between items-center p-2 bg-primary/10 rounded border border-primary/20">
                   <span className="text-sm font-medium">{exc.name}</span>
                   <span className="text-lg font-bold text-primary">{exc.pool}</span>

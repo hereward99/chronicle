@@ -108,6 +108,30 @@ const TEMPLATES = {
     experience_total: 15,
     experience_spent: 10
   },
+  // Dice Pool Character Template (for Storyteller Characters)
+  dicePoolCharacter: {
+    name: "NPC Name",
+    clan: "Brujah",
+    type: "NPC",
+    status: "Active",
+    concept: "A short concept describing this NPC",
+    use_dice_pools: true,
+    skip_attributes: false,
+    // Choose ONE dice pool format: "simple", "general", "standard", or "combined"
+    dice_pools: {
+      type: "combined",
+      general: { primary: 6, secondary: 4 },
+      standard: { physical: 5, social: 6, mental: 4, exceptional: [{ name: "Intimidation", pool: 8 }] }
+    },
+    // Alternative formats:
+    // dice_pools: { type: "simple", difficulty: 3 }
+    // dice_pools: { type: "general", primary: 6, secondary: 4 }
+    // dice_pools: { type: "standard", physical: 5, social: 6, mental: 4, exceptional: [{ name: "Awareness", pool: 7 }] }
+    disciplines: [
+      { name: "Presence", level: 2, powers: ["Awe", "Daunt"] }
+    ],
+    humanity: 6
+  },
   story: {
     title: "Story Title",
     description: "A detailed description of the plot, including major events, NPCs involved, and the current situation",
