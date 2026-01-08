@@ -27,7 +27,13 @@ export interface StandardDicePool {
   exceptional: ExceptionalPool[];
 }
 
-export type DicePoolConfig = SimpleDicePool | GeneralDicePool | StandardDicePool;
+export interface CombinedDicePool {
+  type: 'combined';
+  general: { primary: number; secondary: number };
+  standard: { physical: number; social: number; mental: number; exceptional: ExceptionalPool[] };
+}
+
+export type DicePoolConfig = SimpleDicePool | GeneralDicePool | StandardDicePool | CombinedDicePool;
 
 export interface Character {
   id: string;
