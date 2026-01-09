@@ -4,13 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { useCharacters } from "@/hooks/useCharacters";
+import { useCharacters, SimpleDicePool, DicePoolConfig } from "@/hooks/useCharacters";
 import { useChronicles } from "@/hooks/useChronicles";
 import { Plus } from "lucide-react";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
-import { FileUpload } from "@/components/ui/file-upload";
+import { Card } from "@/components/ui/card";
 
 const characterSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
@@ -19,8 +18,6 @@ const characterSchema = z.object({
   type: z.enum(["PC", "NPC"]),
   generation: z.number().int().min(1).max(15),
   status: z.string().min(1, "Status is required"),
-  sire: z.string().max(100, "Sire name must be less than 100 characters").optional(),
-  coterie: z.string().max(100, "Coterie name must be less than 100 characters").optional(),
 });
 
 const clans = [
@@ -45,9 +42,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
     type: "PC" as "PC" | "NPC",
     generation: 13,
     status: "Active",
-    sire: "",
-    coterie: "",
-    attachments: [] as any[]
+    difficulty: 3,
   });
   
   const { createCharacter } = useCharacters();
@@ -61,8 +56,6 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
       const validated = characterSchema.parse({
         ...formData,
         concept: formData.concept || undefined,
-        sire: formData.sire || undefined,
-        coterie: formData.coterie || undefined,
       });
       
       setLoading(true);
@@ -74,18 +67,28 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
         chronicleId = defaultChronicle.id;
       }
 
+      // For NPCs using quick create, always use dice pools (simple format)
+      const isNpcWithDicePools = validated.type === "NPC";
+      const dicePoolConfig: DicePoolConfig | null = isNpcWithDicePools
+        ? { type: "simple", difficulty: formData.difficulty } as SimpleDicePool
+        : null;
+
       await createCharacter({
         name: validated.name,
         clan: validated.clan,
         concept: validated.concept || null,
         type: validated.type,
-        generation: validated.generation,
+        generation: validated.type === "NPC" ? null : validated.generation,
         status: validated.status,
-        sire: validated.sire || null,
-        coterie: validated.coterie || null,
+        sire: null,
+        coterie: null,
         chronicle_id: chronicleId,
         avatar_url: null,
-      } as any); // Type assertion to handle attachments
+        use_dice_pools: isNpcWithDicePools,
+        skip_attributes: isNpcWithDicePools,
+        dice_pools: dicePoolConfig,
+        skills: isNpcWithDicePools ? {} : undefined,
+      } as any);
 
       // Reset form
       setFormData({
@@ -95,9 +98,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
         type: "PC",
         generation: 13,
         status: "Active",
-        sire: "",
-        coterie: "",
-        attachments: []
+        difficulty: 3,
       });
       
       setOpen(false);
@@ -121,9 +122,11 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
       </DialogTrigger>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-gradient-subtle border-border">
         <DialogHeader>
-          <DialogTitle className="text-foreground">Create New Character</DialogTitle>
+          <DialogTitle className="text-foreground">Quick Create Character</DialogTitle>
           <DialogDescription>
-            Add a new character to your chronicle
+            {formData.type === "NPC" 
+              ? "Quickly add an NPC with simple dice pools" 
+              : "Add a new character to your chronicle"}
           </DialogDescription>
         </DialogHeader>
         
@@ -169,36 +172,79 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="generation">Generation</Label>
-              <Input
-                id="generation"
-                type="number"
-                min="1"
-                max="15"
-                value={formData.generation}
-                onChange={(e) => setFormData(prev => ({ ...prev, generation: parseInt(e.target.value) || 13 }))}
-                className="bg-input border-border"
-                disabled={formData.clan === "Human"}
-                placeholder={formData.clan === "Human" ? "N/A" : ""}
-              />
-            </div>
+          {formData.type === "PC" && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="generation">Generation</Label>
+                <Input
+                  id="generation"
+                  type="number"
+                  min="1"
+                  max="15"
+                  value={formData.generation}
+                  onChange={(e) => setFormData(prev => ({ ...prev, generation: parseInt(e.target.value) || 13 }))}
+                  className="bg-input border-border"
+                  disabled={formData.clan === "Human"}
+                  placeholder={formData.clan === "Human" ? "N/A" : ""}
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="status">Status *</Label>
-              <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
-                <SelectTrigger className="bg-input border-border">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {statuses.map((status) => (
-                    <SelectItem key={status} value={status}>{status}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status *</Label>
+                <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
+                  <SelectTrigger className="bg-input border-border">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statuses.map((status) => (
+                      <SelectItem key={status} value={status}>{status}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
+          )}
+
+          {formData.type === "NPC" && (
+            <Card className="p-4 bg-muted/30 space-y-4">
+              <div className="text-sm font-medium">Dice Pool Settings</div>
+              <p className="text-xs text-muted-foreground">
+                Quick NPCs use simple dice pools. Players roll against the difficulty; the NPC rolls 2× that value.
+              </p>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="difficulty">Difficulty</Label>
+                  <Input
+                    id="difficulty"
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={formData.difficulty}
+                    onChange={(e) => setFormData(prev => ({ ...prev, difficulty: parseInt(e.target.value) || 3 }))}
+                    className="bg-input border-border"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status *</Label>
+                  <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
+                    <SelectTrigger className="bg-input border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statuses.map((status) => (
+                        <SelectItem key={status} value={status}>{status}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="text-xs text-muted-foreground">
+                NPC rolls <strong>{formData.difficulty * 2} dice</strong> for actions
+              </div>
+            </Card>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="concept">Concept</Label>
@@ -210,41 +256,6 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
               className="bg-input border-border"
             />
           </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="sire">Sire</Label>
-              <Input
-                id="sire"
-                value={formData.sire}
-                onChange={(e) => setFormData(prev => ({ ...prev, sire: e.target.value }))}
-                placeholder="Sire name (optional)"
-                className="bg-input border-border"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="coterie">Coterie</Label>
-              <Input
-                id="coterie"
-                value={formData.coterie}
-                onChange={(e) => setFormData(prev => ({ ...prev, coterie: e.target.value }))}
-                placeholder="Coterie name (optional)"
-                className="bg-input border-border"
-              />
-            </div>
-          </div>
-
-          <FileUpload
-            bucket="character-files"
-            entityId="new-character"
-            entityType="character"
-            attachments={formData.attachments}
-            onAttachmentsChange={(attachments) => setFormData(prev => ({ ...prev, attachments }))}
-            accept="image/*,.pdf,.doc,.docx,.txt,.md"
-            maxFiles={15}
-            maxSize={10}
-          />
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
