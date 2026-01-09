@@ -112,14 +112,23 @@ const TEMPLATES = {
   dicePoolCharacter: {
     name: "NPC Name",
     clan: "Brujah",
+    generation: 12,
     type: "NPC",
     status: "Active",
     concept: "A short concept describing this NPC",
+    sire: "Name of their sire (optional)",
+    predator_type: "Sandman",
+    ambition: "What the NPC wants to achieve",
+    desire: "What the NPC wants right now",
+    resonance: "Melancholic",
     appearance: "Physical description of the NPC",
+    distinguishing_features: "Notable features that stand out",
     history: "Brief background or role in the story",
     notes: "Any additional notes about the NPC",
+    
+    // Dice pool configuration
     use_dice_pools: true,
-    skip_attributes: false,
+    skip_attributes: true,
     // Choose ONE dice pool format: "simple", "general", "standard", or "combined"
     // Format 1: Simple (Core Rulebook) - just a difficulty level
     // dice_pools: { type: "simple", difficulty: 3 }
@@ -136,10 +145,28 @@ const TEMPLATES = {
       general: { primary: 6, secondary: 4 },
       standard: { physical: 5, social: 6, mental: 4, exceptional: [{ name: "Intimidation", pool: 8 }] }
     },
+    
+    // Disciplines
     disciplines: [
       { name: "Presence", level: 2, powers: ["Awe", "Daunt"] }
     ],
-    humanity: 6
+    
+    // Advantages and Flaws
+    advantages: [
+      { name: "Status", rating: 2, description: "Respected among the Camarilla" }
+    ],
+    flaws: [
+      { name: "Obvious Predator", rating: 2, description: "Something unsettling about them" }
+    ],
+    
+    // Trackers
+    blood_potency: 2,
+    humanity: 6,
+    hunger: 2,
+    health_max: 6,
+    willpower_max: 5,
+    experience_total: 0,
+    experience_spent: 0
   },
   story: {
     title: "Story Title",
