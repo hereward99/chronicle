@@ -115,18 +115,27 @@ const TEMPLATES = {
     type: "NPC",
     status: "Active",
     concept: "A short concept describing this NPC",
+    appearance: "Physical description of the NPC",
+    history: "Brief background or role in the story",
+    notes: "Any additional notes about the NPC",
     use_dice_pools: true,
     skip_attributes: false,
     // Choose ONE dice pool format: "simple", "general", "standard", or "combined"
+    // Format 1: Simple (Core Rulebook) - just a difficulty level
+    // dice_pools: { type: "simple", difficulty: 3 }
+    
+    // Format 2: General (from Forbidden Religions, Blood Sigils, Chicago by Night)
+    // dice_pools: { type: "general", primary: 6, secondary: 4 }
+    
+    // Format 3: Standard (from Fall of London, Let the Streets Run Red)
+    // dice_pools: { type: "standard", physical: 5, social: 6, mental: 4, exceptional: [{ name: "Awareness", pool: 7 }] }
+    
+    // Format 4: Combined (General + Standard together)
     dice_pools: {
       type: "combined",
       general: { primary: 6, secondary: 4 },
       standard: { physical: 5, social: 6, mental: 4, exceptional: [{ name: "Intimidation", pool: 8 }] }
     },
-    // Alternative formats:
-    // dice_pools: { type: "simple", difficulty: 3 }
-    // dice_pools: { type: "general", primary: 6, secondary: 4 }
-    // dice_pools: { type: "standard", physical: 5, social: 6, mental: 4, exceptional: [{ name: "Awareness", pool: 7 }] }
     disciplines: [
       { name: "Presence", level: 2, powers: ["Awe", "Daunt"] }
     ],
@@ -150,12 +159,14 @@ const TEMPLATES = {
 const BATCH_TEMPLATES = {
   chronicles: [TEMPLATES.chronicle],
   characters: [TEMPLATES.character],
+  dicePoolCharacters: [TEMPLATES.dicePoolCharacter],
   stories: [TEMPLATES.story],
   sessions: [TEMPLATES.session]
 };
 
 interface ImportCardConfig {
   type: ImportType;
+  templateType: keyof typeof TEMPLATES;
   batchType: keyof typeof BATCH_TEMPLATES;
   title: string;
   description: string;
@@ -315,6 +326,7 @@ export default function Import() {
   const templateCards: ImportCardConfig[] = [
     {
       type: "chronicle",
+      templateType: "chronicle",
       batchType: "chronicles",
       title: "Chronicle",
       description: "The overarching campaign or game setting",
@@ -325,16 +337,29 @@ export default function Import() {
     },
     {
       type: "character",
+      templateType: "character",
       batchType: "characters",
-      title: "Character",
-      description: "Full VTM 5e character sheet with attributes, skills, disciplines, and more",
+      title: "Full Character",
+      description: "Complete VTM 5e sheet with attributes, skills, disciplines",
       icon: Users,
       filename: "character-template.json",
       batchFilename: "characters-template.json",
       requiresChronicle: true,
     },
     {
+      type: "character",
+      templateType: "dicePoolCharacter",
+      batchType: "dicePoolCharacters",
+      title: "Dice Pool Character",
+      description: "Streamlined NPC with dice pools instead of full stats",
+      icon: Users,
+      filename: "dice-pool-character-template.json",
+      batchFilename: "dice-pool-characters-template.json",
+      requiresChronicle: true,
+    },
+    {
       type: "story",
+      templateType: "story",
       batchType: "stories",
       title: "Story/Plot",
       description: "Story arcs, plots, and ongoing narratives",
@@ -345,6 +370,7 @@ export default function Import() {
     },
     {
       type: "session",
+      templateType: "session",
       batchType: "sessions",
       title: "Session",
       description: "Game session logs with summaries and XP awards",
@@ -464,7 +490,7 @@ export default function Import() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {templateCards.map((card) => (
-                <Card key={card.type} className="bg-card border-border hover:border-primary/50 transition-colors">
+                <Card key={card.templateType} className="bg-card border-border hover:border-primary/50 transition-colors">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <card.icon className="h-5 w-5 text-primary" />
@@ -476,7 +502,7 @@ export default function Import() {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => downloadTemplate(card.type, card.filename)}
+                      onClick={() => downloadTemplate(card.templateType, card.filename)}
                       className="flex-1"
                     >
                       <Download className="h-4 w-4 mr-2" />
@@ -586,6 +612,69 @@ Return ONLY the completed JSON, maintaining the exact structure.`}
               <Card className="bg-muted/30 border-dashed">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
+                    <Users className="h-5 w-5 text-primary" />
+                    Dice Pool Character Prompt (Storyteller NPCs)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <pre className="text-xs bg-background p-4 rounded-lg overflow-x-auto whitespace-pre-wrap">
+{`Create a Vampire: The Masquerade 5th Edition NPC using dice pools in JSON format.
+
+This is for Storyteller Characters (NPCs) that don't need full attribute/skill sheets.
+
+FIELD RESTRICTIONS:
+- name: Required, max 200 characters
+- clan: Required (same options as full characters)
+- type: Always "NPC"
+- status: "Active", "Ally", "Enemy", "Neutral", or "Dead"
+- concept, appearance, history, notes: Max 5000 characters each
+- use_dice_pools: Must be true
+- skip_attributes: Set true for very minor NPCs (skips attribute display)
+
+DICE POOL FORMATS (choose ONE):
+
+1. SIMPLE (Core Rulebook) - for background characters:
+   dice_pools: { type: "simple", difficulty: 3 }
+   - difficulty: 1-6 (players roll against this; NPC rolls 2× this)
+
+2. GENERAL (from Forbidden Religions, Blood Sigils, Chicago by Night):
+   dice_pools: { type: "general", primary: 6, secondary: 4 }
+   - primary: 4-8 (areas of expertise)
+   - secondary: 2-5 (mediocre areas)
+
+3. STANDARD (from Fall of London, Let the Streets Run Red):
+   dice_pools: { type: "standard", physical: 5, social: 6, mental: 4, exceptional: [...] }
+   - physical/social/mental: 4-8 each
+   - exceptional: Array of { name: "Skill/Discipline", pool: 7-11 }
+
+4. COMBINED (General + Standard together):
+   dice_pools: {
+     type: "combined",
+     general: { primary: 6, secondary: 4 },
+     standard: { physical: 5, social: 6, mental: 4, exceptional: [...] }
+   }
+
+SIZING GUIDELINES:
+- Standard Pools: 4-8
+- Secondary Attributes (Health/Willpower): 5-8  
+- Exceptional Pools: 7-11 for powerful characters
+
+DISCIPLINES: Array of { name, level (1-5), powers: [] }
+- humanity: 0-10 (default 6)
+
+[Describe your NPC - role in the story, capabilities, personality, threat level]
+
+Here's the template:
+[Paste the downloaded dice pool character template here]
+
+Return ONLY the completed JSON, maintaining the exact structure.`}
+                  </pre>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-muted/30 border-dashed">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
                     <Scroll className="h-5 w-5 text-primary" />
                     Story/Plot Prompt
                   </CardTitle>
@@ -660,12 +749,12 @@ Return ONLY the completed JSON, maintaining the exact structure.`}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {templateCards.map((card) => {
-                const result = importResults[card.type];
+                const result = importResults[card.templateType];
                 const isDisabled = card.requiresChronicle && !currentChronicle;
 
                 return (
                   <Card 
-                    key={card.type} 
+                    key={card.templateType} 
                     className={`bg-card border-border transition-colors ${isDisabled ? 'opacity-50' : 'hover:border-primary/50'}`}
                   >
                     <CardHeader>
@@ -682,7 +771,7 @@ Return ONLY the completed JSON, maintaining the exact structure.`}
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <input
-                        ref={(el) => (fileInputRefs.current[card.type] = el)}
+                        ref={(el) => (fileInputRefs.current[card.templateType] = el)}
                         type="file"
                         accept=".json,application/json"
                         className="hidden"
