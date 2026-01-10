@@ -88,12 +88,35 @@ export function useImport() {
     let updatedCount = 0;
 
     for (const char of data) {
-      // Calculate health and willpower from attributes
-      const stamina = char.stamina || 1;
-      const composure = char.composure || 1;
-      const resolve = char.resolve || 1;
-      const healthMax = stamina + 3;
-      const willpowerMax = composure + resolve;
+      // Determine if this is a dice pool character and what type
+      const useDicePools = char.use_dice_pools === true;
+      const skipAttributes = char.skip_attributes === true;
+      const dicePoolType = char.dice_pools?.type;
+      
+      // Calculate health and willpower based on character type
+      let healthMax: number;
+      let willpowerMax: number;
+      
+      if (useDicePools && skipAttributes) {
+        // Dice pool character without attributes - calculate from dice pools or use provided values
+        if (dicePoolType === 'simple') {
+          // Simple pool: health and willpower = difficulty × 2
+          const difficulty = char.dice_pools?.difficulty || 3;
+          healthMax = char.health_max ?? (difficulty * 2);
+          willpowerMax = char.willpower_max ?? (difficulty * 2);
+        } else {
+          // General/Standard pools: use provided values or defaults
+          healthMax = char.health_max ?? 6;
+          willpowerMax = char.willpower_max ?? 6;
+        }
+      } else {
+        // Full character or dice pool with attributes: calculate from attributes
+        const stamina = char.stamina || 1;
+        const composure = char.composure || 1;
+        const resolve = char.resolve || 1;
+        healthMax = char.health_max ?? (stamina + 3);
+        willpowerMax = char.willpower_max ?? (composure + resolve);
+      }
       
       // Extract powers from disciplines if needed
       const powers = extractPowersFromDisciplines(char);
@@ -138,9 +161,9 @@ export function useImport() {
           if (char.intelligence !== undefined) updateData.intelligence = char.intelligence;
           if (char.wits !== undefined) updateData.wits = char.wits;
           if (char.resolve !== undefined) updateData.resolve = char.resolve;
-          // Recalculate willpower if either composure or resolve changed
+          // Recalculate willpower if either composure or resolve changed (use char values directly)
           if (char.composure !== undefined || char.resolve !== undefined) {
-            updateData.willpower_max = (char.composure || composure) + (char.resolve || resolve);
+            updateData.willpower_max = (char.composure || 1) + (char.resolve || 1);
           }
           if (char.skills !== undefined) updateData.skills = char.skills;
           if (char.disciplines !== undefined) updateData.disciplines = char.disciplines;
@@ -194,13 +217,13 @@ export function useImport() {
         notes: char.notes || null,
         strength: char.strength || 1,
         dexterity: char.dexterity || 1,
-        stamina: stamina,
+        stamina: char.stamina || 1,
         charisma: char.charisma || 1,
         manipulation: char.manipulation || 1,
-        composure: composure,
+        composure: char.composure || 1,
         intelligence: char.intelligence || 1,
         wits: char.wits || 1,
-        resolve: resolve,
+        resolve: char.resolve || 1,
         skills: char.skills || {},
         disciplines: char.disciplines || [],
         powers: powers.length > 0 ? powers : (char.powers || []),

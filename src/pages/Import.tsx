@@ -10,12 +10,22 @@ import { useChronicles } from "@/hooks/useChronicles";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 // Template structures matching the database schema
+// =============================================================================
+// CHARACTER CREATION METHODS & TEMPLATES
+// =============================================================================
+// Method 1: Full V5 - Complete character with all attributes, skills, disciplines
+// Method 2: Simple Pool - One difficulty number (Core Rulebook)
+// Method 3: General Pool - Two numbers primary/secondary (Forbidden Religions style)
+// Method 4: Standard Pool - Physical/Social/Mental + Exceptional + optional full attributes
+
 const TEMPLATES = {
   chronicle: {
     name: "My Chronicle Name",
     description: "A brief description of your chronicle's story and setting",
     setting: "City name or location where the chronicle takes place"
   },
+  
+  // METHOD 1: Full V5 Character (Complete character sheet)
   character: {
     name: "Character Name",
     clan: "Brujah",
@@ -33,7 +43,7 @@ const TEMPLATES = {
     history: "The character's backstory and how they became a vampire",
     notes: "Any additional notes about the character",
     
-    // Attributes (1-5 scale)
+    // Full Attributes (1-5 scale)
     strength: 2,
     dexterity: 3,
     stamina: 2,
@@ -106,68 +116,185 @@ const TEMPLATES = {
     humanity: 7,
     hunger: 1,
     experience_total: 15,
-    experience_spent: 10
+    experience_spent: 10,
+    
+    // NOT a dice pool character
+    use_dice_pools: false,
+    skip_attributes: false
   },
-  // Dice Pool Character Template (for Storyteller Characters)
-  dicePoolCharacter: {
-    name: "NPC Name",
+  
+  // METHOD 2: Simple Pool (Core Rulebook style - just a difficulty)
+  // Health and Willpower = difficulty × 2
+  simplePoolCharacter: {
+    name: "Simple NPC Name",
     clan: "Brujah",
     generation: 12,
     type: "NPC",
     status: "Active",
-    concept: "A short concept describing this NPC",
-    sire: "Name of their sire (optional)",
-    predator_type: "Sandman",
-    ambition: "What the NPC wants to achieve",
-    desire: "What the NPC wants right now",
-    resonance: "Melancholic",
-    appearance: "Physical description of the NPC",
-    distinguishing_features: "Notable features that stand out",
-    history: "Brief background or role in the story",
-    notes: "Any additional notes about the NPC",
+    concept: "A brief concept for this antagonist",
+    appearance: "Physical description",
+    history: "Brief background",
+    notes: "Additional notes",
     
-    // Dice pool configuration
+    // Dice pool configuration - SIMPLE format
     use_dice_pools: true,
     skip_attributes: true,
-    // Choose ONE dice pool format: "simple", "general", "standard", or "combined"
-    // Format 1: Simple (Core Rulebook) - just a difficulty level
-    // dice_pools: { type: "simple", difficulty: 3 }
-    
-    // Format 2: General (from Forbidden Religions, Blood Sigils, Chicago by Night)
-    // dice_pools: { type: "general", primary: 6, secondary: 4 }
-    
-    // Format 3: Standard (from Fall of London, Let the Streets Run Red)
-    // dice_pools: { type: "standard", physical: 5, social: 6, mental: 4, exceptional: [{ name: "Awareness", pool: 7 }] }
-    
-    // Format 4: Combined (General + Standard together)
     dice_pools: {
-      type: "combined",
-      general: { primary: 6, secondary: 4 },
-      standard: { physical: 5, social: 6, mental: 4, exceptional: [{ name: "Intimidation", pool: 8 }] }
+      type: "simple",
+      difficulty: 3  // Players roll against this; NPC rolls 2× this (6 dice)
     },
+    
+    // Health and Willpower derived from difficulty (difficulty × 2)
+    // For difficulty 3: health_max = 6, willpower_max = 6
+    
+    // Disciplines (optional)
+    disciplines: [
+      { name: "Potence", level: 1, powers: ["Lethal Body"] }
+    ],
+    
+    // Trackers
+    blood_potency: 1,
+    humanity: 6,
+    hunger: 2
+  },
+  
+  // METHOD 3: General Pool (Forbidden Religions/Blood Sigils style)
+  // Two pools: Primary (areas of expertise) / Secondary (mediocre areas)
+  // Optional: Can include full attributes for Secondary Attributes calculation
+  generalPoolCharacter: {
+    name: "General Pool NPC",
+    clan: "Ventrue",
+    generation: 11,
+    type: "NPC",
+    status: "Active",
+    concept: "A powerful elder with specialized expertise",
+    sire: "Optional sire name",
+    predator_type: "Sandman",
+    ambition: "NPC's long-term goal",
+    desire: "NPC's immediate goal",
+    resonance: "Melancholic",
+    appearance: "Physical description of the NPC",
+    distinguishing_features: "Notable features",
+    history: "Background and role in the story",
+    notes: "Additional notes",
+    
+    // Dice pool configuration - GENERAL format (Primary/Secondary)
+    use_dice_pools: true,
+    skip_attributes: true,  // Set to false if including full attributes below
+    dice_pools: {
+      type: "general",
+      primary: 7,    // Pool for areas of expertise (e.g., "7/4" = 7 here)
+      secondary: 4   // Pool for mediocre/poor areas (e.g., "7/4" = 4 here)
+    },
+    
+    // OPTIONAL: Include attributes if skip_attributes is false
+    // If included, Health = Stamina + 3, Willpower = Composure + Resolve
+    // strength: 2,
+    // dexterity: 3,
+    // stamina: 3,
+    // charisma: 4,
+    // manipulation: 3,
+    // composure: 3,
+    // intelligence: 3,
+    // wits: 3,
+    // resolve: 2,
     
     // Disciplines
     disciplines: [
-      { name: "Presence", level: 2, powers: ["Awe", "Daunt"] }
+      { name: "Dominate", level: 3, powers: ["Compel", "Mesmerize", "The Forgetful Mind"] },
+      { name: "Presence", level: 2, powers: ["Awe", "Lingering Kiss"] }
     ],
     
     // Advantages and Flaws
     advantages: [
-      { name: "Status", rating: 2, description: "Respected among the Camarilla" }
+      { name: "Status", rating: 3, description: "Prince's right hand" }
     ],
     flaws: [
-      { name: "Obvious Predator", rating: 2, description: "Something unsettling about them" }
+      { name: "Prey Exclusion", rating: 1, description: "Cannot feed on the poor" }
     ],
     
     // Trackers
-    blood_potency: 2,
-    humanity: 6,
+    blood_potency: 3,
+    humanity: 5,
     hunger: 2,
-    health_max: 6,
-    willpower_max: 5,
+    health_max: 6,      // Set manually if skip_attributes is true
+    willpower_max: 6,   // Set manually if skip_attributes is true
     experience_total: 0,
     experience_spent: 0
   },
+  
+  // METHOD 4: Standard Pool (Fall of London/Let the Streets Run Red style)
+  // Physical/Social/Mental pools + Exceptional pools for standout abilities
+  // Optionally includes full attributes for derived stats
+  standardPoolCharacter: {
+    name: "Standard Pool NPC",
+    clan: "Tremere",
+    generation: 10,
+    type: "NPC",
+    status: "Active",
+    concept: "A powerful blood sorcerer with specific expertise",
+    sire: "Ancient Tremere Regent",
+    predator_type: "Blood Leech",
+    ambition: "Uncover forbidden blood magic",
+    desire: "Find the missing grimoire",
+    resonance: "Phlegmatic",
+    appearance: "Pale, scholarly appearance with knowing eyes",
+    distinguishing_features: "Ritual scars on forearms",
+    history: "Former Chantry scholar turned rogue researcher",
+    notes: "Dangerous but can be reasoned with",
+    
+    // Dice pool configuration - STANDARD format
+    use_dice_pools: true,
+    skip_attributes: false,  // Including full attributes
+    dice_pools: {
+      type: "standard",
+      physical: 4,   // Standard Dice Pool for physical actions (4-8 typical)
+      social: 6,     // Standard Dice Pool for social actions
+      mental: 8,     // Standard Dice Pool for mental actions
+      exceptional: [
+        { name: "Blood Sorcery", pool: 10 },  // Exceptional pools can go 10-11
+        { name: "Occult", pool: 9 },
+        { name: "Intimidation", pool: 8 }
+      ]
+    },
+    
+    // Full attributes (used for derived stats when skip_attributes is false)
+    strength: 2,
+    dexterity: 2,
+    stamina: 3,     // Health = 3 + 3 = 6
+    charisma: 3,
+    manipulation: 4,
+    composure: 3,   // Willpower = 3 + 4 = 7
+    intelligence: 5,
+    wits: 4,
+    resolve: 4,
+    
+    // Disciplines
+    disciplines: [
+      { name: "Blood Sorcery", level: 4, powers: ["A Taste for Blood", "Extinguish Vitae", "Blood of Potency", "Theft of Vitae"] },
+      { name: "Auspex", level: 3, powers: ["Heightened Senses", "Premonition", "Scry the Soul"] },
+      { name: "Dominate", level: 2, powers: ["Compel", "Mesmerize"] }
+    ],
+    
+    // Advantages and Flaws
+    advantages: [
+      { name: "Occult Library", rating: 3, description: "Extensive collection of forbidden texts" },
+      { name: "Resources", rating: 2, description: "Modest wealth from investments" }
+    ],
+    flaws: [
+      { name: "Hunted", rating: 2, description: "The Tremere hierarchy wants them silenced" },
+      { name: "Obvious Predator", rating: 1, description: "Something unnerving about their presence" }
+    ],
+    
+    // Trackers
+    blood_potency: 4,
+    humanity: 5,
+    hunger: 2,
+    // health_max and willpower_max calculated from attributes when skip_attributes is false
+    experience_total: 50,
+    experience_spent: 45
+  },
+  
   story: {
     title: "Story Title",
     description: "A detailed description of the plot, including major events, NPCs involved, and the current situation",
@@ -186,7 +313,9 @@ const TEMPLATES = {
 const BATCH_TEMPLATES = {
   chronicles: [TEMPLATES.chronicle],
   characters: [TEMPLATES.character],
-  dicePoolCharacters: [TEMPLATES.dicePoolCharacter],
+  simplePoolCharacters: [TEMPLATES.simplePoolCharacter],
+  generalPoolCharacters: [TEMPLATES.generalPoolCharacter],
+  standardPoolCharacters: [TEMPLATES.standardPoolCharacter],
   stories: [TEMPLATES.story],
   sessions: [TEMPLATES.session]
 };
@@ -366,22 +495,44 @@ export default function Import() {
       type: "character",
       templateType: "character",
       batchType: "characters",
-      title: "Full Character",
-      description: "Complete VTM 5e sheet with attributes, skills, disciplines",
+      title: "Method 1: Full V5 Character",
+      description: "Complete character sheet with all attributes, skills, and disciplines",
       icon: Users,
-      filename: "character-template.json",
-      batchFilename: "characters-template.json",
+      filename: "full-character-template.json",
+      batchFilename: "full-characters-template.json",
       requiresChronicle: true,
     },
     {
       type: "character",
-      templateType: "dicePoolCharacter",
-      batchType: "dicePoolCharacters",
-      title: "Dice Pool Character",
-      description: "Streamlined NPC with dice pools instead of full stats",
+      templateType: "simplePoolCharacter",
+      batchType: "simplePoolCharacters",
+      title: "Method 2: Simple Pool",
+      description: "One difficulty number (Core Rulebook style) - Health/Willpower = 2×Difficulty",
       icon: Users,
-      filename: "dice-pool-character-template.json",
-      batchFilename: "dice-pool-characters-template.json",
+      filename: "simple-pool-character-template.json",
+      batchFilename: "simple-pool-characters-template.json",
+      requiresChronicle: true,
+    },
+    {
+      type: "character",
+      templateType: "generalPoolCharacter",
+      batchType: "generalPoolCharacters",
+      title: "Method 3: General Pool",
+      description: "Primary/Secondary pools (e.g., 7/4) with optional attributes",
+      icon: Users,
+      filename: "general-pool-character-template.json",
+      batchFilename: "general-pool-characters-template.json",
+      requiresChronicle: true,
+    },
+    {
+      type: "character",
+      templateType: "standardPoolCharacter",
+      batchType: "standardPoolCharacters",
+      title: "Method 4: Standard Pool",
+      description: "Physical/Social/Mental pools + Exceptional, optional full attributes",
+      icon: Users,
+      filename: "standard-pool-character-template.json",
+      batchFilename: "standard-pool-characters-template.json",
       requiresChronicle: true,
     },
     {
