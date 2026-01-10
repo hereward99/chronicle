@@ -191,7 +191,6 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
       mental: 4, 
       exceptional: [] as ExceptionalPool[] 
     },
-    // Combined format (General + Standard)
     dicePoolCombined: {
       type: "combined" as const,
       general: { primary: 6, secondary: 4 },
@@ -279,9 +278,30 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
         chronicleId = defaultChronicle.id;
       }
 
-      // Calculate health and willpower based on attributes
-      const healthMax = characterData.stamina + 3;
-      const willpowerMax = characterData.composure + characterData.resolve;
+      // Determine if using dice pools (methods 2, 3, 4)
+      const useDicePools = characterData.creationMethod !== "full";
+      const skipAttributes = characterData.skipAttributes && useDicePools;
+
+      // Calculate health and willpower based on method
+      let healthMax: number;
+      let willpowerMax: number;
+      
+      if (useDicePools && skipAttributes) {
+        // Dice pool methods without attributes
+        if (characterData.creationMethod === "simple") {
+          // Simple: health/willpower = difficulty × 2
+          healthMax = characterData.simplePoolDifficulty * 2;
+          willpowerMax = characterData.simplePoolDifficulty * 2;
+        } else {
+          // General/Standard: use manual values
+          healthMax = characterData.manualHealthMax;
+          willpowerMax = characterData.manualWillpowerMax;
+        }
+      } else {
+        // Full method or dice pool with attributes: calculate from attributes
+        healthMax = characterData.stamina + 3;
+        willpowerMax = characterData.composure + characterData.resolve;
+      }
 
       // Normalize skill keys to lowercase with underscores (e.g., "Animal Ken" -> "animal_ken")
       const normalizedSkills: Record<string, { rating: number; specialty?: string }> = {};
@@ -292,23 +312,29 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
 
       // Determine dice pool configuration
       let dicePoolConfig: DicePoolConfig | null = null;
-      if (characterData.useDicePools && characterData.pcOrNpc === "NPC") {
-        switch (characterData.dicePoolType) {
+      if (useDicePools) {
+        switch (characterData.creationMethod) {
           case "simple":
-            dicePoolConfig = characterData.dicePoolSimple;
+            dicePoolConfig = { 
+              type: "simple", 
+              difficulty: characterData.simplePoolDifficulty 
+            } as SimpleDicePool;
             break;
           case "general":
-            dicePoolConfig = characterData.dicePoolGeneral;
+            dicePoolConfig = { 
+              type: "general", 
+              primary: characterData.generalPoolPrimary, 
+              secondary: characterData.generalPoolSecondary 
+            } as GeneralDicePool;
             break;
           case "standard":
-            dicePoolConfig = characterData.dicePoolStandard;
-            break;
-          case "combined":
-            dicePoolConfig = {
-              type: "combined",
-              general: characterData.dicePoolCombined.general,
-              standard: characterData.dicePoolCombined.standard
-            } as CombinedDicePool;
+            dicePoolConfig = { 
+              type: "standard", 
+              physical: characterData.standardPoolPhysical, 
+              social: characterData.standardPoolSocial, 
+              mental: characterData.standardPoolMental, 
+              exceptional: characterData.exceptionalPools 
+            } as StandardDicePool;
             break;
         }
       }
@@ -327,8 +353,8 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
         predator_type: characterData.characterType === "vampire" ? characterData.predatorType : null,
         
         // Dice Pools
-        use_dice_pools: characterData.useDicePools && characterData.pcOrNpc === "NPC",
-        skip_attributes: characterData.skipAttributes && characterData.pcOrNpc === "NPC",
+        use_dice_pools: useDicePools,
+        skip_attributes: skipAttributes,
         dice_pools: dicePoolConfig,
         
         // Attributes
@@ -342,8 +368,8 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
         wits: characterData.wits,
         resolve: characterData.resolve,
         
-        // Skills (normalized keys) - only if not using dice pools
-        skills: characterData.useDicePools ? {} : normalizedSkills,
+        // Skills (normalized keys) - only if using full method
+        skills: characterData.creationMethod === "full" ? normalizedSkills : {},
         
         // Disciplines (only for vampires) - extract powers into separate array
         disciplines: characterData.characterType === "vampire" 
@@ -394,6 +420,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
   const resetWizard = () => {
     setStep(0);
     setCharacterData({
+      creationMethod: "full",
       characterType: "vampire",
       pcOrNpc: "PC",
       name: "",
@@ -404,17 +431,16 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
       status: "Active",
       sire: "",
       coterie: "",
-      useDicePools: false,
       skipAttributes: false,
-      dicePoolType: "simple",
-      dicePoolSimple: { type: "simple", difficulty: 3 },
-      dicePoolGeneral: { type: "general", primary: 6, secondary: 4 },
-      dicePoolStandard: { type: "standard", physical: 4, social: 4, mental: 4, exceptional: [] },
-      dicePoolCombined: {
-        type: "combined",
-        general: { primary: 6, secondary: 4 },
-        standard: { physical: 4, social: 4, mental: 4, exceptional: [] }
-      },
+      simplePoolDifficulty: 3,
+      generalPoolPrimary: 6,
+      generalPoolSecondary: 4,
+      standardPoolPhysical: 5,
+      standardPoolSocial: 5,
+      standardPoolMental: 5,
+      exceptionalPools: [],
+      manualHealthMax: 6,
+      manualWillpowerMax: 6,
       strength: 1,
       dexterity: 1,
       stamina: 1,
