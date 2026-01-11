@@ -37,6 +37,33 @@ export function useImport() {
     return { success: successCount > 0, message: `Imported ${successCount} chronicle(s)`, count: successCount };
   };
 
+  // Helper to normalize skill keys and format
+  // Accepts both plain numbers (e.g., { athletics: 2 }) and object format (e.g., { athletics: { rating: 2 } })
+  const normalizeSkills = (skills: any): Record<string, { rating: number; specialty?: string }> => {
+    if (!skills || typeof skills !== 'object') return {};
+    
+    const normalized: Record<string, { rating: number; specialty?: string }> = {};
+    
+    for (const [key, value] of Object.entries(skills)) {
+      // Normalize key: lowercase and replace spaces with underscores
+      const normalizedKey = key.toLowerCase().replace(/\s+/g, '_');
+      
+      if (typeof value === 'number') {
+        // Plain number format: { athletics: 2 } -> { athletics: { rating: 2 } }
+        normalized[normalizedKey] = { rating: value };
+      } else if (typeof value === 'object' && value !== null) {
+        // Object format: { athletics: { rating: 2, specialty: "Running" } }
+        const skillObj = value as { rating?: number; specialty?: string };
+        normalized[normalizedKey] = {
+          rating: skillObj.rating || 0,
+          ...(skillObj.specialty && { specialty: skillObj.specialty })
+        };
+      }
+    }
+    
+    return normalized;
+  };
+
   // Helper function to extract powers from disciplines if they're embedded
   const extractPowersFromDisciplines = (char: any): any[] => {
     // If char already has a powers array with proper format, use it
@@ -165,7 +192,7 @@ export function useImport() {
           if (char.composure !== undefined || char.resolve !== undefined) {
             updateData.willpower_max = (char.composure || 1) + (char.resolve || 1);
           }
-          if (char.skills !== undefined) updateData.skills = char.skills;
+          if (char.skills !== undefined) updateData.skills = normalizeSkills(char.skills);
           if (char.disciplines !== undefined) updateData.disciplines = char.disciplines;
           // Always update powers with extracted powers if disciplines are provided
           if (char.disciplines !== undefined || char.powers !== undefined) {
@@ -224,7 +251,7 @@ export function useImport() {
         intelligence: char.intelligence || 1,
         wits: char.wits || 1,
         resolve: char.resolve || 1,
-        skills: char.skills || {},
+        skills: normalizeSkills(char.skills),
         disciplines: char.disciplines || [],
         powers: powers.length > 0 ? powers : (char.powers || []),
         advantages: char.advantages || [],
