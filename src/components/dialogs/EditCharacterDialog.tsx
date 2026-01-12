@@ -10,8 +10,9 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileUpload } from "@/components/ui/file-upload";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Trash2, X, Plus, Wand2 } from "lucide-react";
-import { Character } from "@/hooks/useCharacters";
+import { Character, DicePoolConfig, SimpleDicePool, GeneralDicePool, StandardDicePool, CombinedDicePool, ExceptionalPool } from "@/hooks/useCharacters";
 import { useFiles } from "@/hooks/useFiles";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -72,6 +73,8 @@ export function EditCharacterDialog({
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [generatingPortrait, setGeneratingPortrait] = useState(false);
+  const [overrideHealthMax, setOverrideHealthMax] = useState(false);
+  const [overrideWillpowerMax, setOverrideWillpowerMax] = useState(false);
   const { uploadFile } = useFiles();
   const { toast } = useToast();
   
@@ -132,9 +135,13 @@ export function EditCharacterDialog({
     history: "",
     notes: "",
     resonance: "",
+    // Dice Pools
+    use_dice_pools: false,
+    skip_attributes: false,
+    dice_pools: null,
   });
 
-  // Auto-compute health_max and willpower_max when attributes change
+  // Auto-compute health_max and willpower_max when attributes change (unless overridden)
   useEffect(() => {
     const stamina = formData.stamina || 1;
     const composure = formData.composure || 1;
@@ -143,20 +150,35 @@ export function EditCharacterDialog({
     const computedHealthMax = stamina + 3;
     const computedWillpowerMax = composure + resolve;
     
-    if (formData.health_max !== computedHealthMax || formData.willpower_max !== computedWillpowerMax) {
-      setFormData(prev => ({
-        ...prev,
-        health_max: computedHealthMax,
-        willpower_max: computedWillpowerMax,
-      }));
+    const updates: Partial<typeof formData> = {};
+    
+    if (!overrideHealthMax && formData.health_max !== computedHealthMax) {
+      updates.health_max = computedHealthMax;
     }
-  }, [formData.stamina, formData.composure, formData.resolve]);
+    if (!overrideWillpowerMax && formData.willpower_max !== computedWillpowerMax) {
+      updates.willpower_max = computedWillpowerMax;
+    }
+    
+    if (Object.keys(updates).length > 0) {
+      setFormData(prev => ({ ...prev, ...updates }));
+    }
+  }, [formData.stamina, formData.composure, formData.resolve, overrideHealthMax, overrideWillpowerMax]);
 
   useEffect(() => {
     if (character) {
       const stamina = character.stamina || 1;
       const composure = character.composure || 1;
       const resolve = character.resolve || 1;
+      
+      const computedHealthMax = stamina + 3;
+      const computedWillpowerMax = composure + resolve;
+      
+      // Detect if values were overridden (different from computed)
+      const hasHealthOverride = character.health_max !== undefined && character.health_max !== computedHealthMax;
+      const hasWillpowerOverride = character.willpower_max !== undefined && character.willpower_max !== computedWillpowerMax;
+      
+      setOverrideHealthMax(hasHealthOverride);
+      setOverrideWillpowerMax(hasWillpowerOverride);
       
       setFormData({
         name: character.name,
@@ -190,10 +212,10 @@ export function EditCharacterDialog({
         touchstones: character.touchstones || [],
         ambition: character.ambition || "",
         desire: character.desire || "",
-        health_max: stamina + 3,
+        health_max: hasHealthOverride ? (character.health_max || computedHealthMax) : computedHealthMax,
         health_superficial: character.health_superficial || 0,
         health_aggravated: character.health_aggravated || 0,
-        willpower_max: composure + resolve,
+        willpower_max: hasWillpowerOverride ? (character.willpower_max || computedWillpowerMax) : computedWillpowerMax,
         willpower_superficial: character.willpower_superficial || 0,
         willpower_aggravated: character.willpower_aggravated || 0,
         humanity: character.humanity || 7,
@@ -206,6 +228,9 @@ export function EditCharacterDialog({
         history: character.history || "",
         notes: character.notes || "",
         resonance: character.resonance || "",
+        use_dice_pools: character.use_dice_pools || false,
+        skip_attributes: character.skip_attributes || false,
+        dice_pools: character.dice_pools || null,
       });
     }
   }, [character]);
@@ -664,25 +689,70 @@ export function EditCharacterDialog({
               <Card className="p-4">
                 <h3 className="text-lg font-semibold mb-4">Trackers</h3>
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Health (Max)</Label>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Health (Max)</Label>
+                      <div className="flex items-center gap-2">
+                        <Checkbox 
+                          id="override-health" 
+                          checked={overrideHealthMax}
+                          onCheckedChange={(checked) => {
+                            setOverrideHealthMax(!!checked);
+                            if (!checked) {
+                              // Reset to computed value
+                              const stamina = formData.stamina || 1;
+                              setFormData(prev => ({ ...prev, health_max: stamina + 3 }));
+                            }
+                          }}
+                        />
+                        <Label htmlFor="override-health" className="text-xs text-muted-foreground cursor-pointer">Override</Label>
+                      </div>
+                    </div>
                     <Input
                       type="number"
                       min="1"
-                      max="10"
+                      max="15"
                       value={formData.health_max}
                       onChange={(e) => setFormData(prev => ({ ...prev, health_max: parseInt(e.target.value) || 3 }))}
+                      disabled={!overrideHealthMax}
+                      className={!overrideHealthMax ? "opacity-50" : ""}
                     />
+                    {!overrideHealthMax && (
+                      <p className="text-xs text-muted-foreground">Auto: Stamina + 3</p>
+                    )}
                   </div>
-                  <div>
-                    <Label>Willpower (Max)</Label>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Willpower (Max)</Label>
+                      <div className="flex items-center gap-2">
+                        <Checkbox 
+                          id="override-willpower" 
+                          checked={overrideWillpowerMax}
+                          onCheckedChange={(checked) => {
+                            setOverrideWillpowerMax(!!checked);
+                            if (!checked) {
+                              // Reset to computed value
+                              const composure = formData.composure || 1;
+                              const resolve = formData.resolve || 1;
+                              setFormData(prev => ({ ...prev, willpower_max: composure + resolve }));
+                            }
+                          }}
+                        />
+                        <Label htmlFor="override-willpower" className="text-xs text-muted-foreground cursor-pointer">Override</Label>
+                      </div>
+                    </div>
                     <Input
                       type="number"
                       min="1"
-                      max="10"
+                      max="15"
                       value={formData.willpower_max}
                       onChange={(e) => setFormData(prev => ({ ...prev, willpower_max: parseInt(e.target.value) || 3 }))}
+                      disabled={!overrideWillpowerMax}
+                      className={!overrideWillpowerMax ? "opacity-50" : ""}
                     />
+                    {!overrideWillpowerMax && (
+                      <p className="text-xs text-muted-foreground">Auto: Composure + Resolve</p>
+                    )}
                   </div>
                   <div>
                     <Label>Humanity</Label>
@@ -718,6 +788,457 @@ export function EditCharacterDialog({
                     />
                   </div>
                 </div>
+              </Card>
+
+              {/* Dice Pools Section */}
+              <Card className="p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Dice Pools (Storyteller Characters)</h3>
+                  <div className="flex items-center gap-2">
+                    <Checkbox 
+                      id="use-dice-pools" 
+                      checked={formData.use_dice_pools || false}
+                      onCheckedChange={(checked) => {
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          use_dice_pools: !!checked,
+                          dice_pools: checked && !prev.dice_pools ? { type: 'simple', difficulty: 3 } : prev.dice_pools
+                        }));
+                      }}
+                    />
+                    <Label htmlFor="use-dice-pools" className="cursor-pointer">Enable Dice Pools</Label>
+                  </div>
+                </div>
+                
+                {formData.use_dice_pools && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Checkbox 
+                        id="skip-attributes" 
+                        checked={formData.skip_attributes || false}
+                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, skip_attributes: !!checked }))}
+                      />
+                      <Label htmlFor="skip-attributes" className="cursor-pointer text-sm">Skip full attributes (use dice pools only)</Label>
+                    </div>
+                    
+                    <div>
+                      <Label>Pool Type</Label>
+                      <Select 
+                        value={(formData.dice_pools as DicePoolConfig)?.type || 'simple'} 
+                        onValueChange={(value: 'simple' | 'general' | 'standard' | 'combined') => {
+                          let newPools: DicePoolConfig;
+                          switch (value) {
+                            case 'simple':
+                              newPools = { type: 'simple', difficulty: 3 };
+                              break;
+                            case 'general':
+                              newPools = { type: 'general', primary: 6, secondary: 4 };
+                              break;
+                            case 'standard':
+                              newPools = { type: 'standard', physical: 4, social: 4, mental: 4, exceptional: [] };
+                              break;
+                            case 'combined':
+                              newPools = { 
+                                type: 'combined', 
+                                general: { primary: 6, secondary: 4 },
+                                standard: { physical: 4, social: 4, mental: 4, exceptional: [] }
+                              };
+                              break;
+                          }
+                          setFormData(prev => ({ ...prev, dice_pools: newPools }));
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="simple">Simple (Single Difficulty)</SelectItem>
+                          <SelectItem value="general">General (Primary/Secondary)</SelectItem>
+                          <SelectItem value="standard">Standard (Physical/Social/Mental)</SelectItem>
+                          <SelectItem value="combined">Combined (General + Standard)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Simple Pool */}
+                    {(formData.dice_pools as SimpleDicePool)?.type === 'simple' && (
+                      <div>
+                        <Label>Difficulty (Pool = 2× Difficulty)</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={(formData.dice_pools as SimpleDicePool).difficulty}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            dice_pools: { type: 'simple', difficulty: parseInt(e.target.value) || 3 }
+                          }))}
+                        />
+                      </div>
+                    )}
+
+                    {/* General Pool */}
+                    {(formData.dice_pools as GeneralDicePool)?.type === 'general' && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>Primary Pool (Areas of Excellence)</Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            max="15"
+                            value={(formData.dice_pools as GeneralDicePool).primary}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              dice_pools: { 
+                                ...(prev.dice_pools as GeneralDicePool), 
+                                primary: parseInt(e.target.value) || 6 
+                              }
+                            }))}
+                          />
+                        </div>
+                        <div>
+                          <Label>Secondary Pool (Standard Areas)</Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            max="15"
+                            value={(formData.dice_pools as GeneralDicePool).secondary}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              dice_pools: { 
+                                ...(prev.dice_pools as GeneralDicePool), 
+                                secondary: parseInt(e.target.value) || 4 
+                              }
+                            }))}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Standard Pool */}
+                    {(formData.dice_pools as StandardDicePool)?.type === 'standard' && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <Label>Physical</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="15"
+                              value={(formData.dice_pools as StandardDicePool).physical}
+                              onChange={(e) => setFormData(prev => ({
+                                ...prev,
+                                dice_pools: { 
+                                  ...(prev.dice_pools as StandardDicePool), 
+                                  physical: parseInt(e.target.value) || 4 
+                                }
+                              }))}
+                            />
+                          </div>
+                          <div>
+                            <Label>Social</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="15"
+                              value={(formData.dice_pools as StandardDicePool).social}
+                              onChange={(e) => setFormData(prev => ({
+                                ...prev,
+                                dice_pools: { 
+                                  ...(prev.dice_pools as StandardDicePool), 
+                                  social: parseInt(e.target.value) || 4 
+                                }
+                              }))}
+                            />
+                          </div>
+                          <div>
+                            <Label>Mental</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="15"
+                              value={(formData.dice_pools as StandardDicePool).mental}
+                              onChange={(e) => setFormData(prev => ({
+                                ...prev,
+                                dice_pools: { 
+                                  ...(prev.dice_pools as StandardDicePool), 
+                                  mental: parseInt(e.target.value) || 4 
+                                }
+                              }))}
+                            />
+                          </div>
+                        </div>
+                        
+                        {/* Exceptional Skills */}
+                        <div>
+                          <div className="flex justify-between items-center mb-2">
+                            <Label>Exceptional Skills</Label>
+                            <Button 
+                              type="button"
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => {
+                                const currentPools = formData.dice_pools as StandardDicePool;
+                                setFormData(prev => ({
+                                  ...prev,
+                                  dice_pools: {
+                                    ...currentPools,
+                                    exceptional: [...(currentPools.exceptional || []), { name: '', pool: 6 }]
+                                  }
+                                }));
+                              }}
+                            >
+                              <Plus className="w-4 h-4 mr-1" /> Add
+                            </Button>
+                          </div>
+                          {((formData.dice_pools as StandardDicePool).exceptional || []).map((exc, idx) => (
+                            <div key={idx} className="flex gap-2 mb-2">
+                              <Input
+                                placeholder="Skill name"
+                                value={exc.name}
+                                onChange={(e) => {
+                                  const currentPools = formData.dice_pools as StandardDicePool;
+                                  const updated = [...currentPools.exceptional];
+                                  updated[idx] = { ...updated[idx], name: e.target.value };
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    dice_pools: { ...currentPools, exceptional: updated }
+                                  }));
+                                }}
+                                className="flex-1"
+                              />
+                              <Input
+                                type="number"
+                                min="1"
+                                max="15"
+                                value={exc.pool}
+                                onChange={(e) => {
+                                  const currentPools = formData.dice_pools as StandardDicePool;
+                                  const updated = [...currentPools.exceptional];
+                                  updated[idx] = { ...updated[idx], pool: parseInt(e.target.value) || 6 };
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    dice_pools: { ...currentPools, exceptional: updated }
+                                  }));
+                                }}
+                                className="w-20"
+                              />
+                              <Button 
+                                type="button"
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => {
+                                  const currentPools = formData.dice_pools as StandardDicePool;
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    dice_pools: {
+                                      ...currentPools,
+                                      exceptional: currentPools.exceptional.filter((_, i) => i !== idx)
+                                    }
+                                  }));
+                                }}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Combined Pool */}
+                    {(formData.dice_pools as CombinedDicePool)?.type === 'combined' && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label>Primary Pool</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="15"
+                              value={(formData.dice_pools as CombinedDicePool).general.primary}
+                              onChange={(e) => {
+                                const currentPools = formData.dice_pools as CombinedDicePool;
+                                setFormData(prev => ({
+                                  ...prev,
+                                  dice_pools: {
+                                    ...currentPools,
+                                    general: { ...currentPools.general, primary: parseInt(e.target.value) || 6 }
+                                  }
+                                }));
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label>Secondary Pool</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="15"
+                              value={(formData.dice_pools as CombinedDicePool).general.secondary}
+                              onChange={(e) => {
+                                const currentPools = formData.dice_pools as CombinedDicePool;
+                                setFormData(prev => ({
+                                  ...prev,
+                                  dice_pools: {
+                                    ...currentPools,
+                                    general: { ...currentPools.general, secondary: parseInt(e.target.value) || 4 }
+                                  }
+                                }));
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <Label>Physical</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="15"
+                              value={(formData.dice_pools as CombinedDicePool).standard.physical}
+                              onChange={(e) => {
+                                const currentPools = formData.dice_pools as CombinedDicePool;
+                                setFormData(prev => ({
+                                  ...prev,
+                                  dice_pools: {
+                                    ...currentPools,
+                                    standard: { ...currentPools.standard, physical: parseInt(e.target.value) || 4 }
+                                  }
+                                }));
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label>Social</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="15"
+                              value={(formData.dice_pools as CombinedDicePool).standard.social}
+                              onChange={(e) => {
+                                const currentPools = formData.dice_pools as CombinedDicePool;
+                                setFormData(prev => ({
+                                  ...prev,
+                                  dice_pools: {
+                                    ...currentPools,
+                                    standard: { ...currentPools.standard, social: parseInt(e.target.value) || 4 }
+                                  }
+                                }));
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <Label>Mental</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="15"
+                              value={(formData.dice_pools as CombinedDicePool).standard.mental}
+                              onChange={(e) => {
+                                const currentPools = formData.dice_pools as CombinedDicePool;
+                                setFormData(prev => ({
+                                  ...prev,
+                                  dice_pools: {
+                                    ...currentPools,
+                                    standard: { ...currentPools.standard, mental: parseInt(e.target.value) || 4 }
+                                  }
+                                }));
+                              }}
+                            />
+                          </div>
+                        </div>
+                        
+                        {/* Exceptional Skills for Combined */}
+                        <div>
+                          <div className="flex justify-between items-center mb-2">
+                            <Label>Exceptional Skills</Label>
+                            <Button 
+                              type="button"
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => {
+                                const currentPools = formData.dice_pools as CombinedDicePool;
+                                setFormData(prev => ({
+                                  ...prev,
+                                  dice_pools: {
+                                    ...currentPools,
+                                    standard: {
+                                      ...currentPools.standard,
+                                      exceptional: [...(currentPools.standard.exceptional || []), { name: '', pool: 6 }]
+                                    }
+                                  }
+                                }));
+                              }}
+                            >
+                              <Plus className="w-4 h-4 mr-1" /> Add
+                            </Button>
+                          </div>
+                          {((formData.dice_pools as CombinedDicePool).standard.exceptional || []).map((exc, idx) => (
+                            <div key={idx} className="flex gap-2 mb-2">
+                              <Input
+                                placeholder="Skill name"
+                                value={exc.name}
+                                onChange={(e) => {
+                                  const currentPools = formData.dice_pools as CombinedDicePool;
+                                  const updated = [...currentPools.standard.exceptional];
+                                  updated[idx] = { ...updated[idx], name: e.target.value };
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    dice_pools: {
+                                      ...currentPools,
+                                      standard: { ...currentPools.standard, exceptional: updated }
+                                    }
+                                  }));
+                                }}
+                                className="flex-1"
+                              />
+                              <Input
+                                type="number"
+                                min="1"
+                                max="15"
+                                value={exc.pool}
+                                onChange={(e) => {
+                                  const currentPools = formData.dice_pools as CombinedDicePool;
+                                  const updated = [...currentPools.standard.exceptional];
+                                  updated[idx] = { ...updated[idx], pool: parseInt(e.target.value) || 6 };
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    dice_pools: {
+                                      ...currentPools,
+                                      standard: { ...currentPools.standard, exceptional: updated }
+                                    }
+                                  }));
+                                }}
+                                className="w-20"
+                              />
+                              <Button 
+                                type="button"
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => {
+                                  const currentPools = formData.dice_pools as CombinedDicePool;
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    dice_pools: {
+                                      ...currentPools,
+                                      standard: {
+                                        ...currentPools.standard,
+                                        exceptional: currentPools.standard.exceptional.filter((_, i) => i !== idx)
+                                      }
+                                    }
+                                  }));
+                                }}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </Card>
 
               <Card className="p-4">
