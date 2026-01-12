@@ -253,6 +253,39 @@ async function loadImageAsBase64(url: string): Promise<string | null> {
   }
 }
 
+// Dice Pool types for PDF export
+interface SimpleDicePool {
+  type: 'simple';
+  difficulty: number;
+}
+
+interface GeneralDicePool {
+  type: 'general';
+  primary: number;
+  secondary: number;
+}
+
+interface ExceptionalPool {
+  name: string;
+  pool: number;
+}
+
+interface StandardDicePool {
+  type: 'standard';
+  physical: number;
+  social: number;
+  mental: number;
+  exceptional: ExceptionalPool[];
+}
+
+interface CombinedDicePool {
+  type: 'combined';
+  general: { primary: number; secondary: number };
+  standard: { physical: number; social: number; mental: number; exceptional: ExceptionalPool[] };
+}
+
+type DicePoolConfig = SimpleDicePool | GeneralDicePool | StandardDicePool | CombinedDicePool;
+
 // Export a Character to PDF
 export async function exportCharacterToPDF(character: {
   name: string;
@@ -292,6 +325,9 @@ export async function exportCharacterToPDF(character: {
   flaws?: { name: string; rating?: number }[] | null;
   convictions?: string[] | null;
   touchstones?: { name: string; conviction?: string }[] | null;
+  use_dice_pools?: boolean | null;
+  skip_attributes?: boolean | null;
+  dice_pools?: DicePoolConfig | null;
 }) {
   const pdf = createThemedPDF({
     title: character.name,
@@ -355,51 +391,174 @@ export async function exportCharacterToPDF(character: {
   }
   y += 5;
   
-  // Attributes
-  y = checkNewPage(pdf, y, 50);
-  y = addSection(pdf, 'Attributes', y);
-  y += 4;
-  
-  const colWidth = (pageWidth - 40) / 3;
-  const attributes = {
-    Physical: [
-      { name: 'Strength', value: character.strength || 1 },
-      { name: 'Dexterity', value: character.dexterity || 1 },
-      { name: 'Stamina', value: character.stamina || 1 },
-    ],
-    Social: [
-      { name: 'Charisma', value: character.charisma || 1 },
-      { name: 'Manipulation', value: character.manipulation || 1 },
-      { name: 'Composure', value: character.composure || 1 },
-    ],
-    Mental: [
-      { name: 'Intelligence', value: character.intelligence || 1 },
-      { name: 'Wits', value: character.wits || 1 },
-      { name: 'Resolve', value: character.resolve || 1 },
-    ],
-  };
-  
-  Object.entries(attributes).forEach(([category, attrs], colIndex) => {
-    const x = 20 + colIndex * colWidth;
-    let attrY = y;
+  // Dice Pools section (for Storyteller Characters)
+  if (character.use_dice_pools && character.dice_pools) {
+    y = checkNewPage(pdf, y, 50);
+    y = addSection(pdf, 'Dice Pools', y);
+    y += 4;
     
-    pdf.setTextColor(COLORS.primary.r, COLORS.primary.g, COLORS.primary.b);
-    pdf.setFontSize(9);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(category, x, attrY);
-    attrY += 5;
+    const pools = character.dice_pools;
     
-    attrs.forEach(attr => {
+    if (pools.type === 'simple') {
+      // Simple antagonist: single difficulty number
+      pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      y = addLabelValue(pdf, 'Difficulty', pools.difficulty.toString(), y);
+      pdf.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+      pdf.setFontSize(9);
+      pdf.text(`Players roll against Difficulty ${pools.difficulty}. This character rolls ${pools.difficulty * 2} dice.`, 20, y);
+      y += 8;
+    } else if (pools.type === 'general') {
+      // General format: Primary/Secondary
+      y = addLabelValue(pdf, 'Primary Pool', `${pools.primary} dice (areas of expertise)`, y);
+      y = addLabelValue(pdf, 'Secondary Pool', `${pools.secondary} dice (other areas)`, y);
+      pdf.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+      pdf.setFontSize(9);
+      pdf.text(`Format: ${pools.primary}/${pools.secondary}`, 20, y);
+      y += 8;
+    } else if (pools.type === 'standard') {
+      // Standard format: Physical/Social/Mental + Exceptional
+      const colWidth = (pageWidth - 40) / 3;
+      
+      pdf.setTextColor(COLORS.primary.r, COLORS.primary.g, COLORS.primary.b);
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'bold');
+      
+      // Column headers
+      pdf.text('Physical', 20, y);
+      pdf.text('Social', 20 + colWidth, y);
+      pdf.text('Mental', 20 + colWidth * 2, y);
+      y += 5;
+      
+      pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      
+      // Pool values
+      pdf.text(`${pools.physical}`, 20, y);
+      pdf.text(`${pools.social}`, 20 + colWidth, y);
+      pdf.text(`${pools.mental}`, 20 + colWidth * 2, y);
+      y += 8;
+      
+      // Exceptional pools
+      if (pools.exceptional && pools.exceptional.length > 0) {
+        pdf.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('Exceptional Pools:', 20, y);
+        y += 5;
+        
+        pools.exceptional.forEach(exc => {
+          pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
+          pdf.setFontSize(9);
+          pdf.text(`• ${exc.name}:`, 25, y);
+          const textWidth = pdf.getTextWidth(`• ${exc.name}:`);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(`${exc.pool}`, 25 + textWidth + 3, y);
+          pdf.setFont('helvetica', 'normal');
+          y += 5;
+        });
+      }
+      y += 3;
+    } else if (pools.type === 'combined') {
+      // Combined format: General + Standard
+      const combined = pools as CombinedDicePool;
+      
+      // General section
+      pdf.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+      pdf.setFontSize(9);
+      pdf.text('General Difficulties:', 20, y);
+      y += 5;
+      y = addLabelValue(pdf, 'Primary', `${combined.general.primary} dice`, y, 25);
+      y = addLabelValue(pdf, 'Secondary', `${combined.general.secondary} dice`, y, 25);
+      y += 3;
+      
+      // Standard section
+      pdf.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+      pdf.setFontSize(9);
+      pdf.text('Standard Pools:', 20, y);
+      y += 5;
+      
+      const colWidth = (pageWidth - 60) / 3;
       pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
       pdf.setFontSize(9);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`${attr.name}:`, x, attrY);
-      const textWidth = pdf.getTextWidth(`${attr.name}:`);
-      drawDots(pdf, x + textWidth + 3, attrY, attr.value, 5);
+      pdf.text(`Physical: ${combined.standard.physical}`, 25, y);
+      pdf.text(`Social: ${combined.standard.social}`, 25 + colWidth, y);
+      pdf.text(`Mental: ${combined.standard.mental}`, 25 + colWidth * 2, y);
+      y += 6;
+      
+      // Exceptional pools
+      if (combined.standard.exceptional && combined.standard.exceptional.length > 0) {
+        pdf.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+        pdf.setFontSize(9);
+        pdf.text('Exceptional Pools:', 25, y);
+        y += 5;
+        
+        combined.standard.exceptional.forEach(exc => {
+          pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
+          pdf.setFontSize(9);
+          pdf.text(`• ${exc.name}:`, 30, y);
+          const textWidth = pdf.getTextWidth(`• ${exc.name}:`);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(`${exc.pool}`, 30 + textWidth + 3, y);
+          pdf.setFont('helvetica', 'normal');
+          y += 5;
+        });
+      }
+      y += 3;
+    }
+  }
+  
+  // Attributes (only show if not using dice pools OR if skip_attributes is false)
+  const showAttributes = !character.use_dice_pools || !character.skip_attributes;
+  
+  if (showAttributes) {
+    y = checkNewPage(pdf, y, 50);
+    y = addSection(pdf, 'Attributes', y);
+    y += 4;
+    
+    const colWidth = (pageWidth - 40) / 3;
+    const attributes = {
+      Physical: [
+        { name: 'Strength', value: character.strength || 1 },
+        { name: 'Dexterity', value: character.dexterity || 1 },
+        { name: 'Stamina', value: character.stamina || 1 },
+      ],
+      Social: [
+        { name: 'Charisma', value: character.charisma || 1 },
+        { name: 'Manipulation', value: character.manipulation || 1 },
+        { name: 'Composure', value: character.composure || 1 },
+      ],
+      Mental: [
+        { name: 'Intelligence', value: character.intelligence || 1 },
+        { name: 'Wits', value: character.wits || 1 },
+        { name: 'Resolve', value: character.resolve || 1 },
+      ],
+    };
+    
+    Object.entries(attributes).forEach(([category, attrs], colIndex) => {
+      const x = 20 + colIndex * colWidth;
+      let attrY = y;
+      
+      pdf.setTextColor(COLORS.primary.r, COLORS.primary.g, COLORS.primary.b);
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(category, x, attrY);
       attrY += 5;
+      
+      attrs.forEach(attr => {
+        pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`${attr.name}:`, x, attrY);
+        const textWidth = pdf.getTextWidth(`${attr.name}:`);
+        drawDots(pdf, x + textWidth + 3, attrY, attr.value, 5);
+        attrY += 5;
+      });
     });
-  });
-  y += 25;
+    y += 25;
+  }
   
   // Trackers
   y = checkNewPage(pdf, y, 30);
@@ -417,8 +576,8 @@ export async function exportCharacterToPDF(character: {
   addLabelValue(pdf, 'Experience', `${character.experience_total || 0} total (${expUnspent} unspent)`, trackerY, pageWidth / 2);
   y += 5;
   
-  // Skills - grouped by category
-  if (character.skills && Object.keys(character.skills).length > 0) {
+  // Skills - grouped by category (only show if not using dice pools)
+  if (!character.use_dice_pools && character.skills && Object.keys(character.skills).length > 0) {
     y = checkNewPage(pdf, y, 50);
     y = addSection(pdf, 'Skills', y);
     y += 4;
