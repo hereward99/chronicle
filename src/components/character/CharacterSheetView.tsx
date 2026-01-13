@@ -300,10 +300,13 @@ export function CharacterSheetView({ character }: CharacterSheetViewProps) {
 }
 
 function CharacterSheetContent({ character }: CharacterSheetViewProps) {
-  // Auto-compute Health and Willpower from attributes
+  // Use stored max values (which may be overridden), fallback to computed values
   const computedHealthMax = (character.stamina || 1) + 3;
   const computedWillpowerMax = (character.composure || 1) + (character.resolve || 1);
-
+  
+  // Use character's saved values if they exist, otherwise use computed
+  const healthMax = character.health_max ?? computedHealthMax;
+  const willpowerMax = character.willpower_max ?? computedWillpowerMax;
   const physicalAttributes = [
     { name: "Strength", value: character.strength || 1 },
     { name: "Dexterity", value: character.dexterity || 1 },
@@ -422,11 +425,11 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                     <span className="text-sm font-medium">Health</span>
                   </RuleTooltip>
                   <span className="text-xs text-muted-foreground">
-                    {(character.health_aggravated || 0) + (character.health_superficial || 0)}/{computedHealthMax} damage
+                    {(character.health_aggravated || 0) + (character.health_superficial || 0)}/{healthMax} damage
                   </span>
                 </div>
                 <HealthTracker 
-                  max={computedHealthMax}
+                  max={healthMax}
                   superficial={character.health_superficial}
                   aggravated={character.health_aggravated}
                 />
@@ -438,11 +441,11 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                     <span className="text-sm font-medium">Willpower</span>
                   </RuleTooltip>
                   <span className="text-xs text-muted-foreground">
-                    {(character.willpower_aggravated || 0) + (character.willpower_superficial || 0)}/{computedWillpowerMax} damage
+                    {(character.willpower_aggravated || 0) + (character.willpower_superficial || 0)}/{willpowerMax} damage
                   </span>
                 </div>
                 <HealthTracker 
-                  max={computedWillpowerMax}
+                  max={willpowerMax}
                   superficial={character.willpower_superficial}
                   aggravated={character.willpower_aggravated}
                 />
