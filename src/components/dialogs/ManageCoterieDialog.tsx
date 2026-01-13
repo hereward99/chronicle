@@ -140,12 +140,12 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
               </div>
             </div>
 
-            <div className="space-y-2 flex-1 flex flex-col overflow-hidden">
+            <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 Members
               </Label>
-              <ScrollArea className="flex-1 border rounded-md">
+              <ScrollArea className="h-[200px] border rounded-md">
                 <div className="p-4 space-y-3">
                   {characters.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No characters available</p>
