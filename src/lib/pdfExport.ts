@@ -325,6 +325,8 @@ export async function exportCharacterToPDF(character: {
   flaws?: { name: string; rating?: number }[] | null;
   convictions?: string[] | null;
   touchstones?: { name: string; conviction?: string }[] | null;
+  loresheets?: { name: string; benefits?: string[] }[] | null;
+  distinguishing_features?: string | null;
   use_dice_pools?: boolean | null;
   skip_attributes?: boolean | null;
   dice_pools?: DicePoolConfig | null;
@@ -670,10 +672,11 @@ export async function exportCharacterToPDF(character: {
     y += 3;
   }
   
-  // Beliefs
-  if (character.ambition || character.desire || (character.convictions && character.convictions.length > 0)) {
+  // Beliefs & Touchstones
+  const hasTouchstones = character.touchstones && (character.touchstones as any[]).length > 0;
+  if (character.ambition || character.desire || (character.convictions && character.convictions.length > 0) || hasTouchstones) {
     y = checkNewPage(pdf, y, 30);
-    y = addSection(pdf, 'Beliefs', y);
+    y = addSection(pdf, 'Beliefs & Touchstones', y);
     y += 4;
     
     if (character.ambition) {
@@ -691,6 +694,20 @@ export async function exportCharacterToPDF(character: {
         pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
         pdf.setFontSize(8);
         pdf.text(`• ${conv}`, 25, y);
+        y += 4;
+      });
+    }
+    if (hasTouchstones) {
+      y += 2;
+      pdf.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+      pdf.setFontSize(9);
+      pdf.text('Touchstones:', 20, y);
+      y += 4;
+      (character.touchstones as { name: string; conviction?: string }[]).forEach(ts => {
+        pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
+        pdf.setFontSize(8);
+        const label = ts.conviction ? `• ${ts.name} (${ts.conviction})` : `• ${ts.name}`;
+        pdf.text(label, 25, y);
         y += 4;
       });
     }
@@ -743,11 +760,42 @@ export async function exportCharacterToPDF(character: {
     y += 3;
   }
   
+  // Loresheets
+  if (character.loresheets && (character.loresheets as any[]).length > 0) {
+    y = checkNewPage(pdf, y, 25);
+    y = addSection(pdf, 'Loresheets', y);
+    y += 4;
+    (character.loresheets as { name: string; benefits?: string[] }[]).forEach(ls => {
+      pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`${ls.name}`, 20, y);
+      y += 4;
+      if (ls.benefits && ls.benefits.length > 0) {
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(8);
+        ls.benefits.forEach(benefit => {
+          pdf.text(`• ${benefit}`, 25, y);
+          y += 4;
+        });
+      }
+      y += 2;
+    });
+    y += 3;
+  }
+  
   // Background sections
   if (character.appearance) {
     y = checkNewPage(pdf, y, 25);
     y = addSection(pdf, 'Appearance', y);
     y = addText(pdf, character.appearance, y + 4, { fontSize: 9 });
+    y += 5;
+  }
+  
+  if (character.distinguishing_features) {
+    y = checkNewPage(pdf, y, 25);
+    y = addSection(pdf, 'Distinguishing Features', y);
+    y = addText(pdf, character.distinguishing_features, y + 4, { fontSize: 9 });
     y += 5;
   }
   
