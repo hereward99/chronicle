@@ -9,6 +9,7 @@ export interface Session {
   date_played: string;
   experience_awarded: number | null;
   chronicle_id: string;
+  plot_id: string | null;
   user_id: string;
   created_at: string;
   updated_at: string;

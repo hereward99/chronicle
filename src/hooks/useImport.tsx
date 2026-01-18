@@ -324,8 +324,24 @@ export function useImport() {
       throw new Error("Please select a chronicle first");
     }
 
+    // Fetch existing plots to match story names
+    const { data: plots } = await supabase
+      .from("plots")
+      .select("id, title")
+      .eq("chronicle_id", currentChronicle.id);
+
+    const plotMap = new Map(plots?.map(p => [p.title.toLowerCase(), p.id]) || []);
+
     let successCount = 0;
     for (const session of data) {
+      // Find plot_id by story name if provided
+      let plotId: string | null = null;
+      if (session.story) {
+        plotId = plotMap.get(session.story.toLowerCase()) || null;
+      } else if (session.plot_id) {
+        plotId = session.plot_id;
+      }
+
       const { error } = await supabase.from("sessions").insert({
         user_id: userData.user.id,
         chronicle_id: currentChronicle.id,
@@ -333,6 +349,7 @@ export function useImport() {
         summary: session.summary || null,
         date_played: session.date_played || new Date().toISOString().split("T")[0],
         experience_awarded: session.experience_awarded || 0,
+        plot_id: plotId,
       });
       if (!error) successCount++;
     }

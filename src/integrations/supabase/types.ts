@@ -514,6 +514,7 @@ export type Database = {
           date_played: string
           experience_awarded: number | null
           id: string
+          plot_id: string | null
           summary: string | null
           title: string
           updated_at: string
@@ -526,6 +527,7 @@ export type Database = {
           date_played?: string
           experience_awarded?: number | null
           id?: string
+          plot_id?: string | null
           summary?: string | null
           title: string
           updated_at?: string
@@ -538,6 +540,7 @@ export type Database = {
           date_played?: string
           experience_awarded?: number | null
           id?: string
+          plot_id?: string | null
           summary?: string | null
           title?: string
           updated_at?: string
@@ -549,6 +552,13 @@ export type Database = {
             columns: ["chronicle_id"]
             isOneToOne: false
             referencedRelation: "chronicles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_plot_id_fkey"
+            columns: ["plot_id"]
+            isOneToOne: false
+            referencedRelation: "plots"
             referencedColumns: ["id"]
           },
         ]
