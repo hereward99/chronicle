@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSessions } from "@/hooks/useSessions";
 import { useChronicles } from "@/hooks/useChronicles";
-import { Calendar } from "lucide-react";
+import { usePlots } from "@/hooks/usePlots";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,6 +16,7 @@ const sessionSchema = z.object({
   summary: z.string().max(2000, "Summary must be less than 2000 characters").optional(),
   date_played: z.string().min(1, "Date is required"),
   experience_awarded: z.number().int().min(0).max(10),
+  plot_id: z.string().nullable(),
 });
 
 interface CreateSessionDialogProps {
@@ -29,11 +31,16 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
     summary: "",
     date_played: new Date().toISOString().split('T')[0], // Today's date
     experience_awarded: 1,
+    plot_id: null as string | null,
   });
   
   const { createSession } = useSessions();
   const { currentChronicle, createDefaultChronicle } = useChronicles();
+  const { plots } = usePlots();
   const { toast } = useToast();
+
+  // Filter plots for current chronicle
+  const chroniclePlots = plots.filter(p => p.chronicle_id === currentChronicle?.id);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +49,7 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
       const validated = sessionSchema.parse({
         ...formData,
         summary: formData.summary || undefined,
+        plot_id: formData.plot_id,
       });
       
       setLoading(true);
@@ -59,6 +67,7 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
         date_played: validated.date_played,
         experience_awarded: validated.experience_awarded,
         chronicle_id: chronicleId,
+        plot_id: validated.plot_id,
       });
 
       // Reset form
@@ -67,6 +76,7 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
         summary: "",
         date_played: new Date().toISOString().split('T')[0],
         experience_awarded: 1,
+        plot_id: null,
       });
       
       setOpen(false);
@@ -107,6 +117,26 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
               className="bg-input border-border"
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="story">Story (Optional)</Label>
+            <Select
+              value={formData.plot_id || "none"}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, plot_id: value === "none" ? null : value }))}
+            >
+              <SelectTrigger className="bg-input border-border">
+                <SelectValue placeholder="Select a story..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No story</SelectItem>
+                {chroniclePlots.map((plot) => (
+                  <SelectItem key={plot.id} value={plot.id}>
+                    {plot.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
