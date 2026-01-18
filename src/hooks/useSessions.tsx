@@ -74,6 +74,34 @@ export function useSessions() {
     }
   };
 
+  const updateSession = async (id: string, updates: Partial<Omit<Session, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => {
+    try {
+      const { data, error } = await supabase
+        .from('sessions')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setSessions(prev => prev.map(s => s.id === id ? { ...s, ...data } as Session : s));
+      toast({
+        title: "Session updated",
+        description: "Your session has been updated successfully.",
+      });
+      
+      return data;
+    } catch (error: any) {
+      toast({
+        title: "Error updating session",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   useEffect(() => {
     fetchSessions();
   }, []);
@@ -82,6 +110,7 @@ export function useSessions() {
     sessions,
     loading,
     createSession,
+    updateSession,
     refetch: fetchSessions,
   };
 }

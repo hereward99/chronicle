@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Calendar, Loader2, FileText, Download, BookOpen, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Search, Calendar, Loader2, FileText, Download, BookOpen, ChevronDown, ChevronRight, Pencil } from "lucide-react";
 import { CreateSessionDialog } from "@/components/dialogs/CreateSessionDialog";
+import { EditSessionDialog } from "@/components/dialogs/EditSessionDialog";
 import { useSessions, Session } from "@/hooks/useSessions";
 import { usePlots } from "@/hooks/usePlots";
 import { exportSessionToPDF } from "@/lib/pdfExport";
@@ -13,6 +14,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 const Sessions = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(["ungrouped"]));
+  const [editingSession, setEditingSession] = useState<Session | null>(null);
   const { sessions, loading } = useSessions();
   const { plots } = usePlots();
 
@@ -98,6 +100,13 @@ const Sessions = () => {
                 {session.experience_awarded} XP awarded
               </Badge>
             )}
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setEditingSession(session)}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
             <Button 
               variant="outline" 
               size="sm"
@@ -257,6 +266,15 @@ const Sessions = () => {
           </Card>
         )}
       </div>
+
+      {/* Edit Session Dialog */}
+      {editingSession && (
+        <EditSessionDialog
+          session={editingSession}
+          open={!!editingSession}
+          onOpenChange={(open) => !open && setEditingSession(null)}
+        />
+      )}
     </div>
   );
 };
