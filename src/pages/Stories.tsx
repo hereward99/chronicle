@@ -10,6 +10,7 @@ import { EditPlotDialog } from "@/components/dialogs/EditPlotDialog";
 import { ViewPlotDialog } from "@/components/dialogs/ViewPlotDialog";
 import { usePlots, Plot } from "@/hooks/usePlots";
 import { usePlotCharacters } from "@/hooks/usePlotCharacters";
+import { useSessions } from "@/hooks/useSessions";
 
 const Stories = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -17,9 +18,14 @@ const Stories = () => {
   const [editingPlot, setEditingPlot] = useState<Plot | null>(null);
   const { plots, loading, refetch } = usePlots();
   const { getCharactersForPlot } = usePlotCharacters();
+  const { sessions } = useSessions();
 
   const getCharacterCountForPlot = (plotId: string) => {
     return getCharactersForPlot(plotId).length;
+  };
+
+  const getSessionCountForPlot = (plotId: string) => {
+    return sessions.filter(session => session.plot_id === plotId).length;
   };
 
   const getStatusColor = (status: string) => {
@@ -88,7 +94,7 @@ const Stories = () => {
         <div className="space-y-2">
           <div className="flex items-center text-sm text-muted-foreground">
             <Clock className="h-4 w-4 mr-2" />
-            0 sessions played
+            {getSessionCountForPlot(story.id)} session{getSessionCountForPlot(story.id) !== 1 ? 's' : ''} played
           </div>
           <div className="flex items-center text-sm text-muted-foreground">
             <Users className="h-4 w-4 mr-2" />
