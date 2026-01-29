@@ -14,6 +14,90 @@ export type Database = {
   }
   public: {
     Tables: {
+      boons: {
+        Row: {
+          chronicle_id: string
+          created_at: string
+          creditor_id: string
+          debtor_id: string
+          description: string
+          id: string
+          notes: string | null
+          plot_id: string | null
+          session_id: string | null
+          severity: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chronicle_id: string
+          created_at?: string
+          creditor_id: string
+          debtor_id: string
+          description: string
+          id?: string
+          notes?: string | null
+          plot_id?: string | null
+          session_id?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chronicle_id?: string
+          created_at?: string
+          creditor_id?: string
+          debtor_id?: string
+          description?: string
+          id?: string
+          notes?: string | null
+          plot_id?: string | null
+          session_id?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boons_chronicle_id_fkey"
+            columns: ["chronicle_id"]
+            isOneToOne: false
+            referencedRelation: "chronicles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boons_creditor_id_fkey"
+            columns: ["creditor_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boons_debtor_id_fkey"
+            columns: ["debtor_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boons_plot_id_fkey"
+            columns: ["plot_id"]
+            isOneToOne: false
+            referencedRelation: "plots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boons_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       character_factions: {
         Row: {
           character_id: string

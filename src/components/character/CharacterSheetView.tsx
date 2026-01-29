@@ -1,4 +1,5 @@
 import { Character, DicePoolConfig, SimpleDicePool, GeneralDicePool, StandardDicePool, CombinedDicePool } from "@/hooks/useCharacters";
+import { useCharacters } from "@/hooks/useCharacters";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { HelpCircle, Droplet, Download, Dices } from "lucide-react";
 import { CharacterAttachmentsGallery } from "./CharacterAttachmentsGallery";
+import { BoonsSection } from "@/components/boons/BoonsSection";
 import { exportCharacterToPDF } from "@/lib/pdfExport";
 
 interface CharacterSheetViewProps {
@@ -405,11 +407,12 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
       </Card>
 
       <Tabs defaultValue="stats" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="stats">Stats</TabsTrigger>
           <TabsTrigger value="disciplines">Disciplines</TabsTrigger>
           <TabsTrigger value="advantages">Advantages</TabsTrigger>
           <TabsTrigger value="beliefs">Beliefs</TabsTrigger>
+          <TabsTrigger value="boons">Boons</TabsTrigger>
           <TabsTrigger value="details">Details</TabsTrigger>
         </TabsList>
 
@@ -771,6 +774,11 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
           )}
         </TabsContent>
 
+        {/* Boons Tab */}
+        <TabsContent value="boons" className="space-y-6">
+          <BoonsTabContent character={character} />
+        </TabsContent>
+
         {/* Details Tab */}
         <TabsContent value="details" className="space-y-6">
           {character.appearance && (
@@ -813,5 +821,21 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
         </TabsContent>
       </Tabs>
     </>
+  );
+}
+
+// Separate component for Boons tab to use hooks
+function BoonsTabContent({ character }: { character: Character }) {
+  const { characters } = useCharacters();
+  
+  // Filter to only characters in the same chronicle
+  const chronicleCharacters = characters.filter(c => c.chronicle_id === character.chronicle_id);
+  
+  return (
+    <BoonsSection 
+      character={character} 
+      characters={chronicleCharacters} 
+      editable={false} 
+    />
   );
 }
