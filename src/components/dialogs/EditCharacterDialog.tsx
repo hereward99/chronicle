@@ -12,10 +12,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileUpload } from "@/components/ui/file-upload";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Trash2, X, Plus, Wand2 } from "lucide-react";
-import { Character, DicePoolConfig, SimpleDicePool, GeneralDicePool, StandardDicePool, CombinedDicePool, ExceptionalPool } from "@/hooks/useCharacters";
+import { Character, DicePoolConfig, SimpleDicePool, GeneralDicePool, StandardDicePool, CombinedDicePool, ExceptionalPool, useCharacters } from "@/hooks/useCharacters";
 import { useFiles } from "@/hooks/useFiles";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { BoonsSection } from "@/components/boons/BoonsSection";
 
 interface EditCharacterDialogProps {
   character: Character | null;
@@ -450,12 +451,13 @@ export function EditCharacterDialog({
         
         <ScrollArea className="flex-1 min-h-0 pr-4">
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-7">
               <TabsTrigger value="basic">Basic</TabsTrigger>
               <TabsTrigger value="stats">Stats</TabsTrigger>
               <TabsTrigger value="disciplines">Disciplines</TabsTrigger>
               <TabsTrigger value="advantages">Advantages</TabsTrigger>
               <TabsTrigger value="beliefs">Beliefs</TabsTrigger>
+              <TabsTrigger value="boons">Boons</TabsTrigger>
               <TabsTrigger value="details">Details</TabsTrigger>
             </TabsList>
 
@@ -1588,6 +1590,11 @@ export function EditCharacterDialog({
               </div>
             </TabsContent>
 
+            {/* Boons Tab */}
+            <TabsContent value="boons" className="space-y-4">
+              <BoonsTabContent character={character} />
+            </TabsContent>
+
             {/* Details Tab */}
             <TabsContent value="details" className="space-y-4">
               <Card className="p-4">
@@ -1655,5 +1662,21 @@ export function EditCharacterDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// Separate component for Boons tab to use hooks
+function BoonsTabContent({ character }: { character: Character }) {
+  const { characters } = useCharacters();
+  
+  // Filter to only characters in the same chronicle
+  const chronicleCharacters = characters.filter(c => c.chronicle_id === character.chronicle_id);
+  
+  return (
+    <BoonsSection 
+      character={character} 
+      characters={chronicleCharacters} 
+      editable={true} 
+    />
   );
 }
