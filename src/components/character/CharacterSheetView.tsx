@@ -626,24 +626,52 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Powers</h3>
             {character.powers && character.powers.length > 0 ? (
-              <div className="space-y-4">
-                {character.powers.map((power, idx) => (
-                  <div key={idx} className="border-l-2 border-primary pl-4">
-                    <div className="flex items-start justify-between mb-1">
-                      <div>
-                        <h4 className="font-medium">{power.name}</h4>
-                        <p className="text-xs text-muted-foreground">
-                          {power.discipline} {power.level && `• Level ${power.level}`}
-                          {power.cost && ` • ${power.cost}`}
-                        </p>
+              (() => {
+                // Group powers by discipline
+                const powersByDiscipline = character.powers.reduce((acc, power) => {
+                  const discipline = power.discipline || 'Other';
+                  if (!acc[discipline]) {
+                    acc[discipline] = [];
+                  }
+                  acc[discipline].push(power);
+                  return acc;
+                }, {} as Record<string, typeof character.powers>);
+
+                // Sort disciplines alphabetically, with 'Other' at the end
+                const sortedDisciplines = Object.keys(powersByDiscipline).sort((a, b) => {
+                  if (a === 'Other') return 1;
+                  if (b === 'Other') return -1;
+                  return a.localeCompare(b);
+                });
+
+                return (
+                  <div className="space-y-6">
+                    {sortedDisciplines.map((discipline) => (
+                      <div key={discipline}>
+                        <h4 className="font-semibold text-primary mb-3">{discipline}</h4>
+                        <div className="space-y-3 ml-2">
+                          {powersByDiscipline[discipline]!.map((power, idx) => (
+                            <div key={idx} className="border-l-2 border-primary/50 pl-4">
+                              <div className="flex items-start justify-between mb-1">
+                                <div>
+                                  <h5 className="font-medium">{power.name}</h5>
+                                  <p className="text-xs text-muted-foreground">
+                                    {power.level && `Level ${power.level}`}
+                                    {power.cost && ` • ${power.cost}`}
+                                  </p>
+                                </div>
+                              </div>
+                              {power.description && (
+                                <p className="text-sm text-muted-foreground mt-2">{power.description}</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                    {power.description && (
-                      <p className="text-sm text-muted-foreground mt-2">{power.description}</p>
-                    )}
+                    ))}
                   </div>
-                ))}
-              </div>
+                );
+              })()
             ) : (
               <p className="text-sm text-muted-foreground">No powers assigned yet</p>
             )}
