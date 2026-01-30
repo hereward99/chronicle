@@ -605,30 +605,12 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
         <TabsContent value="disciplines" className="space-y-6">
           <Card className="p-6">
             <RuleTooltip title="Disciplines" description={rulesReference.disciplines.general}>
-              <h3 className="text-lg font-semibold mb-4">Disciplines</h3>
+              <h3 className="text-lg font-semibold mb-4">Disciplines & Powers</h3>
             </RuleTooltip>
             {character.disciplines && character.disciplines.length > 0 ? (
-              <div className="space-y-4">
-                {character.disciplines.map((disc, idx) => (
-                  <div key={idx}>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium">{disc.name}</span>
-                      <DotRating current={disc.level} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No disciplines assigned yet</p>
-            )}
-          </Card>
-
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Powers</h3>
-            {character.powers && character.powers.length > 0 ? (
               (() => {
                 // Group powers by discipline
-                const powersByDiscipline = character.powers.reduce((acc, power) => {
+                const powersByDiscipline = (character.powers || []).reduce((acc, power) => {
                   const discipline = power.discipline || 'Other';
                   if (!acc[discipline]) {
                     acc[discipline] = [];
@@ -637,21 +619,46 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                   return acc;
                 }, {} as Record<string, typeof character.powers>);
 
-                // Sort disciplines alphabetically, with 'Other' at the end
-                const sortedDisciplines = Object.keys(powersByDiscipline).sort((a, b) => {
-                  if (a === 'Other') return 1;
-                  if (b === 'Other') return -1;
-                  return a.localeCompare(b);
-                });
-
                 return (
                   <div className="space-y-6">
-                    {sortedDisciplines.map((discipline) => (
-                      <div key={discipline}>
-                        <h4 className="font-semibold text-primary mb-3">{discipline}</h4>
-                        <div className="space-y-3 ml-2">
-                          {powersByDiscipline[discipline]!.map((power, idx) => (
-                            <div key={idx} className="border-l-2 border-primary/50 pl-4">
+                    {character.disciplines.map((disc, idx) => (
+                      <div key={idx}>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-semibold text-primary">{disc.name}</span>
+                          <DotRating current={disc.level} />
+                        </div>
+                        {/* Powers for this discipline */}
+                        {powersByDiscipline[disc.name] && powersByDiscipline[disc.name]!.length > 0 && (
+                          <div className="space-y-3 ml-4 mt-2">
+                            {powersByDiscipline[disc.name]!.map((power, powerIdx) => (
+                              <div key={powerIdx} className="border-l-2 border-primary/50 pl-4">
+                                <div className="flex items-start justify-between mb-1">
+                                  <div>
+                                    <h5 className="font-medium">{power.name}</h5>
+                                    <p className="text-xs text-muted-foreground">
+                                      {power.level && `Level ${power.level}`}
+                                      {power.cost && ` • ${power.cost}`}
+                                    </p>
+                                  </div>
+                                </div>
+                                {power.description && (
+                                  <p className="text-sm text-muted-foreground mt-2">{power.description}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {/* Powers without a matching discipline */}
+                    {powersByDiscipline['Other'] && powersByDiscipline['Other']!.length > 0 && (
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-semibold text-muted-foreground">Other Powers</span>
+                        </div>
+                        <div className="space-y-3 ml-4 mt-2">
+                          {powersByDiscipline['Other']!.map((power, powerIdx) => (
+                            <div key={powerIdx} className="border-l-2 border-primary/50 pl-4">
                               <div className="flex items-start justify-between mb-1">
                                 <div>
                                   <h5 className="font-medium">{power.name}</h5>
@@ -668,12 +675,12 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                           ))}
                         </div>
                       </div>
-                    ))}
+                    )}
                   </div>
                 );
               })()
             ) : (
-              <p className="text-sm text-muted-foreground">No powers assigned yet</p>
+              <p className="text-sm text-muted-foreground">No disciplines assigned yet</p>
             )}
           </Card>
         </TabsContent>
