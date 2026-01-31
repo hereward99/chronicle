@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { MentionInput } from "@/components/mentions/MentionInput";
 import { usePlots } from "@/hooks/usePlots";
 import { useChronicles } from "@/hooks/useChronicles";
 import { BookOpen } from "lucide-react";
@@ -150,14 +150,15 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
 
           <div className="space-y-2">
             <Label htmlFor="plot-description">Description</Label>
-            <Textarea
+            <MentionInput
               id="plot-description"
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Describe the story, its themes, and key elements... (optional)"
+              onChange={(value) => setFormData(prev => ({ ...prev, description: value }))}
+              placeholder="Describe the story, its themes, and key elements... Use @ to mention entities (optional)"
               className="bg-input border-border min-h-24 resize-none"
               maxLength={10000}
             />
+            <p className="text-xs text-muted-foreground">Type @ to mention characters, sessions, etc.</p>
           </div>
 
           <FileUpload

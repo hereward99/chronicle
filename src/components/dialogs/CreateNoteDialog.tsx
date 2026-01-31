@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { MentionInput } from "@/components/mentions/MentionInput";
 import { useNotes } from "@/hooks/useNotes";
 import { useChronicles } from "@/hooks/useChronicles";
 import { Scroll } from "lucide-react";
@@ -128,14 +128,15 @@ export function CreateNoteDialog({ children }: CreateNoteDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="note-content">Content</Label>
-            <Textarea
+            <MentionInput
               id="note-content"
               value={formData.content}
-              onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-              placeholder="Write your note content here... (optional)"
+              onChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
+              placeholder="Write your note content here... Use @ to mention entities (optional)"
               className="bg-input border-border min-h-32 resize-none"
               maxLength={5000}
             />
+            <p className="text-xs text-muted-foreground">Type @ to mention characters, stories, sessions, etc.</p>
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">

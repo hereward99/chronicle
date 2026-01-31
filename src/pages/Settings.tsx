@@ -9,7 +9,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useChronicles } from '@/hooks/useChronicles';
 import { useGeneratorSettings } from '@/hooks/useGeneratorSettings';
-import { Download, Upload, Loader2, AlertTriangle, Bot } from 'lucide-react';
+import { Download, Upload, Loader2, AlertTriangle, Bot, AtSign } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   AlertDialog,
@@ -448,6 +448,59 @@ export default function Settings() {
                   </div>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Mentions & Cross-References */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AtSign className="h-5 w-5" />
+                Mentions & Cross-References
+              </CardTitle>
+              <CardDescription>
+                Link to characters, stories, sessions, and more within your text fields.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div>
+                  <h4 className="font-medium text-sm mb-1">How to use mentions</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Type <code className="bg-muted px-1.5 py-0.5 rounded text-foreground">@</code> in any supported text field 
+                    to open the autocomplete menu. Select an entity to insert a clickable link.
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-sm mb-1">Supported fields</h4>
+                  <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                    <li>Note content</li>
+                    <li>Session summaries</li>
+                    <li>Story descriptions</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-sm mb-1">Mention syntax</h4>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Mentions are stored as: <code className="bg-muted px-1.5 py-0.5 rounded text-foreground">@[Name](type:id)</code>
+                  </p>
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <p><strong>Types:</strong> character, plot, session, note, faction, coterie</p>
+                    <p><strong>Example:</strong> <code className="bg-muted px-1 rounded">@[Marcus Blackwood](character:abc-123)</code></p>
+                  </div>
+                </div>
+
+                <Alert>
+                  <AtSign className="h-4 w-4" />
+                  <AlertTitle>Forward-only</AlertTitle>
+                  <AlertDescription>
+                    Mentions work in new or edited content. Existing content stays as plain text 
+                    unless you edit it to add mentions.
+                  </AlertDescription>
+                </Alert>
+              </div>
             </CardContent>
           </Card>
           <Card>
