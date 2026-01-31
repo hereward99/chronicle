@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { MentionInput } from "@/components/mentions/MentionInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSessions, Session } from "@/hooks/useSessions";
 import { usePlots } from "@/hooks/usePlots";
@@ -158,14 +158,15 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
 
           <div className="space-y-2">
             <Label htmlFor="edit-session-summary">Session Summary</Label>
-            <Textarea
+            <MentionInput
               id="edit-session-summary"
               value={formData.summary}
-              onChange={(e) => setFormData(prev => ({ ...prev, summary: e.target.value }))}
-              placeholder="What happened in this session? (optional)"
+              onChange={(value) => setFormData(prev => ({ ...prev, summary: value }))}
+              placeholder="What happened in this session? Use @ to mention characters (optional)"
               className="bg-input border-border min-h-24 resize-none"
               maxLength={2000}
             />
+            <p className="text-xs text-muted-foreground">Type @ to mention characters, stories, etc.</p>
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
