@@ -50,7 +50,7 @@ export function MentionInput({
   const suggestionsRef = useRef<HTMLDivElement>(null);
   
   const { search } = useMentionSearch();
-  const suggestions = search(searchQuery, 8);
+  const suggestions = search(searchQuery, 50);
 
   // Find the @ trigger position before cursor
   const findMentionStart = useCallback((text: string, cursorPos: number): number | null => {

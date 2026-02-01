@@ -89,7 +89,7 @@ export function useMentionSearch() {
     return options;
   }, [characters, plots, sessions, notes, factions, coteries]);
 
-  const search = useCallback((query: string, limit = 10): MentionOption[] => {
+  const search = useCallback((query: string, limit = 50): MentionOption[] => {
     if (!query.trim()) return allOptions.slice(0, limit);
 
     const lowerQuery = query.toLowerCase();
