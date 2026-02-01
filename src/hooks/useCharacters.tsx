@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -115,36 +115,30 @@ export interface Character {
   resonance?: string;
 }
 
+const fetchCharacters = async (): Promise<Character[]> => {
+  const { data, error } = await supabase
+    .from('characters')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return (data as unknown as Character[] || []).map(char => ({
+    ...char,
+    attachments: char.attachments || []
+  }));
+};
+
 export function useCharacters() {
-  const [characters, setCharacters] = useState<Character[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const fetchCharacters = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('characters')
-        .select('*')
-        .order('created_at', { ascending: false });
+  const { data: characters = [], isLoading: loading } = useQuery({
+    queryKey: ['characters'],
+    queryFn: fetchCharacters,
+  });
 
-      if (error) throw error;
-      setCharacters((data as unknown as Character[] || []).map(char => ({
-        ...char,
-        attachments: char.attachments || []
-      })));
-    } catch (error: any) {
-      toast({
-        title: "Error fetching characters",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const createCharacter = async (character: Omit<Character, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    try {
+  const createMutation = useMutation({
+    mutationFn: async (character: Omit<Character, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -155,26 +149,26 @@ export function useCharacters() {
         .single();
 
       if (error) throw error;
-      
-      setCharacters(prev => [data as unknown as Character, ...prev]);
+      return data;
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['characters'] });
       toast({
         title: "Character created",
-        description: `${character.name} has been added to your chronicle.`,
+        description: `${variables.name} has been added to your chronicle.`,
       });
-      
-      return data;
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       toast({
         title: "Error creating character",
         description: error.message,
         variant: "destructive",
       });
-      throw error;
-    }
-  };
+    },
+  });
 
-  const updateCharacter = async (id: string, updates: Partial<Character>) => {
-    try {
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Character> }) => {
       const { data, error } = await supabase
         .from('characters')
         .update(updates as any)
@@ -183,51 +177,60 @@ export function useCharacters() {
         .single();
 
       if (error) throw error;
-      
-      setCharacters(prev => prev.map(char => char.id === id ? data as unknown as Character : char));
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['characters'] });
       toast({
         title: "Character updated",
         description: "Character has been successfully updated.",
       });
-      
-      return data;
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       toast({
         title: "Error updating character",
         description: error.message,
         variant: "destructive",
       });
-      throw error;
-    }
-  };
+    },
+  });
 
-  const deleteCharacter = async (id: string) => {
-    try {
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('characters')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
-      
-      setCharacters(prev => prev.filter(char => char.id !== id));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['characters'] });
       toast({
         title: "Character deleted",
         description: "Character has been successfully deleted.",
       });
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       toast({
         title: "Error deleting character",
         description: error.message,
         variant: "destructive",
       });
-      throw error;
-    }
+    },
+  });
+
+  const createCharacter = async (character: Omit<Character, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    return createMutation.mutateAsync(character);
   };
 
-  useEffect(() => {
-    fetchCharacters();
-  }, []);
+  const updateCharacter = async (id: string, updates: Partial<Character>) => {
+    return updateMutation.mutateAsync({ id, updates });
+  };
+
+  const deleteCharacter = async (id: string) => {
+    return deleteMutation.mutateAsync(id);
+  };
 
   return {
     characters,
@@ -235,6 +238,6 @@ export function useCharacters() {
     createCharacter,
     updateCharacter,
     deleteCharacter,
-    refetch: fetchCharacters,
+    refetch: () => queryClient.invalidateQueries({ queryKey: ['characters'] }),
   };
 }
