@@ -12,6 +12,7 @@ import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialo
 import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
 import { CreateSessionDialog } from "@/components/dialogs/CreateSessionDialog";
 import { CreateNoteDialog } from "@/components/dialogs/CreateNoteDialog";
+import { MentionText } from "@/components/mentions/MentionText";
 
 export default function Chronicle() {
   const { stats, loading: statsLoading } = useChronicleStats();
@@ -197,9 +198,10 @@ export default function Chronicle() {
                       {plot.status}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {plot.description || 'No description provided'}
-                  </p>
+                  <MentionText 
+                    text={plot.description || 'No description provided'} 
+                    className="text-sm text-muted-foreground block"
+                  />
                 </div>
               ))
             )}
@@ -247,9 +249,10 @@ export default function Chronicle() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground line-clamp-3">
-                      {note.content || 'No content'}
-                    </p>
+                    <MentionText 
+                      text={note.content || 'No content'} 
+                      className="text-sm text-muted-foreground line-clamp-3 block"
+                    />
                     <p className="text-xs text-muted-foreground mt-2">
                       {formatDistanceToNow(new Date(note.created_at))} ago
                     </p>

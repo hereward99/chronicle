@@ -11,6 +11,7 @@ import { ViewPlotDialog } from "@/components/dialogs/ViewPlotDialog";
 import { usePlots, Plot } from "@/hooks/usePlots";
 import { usePlotCharacters } from "@/hooks/usePlotCharacters";
 import { useSessions } from "@/hooks/useSessions";
+import { MentionText } from "@/components/mentions/MentionText";
 
 const Stories = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -86,9 +87,10 @@ const Stories = () => {
             {story.status}
           </Badge>
         </div>
-        <CardDescription className="line-clamp-3">
-          {story.description || "No description provided"}
-        </CardDescription>
+        <MentionText 
+          text={story.description || "No description provided"} 
+          className="text-sm text-muted-foreground line-clamp-3 block"
+        />
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-2">

@@ -10,6 +10,7 @@ import { useSessions, Session } from "@/hooks/useSessions";
 import { usePlots } from "@/hooks/usePlots";
 import { exportSessionToPDF } from "@/lib/pdfExport";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { MentionText } from "@/components/mentions/MentionText";
 
 const Sessions = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -121,9 +122,10 @@ const Sessions = () => {
         {session.summary && (
           <div className="space-y-2">
             <h4 className="text-sm font-medium text-foreground">Session Summary:</h4>
-            <p className="text-sm text-muted-foreground">
-              {session.summary}
-            </p>
+            <MentionText 
+              text={session.summary} 
+              className="text-sm text-muted-foreground block whitespace-pre-wrap"
+            />
           </div>
         )}
 
