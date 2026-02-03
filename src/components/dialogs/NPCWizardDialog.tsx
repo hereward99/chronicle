@@ -15,12 +15,14 @@ import { useChronicles } from "@/hooks/useChronicles";
 import { useToast } from "@/hooks/use-toast";
 
 type CreationMethod = "full" | "simple" | "general" | "standard";
+type CreatureType = "vampire" | "human" | "ghoul";
 
 interface NPCWizardDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   generatedData: any;
   creationMethod: CreationMethod;
+  creatureType: CreatureType;
 }
 
 const CLANS = [
@@ -43,7 +45,7 @@ const FULL_STEPS = ["Review Basics", "Attributes", "Powers", "Background", "Conf
 const POOL_STEPS = ["Review Basics", "Dice Pools", "Powers", "Background", "Confirm"];
 const SIMPLE_STEPS = ["Review Basics", "Dice Pool", "Powers", "Confirm"];
 
-export function NPCWizardDialog({ open, onOpenChange, generatedData, creationMethod }: NPCWizardDialogProps) {
+export function NPCWizardDialog({ open, onOpenChange, generatedData, creationMethod, creatureType }: NPCWizardDialogProps) {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const { createCharacter } = useCharacters();
@@ -171,10 +173,14 @@ export function NPCWizardDialog({ open, onOpenChange, generatedData, creationMet
       });
       setStep(0);
     }
-  }, [generatedData, open]);
+  }, [generatedData, open, creatureType]);
 
   const progress = ((step + 1) / STEPS.length) * 100;
-  const isVampire = characterData.clan && !["Human", "Ghoul"].includes(characterData.clan);
+  
+  // Determine vampire status based on creature type prop (more reliable than clan parsing)
+  const isVampire = creatureType === "vampire";
+  const isGhoul = creatureType === "ghoul";
+  const isHuman = creatureType === "human";
 
   const nextStep = () => {
     if (step < STEPS.length - 1) setStep(step + 1);
@@ -186,7 +192,10 @@ export function NPCWizardDialog({ open, onOpenChange, generatedData, creationMet
 
   const canProceed = () => {
     if (step === 0) {
-      return characterData.name.trim() !== "" && characterData.clan !== "";
+      // Name is always required, clan only required for vampires
+      if (characterData.name.trim() === "") return false;
+      if (isVampire && characterData.clan === "") return false;
+      return true;
     }
     return true;
   };
@@ -366,20 +375,28 @@ export function NPCWizardDialog({ open, onOpenChange, generatedData, creationMet
                 />
               </div>
               <div className="space-y-2">
-                <Label>Clan *</Label>
-                <Select
-                  value={characterData.clan}
-                  onValueChange={(v) => setCharacterData(prev => ({ ...prev, clan: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select clan" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CLANS.map(clan => (
-                      <SelectItem key={clan} value={clan}>{clan}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Clan {isVampire ? "*" : ""}</Label>
+                {isVampire ? (
+                  <Select
+                    value={characterData.clan}
+                    onValueChange={(v) => setCharacterData(prev => ({ ...prev, clan: v }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select clan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CLANS.filter(c => !["Human", "Ghoul"].includes(c)).map(clan => (
+                        <SelectItem key={clan} value={clan}>{clan}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    value={isGhoul ? "Ghoul" : "Human"}
+                    disabled
+                    className="bg-muted text-muted-foreground"
+                  />
+                )}
               </div>
             </div>
 
@@ -424,11 +441,15 @@ export function NPCWizardDialog({ open, onOpenChange, generatedData, creationMet
             )}
 
             <div className="space-y-2">
-              <Label>Sire</Label>
+              <Label className={isHuman ? "text-muted-foreground" : ""}>
+                {isGhoul ? "Domitor" : "Sire"}
+              </Label>
               <Input
                 value={characterData.sire}
                 onChange={(e) => setCharacterData(prev => ({ ...prev, sire: e.target.value }))}
-                placeholder="Sire's name (optional)"
+                placeholder={isHuman ? "N/A for humans" : isGhoul ? "Domitor's name (optional)" : "Sire's name (optional)"}
+                disabled={isHuman}
+                className={isHuman ? "bg-muted text-muted-foreground" : ""}
               />
             </div>
           </div>
