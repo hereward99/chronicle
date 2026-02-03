@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const sessionSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
-  summary: z.string().max(2000, "Summary must be less than 2000 characters").optional(),
+  summary: z.string().max(3000, "Summary must be less than 3000 characters").optional(),
   date_played: z.string().min(1, "Date is required"),
   experience_awarded: z.number().int().min(0).max(10),
   plot_id: z.string().nullable(),
@@ -174,7 +174,7 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
               onChange={(value) => setFormData(prev => ({ ...prev, summary: value }))}
               placeholder="What happened in this session? Use @ to mention characters (optional)"
               className="bg-input border-border min-h-24 resize-none"
-              maxLength={2000}
+              maxLength={3000}
             />
             <p className="text-xs text-muted-foreground">Type @ to mention characters, stories, etc.</p>
           </div>
