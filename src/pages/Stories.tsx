@@ -12,6 +12,7 @@ import { usePlots, Plot } from "@/hooks/usePlots";
 import { usePlotCharacters } from "@/hooks/usePlotCharacters";
 import { useSessions } from "@/hooks/useSessions";
 import { MentionText } from "@/components/mentions/MentionText";
+import { TextHighlight } from "@/components/ui/text-highlight";
 
 const Stories = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -81,16 +82,24 @@ const Stories = () => {
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <CardTitle className="text-lg text-foreground line-clamp-2">
-            {story.title}
+            <TextHighlight text={story.title} highlight={searchTerm} />
           </CardTitle>
           <Badge variant={getStatusColor(story.status)} className="shrink-0">
             {story.status}
           </Badge>
         </div>
-        <MentionText 
-          text={story.description || "No description provided"} 
-          className="text-sm text-muted-foreground line-clamp-3 block"
-        />
+        {searchTerm ? (
+          <TextHighlight 
+            text={story.description || "No description provided"} 
+            className="text-sm text-muted-foreground line-clamp-3 block"
+            highlight={searchTerm}
+          />
+        ) : (
+          <MentionText 
+            text={story.description || "No description provided"} 
+            className="text-sm text-muted-foreground line-clamp-3 block"
+          />
+        )}
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-2">
