@@ -16,6 +16,7 @@ import { GenerateNPCDialog } from "@/components/dialogs/GenerateNPCDialog";
 import { NPCWizardDialog } from "@/components/dialogs/NPCWizardDialog";
 
 type CreationMethod = "full" | "simple" | "general" | "standard";
+type CreatureType = "vampire" | "human" | "ghoul";
 
 interface GeneratedData {
   content: string;
@@ -41,10 +42,12 @@ export default function Generator() {
   const [showNPCWizard, setShowNPCWizard] = useState(false);
   const [npcGeneratedData, setNPCGeneratedData] = useState<any>(null);
   const [npcCreationMethod, setNPCCreationMethod] = useState<CreationMethod>("full");
+  const [npcCreatureType, setNPCCreatureType] = useState<CreatureType>("vampire");
 
-  const handleNPCGenerated = (data: any, method: CreationMethod) => {
+  const handleNPCGenerated = (data: any, method: CreationMethod, creatureType: CreatureType) => {
     setNPCGeneratedData(data);
     setNPCCreationMethod(method);
+    setNPCCreatureType(creatureType);
     setShowNPCWizard(true);
   };
 
@@ -501,6 +504,7 @@ export default function Generator() {
         onOpenChange={setShowNPCWizard}
         generatedData={npcGeneratedData}
         creationMethod={npcCreationMethod}
+        creatureType={npcCreatureType}
       />
     </div>
   );

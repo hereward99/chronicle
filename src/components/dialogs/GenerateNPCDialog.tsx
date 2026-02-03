@@ -12,11 +12,12 @@ import { useGeneratorSettings } from "@/hooks/useGeneratorSettings";
 import { generateWithOllama } from "@/lib/ollama";
 
 type CreationMethod = "full" | "simple" | "general" | "standard";
+type CreatureType = "vampire" | "human" | "ghoul";
 
 interface GenerateNPCDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onComplete: (data: any, creationMethod: CreationMethod) => void;
+  onComplete: (data: any, creationMethod: CreationMethod, creatureType: CreatureType) => void;
 }
 
 const CREATION_METHODS = [
@@ -42,16 +43,34 @@ const CREATION_METHODS = [
   }
 ];
 
-const EXAMPLE_PROMPTS = [
-  "A cunning Nosferatu information broker",
-  "A young Toreador artist struggling with the Beast",
-  "An ancient Tremere elder with forbidden knowledge",
-  "A mortal detective investigating strange murders"
+const CREATURE_TYPES = [
+  { id: "vampire" as const, label: "Vampire", desc: "A Kindred with clan, disciplines, and the Beast" },
+  { id: "human" as const, label: "Human", desc: "A mortal without supernatural powers" },
+  { id: "ghoul" as const, label: "Ghoul", desc: "A blood-bound servant with limited powers" },
 ];
+
+const EXAMPLE_PROMPTS: Record<CreatureType, string[]> = {
+  vampire: [
+    "A cunning Nosferatu information broker",
+    "A young Toreador artist struggling with the Beast",
+    "An ancient Tremere elder with forbidden knowledge",
+  ],
+  human: [
+    "A mortal detective investigating strange murders",
+    "A ambitious politician with dangerous secrets",
+    "A street-smart gang leader controlling the docks",
+  ],
+  ghoul: [
+    "A loyal bodyguard who has served for decades",
+    "A ghoul secretary managing a Ventrue's affairs",
+    "A rogue ghoul seeking freedom from their domitor",
+  ],
+};
 
 export function GenerateNPCDialog({ open, onOpenChange, onComplete }: GenerateNPCDialogProps) {
   const [step, setStep] = useState<"method" | "prompt" | "generating">("method");
   const [creationMethod, setCreationMethod] = useState<CreationMethod>("full");
+  const [creatureType, setCreatureType] = useState<CreatureType>("vampire");
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
@@ -71,10 +90,18 @@ export function GenerateNPCDialog({ open, onOpenChange, onComplete }: GenerateNP
     try {
       let data;
 
-      // Modify the prompt based on creation method
+      // Modify the prompt based on creation method and creature type
       let enhancedPrompt = prompt;
+      
+      // Add creature type context
+      if (creatureType === "human") {
+        enhancedPrompt = `${prompt}. IMPORTANT: This is a HUMAN mortal character. Set clan to "Human", generation to null, and omit vampire-specific traits like predator_type, resonance, disciplines, hunger, and blood_potency.`;
+      } else if (creatureType === "ghoul") {
+        enhancedPrompt = `${prompt}. IMPORTANT: This is a GHOUL character. Set clan to "Ghoul", generation to null. Ghouls can have limited discipline access (typically 1-2 dots) from their domitor. Include a note about their domitor if relevant.`;
+      }
+      
       if (creationMethod !== "full") {
-        enhancedPrompt = `${prompt}. Note: This is a quick NPC, focus on concept, personality, and key disciplines. Attributes and skills can be minimal.`;
+        enhancedPrompt = `${enhancedPrompt} Note: This is a quick NPC, focus on concept, personality, and key disciplines. Attributes and skills can be minimal.`;
       }
 
       if (generatorSettings.useLocalLLM) {
@@ -101,13 +128,23 @@ export function GenerateNPCDialog({ open, onOpenChange, onComplete }: GenerateNP
       }
 
       if (data?.parsed) {
+        // Ensure the clan matches the selected creature type
+        if (creatureType === "human") {
+          data.parsed.clan = "Human";
+          data.parsed.generation = null;
+        } else if (creatureType === "ghoul") {
+          data.parsed.clan = "Ghoul";
+          data.parsed.generation = null;
+        }
+        
         // Reset dialog state
         setStep("method");
         setPrompt("");
+        setCreatureType("vampire");
         onOpenChange(false);
         
         // Pass the generated data to the wizard
-        onComplete(data.parsed, creationMethod);
+        onComplete(data.parsed, creationMethod, creatureType);
       } else {
         throw new Error("Failed to parse generated content");
       }
@@ -134,6 +171,7 @@ export function GenerateNPCDialog({ open, onOpenChange, onComplete }: GenerateNP
   const handleClose = () => {
     setStep("method");
     setPrompt("");
+    setCreatureType("vampire");
     onOpenChange(false);
   };
 
@@ -196,9 +234,35 @@ export function GenerateNPCDialog({ open, onOpenChange, onComplete }: GenerateNP
             </div>
 
             <div className="space-y-2">
+              <Label>Creature Type</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {CREATURE_TYPES.map((type) => (
+                  <Card
+                    key={type.id}
+                    className={`p-3 cursor-pointer transition-all hover:border-primary/50 ${
+                      creatureType === type.id ? "border-primary bg-primary/5" : ""
+                    }`}
+                    onClick={() => setCreatureType(type.id)}
+                  >
+                    <div className="text-center space-y-0.5">
+                      <div className="font-semibold text-sm">{type.label}</div>
+                      <div className="text-xs text-muted-foreground">{type.desc}</div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
               <Label>Describe your NPC</Label>
               <Textarea
-                placeholder="A cunning Nosferatu information broker who knows everyone's secrets..."
+                placeholder={
+                  creatureType === "vampire" 
+                    ? "A cunning Nosferatu information broker who knows everyone's secrets..."
+                    : creatureType === "human"
+                    ? "A mortal detective investigating strange murders..."
+                    : "A loyal ghoul bodyguard who has served for decades..."
+                }
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 className="min-h-24 resize-none"
@@ -208,7 +272,7 @@ export function GenerateNPCDialog({ open, onOpenChange, onComplete }: GenerateNP
             <div className="space-y-2">
               <p className="text-xs font-medium text-muted-foreground">Quick prompts:</p>
               <div className="flex flex-wrap gap-1">
-                {EXAMPLE_PROMPTS.map((example, i) => (
+                {EXAMPLE_PROMPTS[creatureType].map((example, i) => (
                   <Badge 
                     key={i}
                     variant="outline" 
