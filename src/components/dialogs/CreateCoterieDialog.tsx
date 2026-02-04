@@ -3,10 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { MentionInput } from "@/components/mentions/MentionInput";
 import { useCoteries } from "@/hooks/useCoteries";
 import { useChronicles } from "@/hooks/useChronicles";
-
 interface CreateCoterieDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -70,13 +69,15 @@ export function CreateCoterieDialog({ open, onOpenChange }: CreateCoterieDialogP
           
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
-            <Textarea
+            <MentionInput
               id="description"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="A group of vampires working together..."
-              rows={3}
+              onChange={setDescription}
+              placeholder="A group of vampires working together... Use @ to mention entities"
+              className="min-h-20 resize-none"
+              maxLength={3000}
             />
+            <p className="text-xs text-muted-foreground">Type @ to mention characters, stories, sessions, etc.</p>
           </div>
           
           <div className="space-y-2">
