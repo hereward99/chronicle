@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { MentionInput } from "@/components/mentions/MentionInput";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCoteries, Coterie } from "@/hooks/useCoteries";
@@ -122,12 +122,15 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
               
               <div className="space-y-2">
                 <Label htmlFor="edit-description">Description</Label>
-                <Textarea
+                <MentionInput
                   id="edit-description"
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={3}
+                  onChange={setDescription}
+                  placeholder="Describe the coterie... Use @ to mention entities"
+                  className="min-h-20 resize-none"
+                  maxLength={3000}
                 />
+                <p className="text-xs text-muted-foreground">Type @ to mention characters, stories, sessions, etc.</p>
               </div>
               
               <div className="space-y-2">

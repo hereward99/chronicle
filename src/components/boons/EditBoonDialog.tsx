@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { MentionInput } from "@/components/mentions/MentionInput";
 import {
   Select,
   SelectContent,
@@ -209,12 +209,14 @@ export function EditBoonDialog({
           {/* Notes */}
           <div className="space-y-2">
             <Label>Notes</Label>
-            <Textarea
+            <MentionInput
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="How was this boon accrued..."
-              rows={2}
+              onChange={setNotes}
+              placeholder="How was this boon accrued... Use @ to mention entities"
+              className="min-h-16 resize-none"
+              maxLength={2000}
             />
+            <p className="text-xs text-muted-foreground">Type @ to mention characters, stories, sessions, etc.</p>
           </div>
 
           {/* Story link */}

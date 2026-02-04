@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { MentionInput } from "@/components/mentions/MentionInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
@@ -1619,22 +1620,26 @@ export function EditCharacterDialog({
 
               <Card className="p-4">
                 <Label>History</Label>
-                <Textarea
-                  value={formData.history}
-                  onChange={(e) => setFormData(prev => ({ ...prev, history: e.target.value }))}
-                  placeholder="Character background and history"
-                  rows={5}
+                <MentionInput
+                  value={formData.history || ""}
+                  onChange={(value) => setFormData(prev => ({ ...prev, history: value }))}
+                  placeholder="Character background and history... Use @ to mention entities"
+                  className="min-h-32 resize-none"
+                  maxLength={5000}
                 />
+                <p className="text-xs text-muted-foreground mt-1">Type @ to mention characters, stories, sessions, etc.</p>
               </Card>
 
               <Card className="p-4">
                 <Label>Notes</Label>
-                <Textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                  placeholder="Additional notes"
-                  rows={5}
+                <MentionInput
+                  value={formData.notes || ""}
+                  onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
+                  placeholder="Additional notes... Use @ to mention entities"
+                  className="min-h-32 resize-none"
+                  maxLength={5000}
                 />
+                <p className="text-xs text-muted-foreground mt-1">Type @ to mention characters, stories, sessions, etc.</p>
               </Card>
             </TabsContent>
           </Tabs>

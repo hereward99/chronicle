@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { MentionInput } from '@/components/mentions/MentionInput';
 import { Faction } from '@/hooks/useFactions';
 import { Trash2 } from 'lucide-react';
 import {
@@ -120,13 +120,15 @@ export function EditFactionDialog({
 
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
-              <Textarea
+              <MentionInput
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Describe the faction's purpose, ideology, or history"
-                rows={3}
+                onChange={(value) => setFormData({ ...formData, description: value })}
+                placeholder="Describe the faction's purpose, ideology, or history... Use @ to mention entities"
+                className="min-h-20 resize-none"
+                maxLength={3000}
               />
+              <p className="text-xs text-muted-foreground">Type @ to mention characters, stories, sessions, etc.</p>
             </div>
 
             <div className="space-y-2">

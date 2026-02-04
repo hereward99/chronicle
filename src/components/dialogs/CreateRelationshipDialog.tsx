@@ -3,13 +3,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { MentionInput } from "@/components/mentions/MentionInput";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { Relationship } from "@/hooks/useRelationships";
 import { Character } from "@/hooks/useCharacters";
-
 interface CreateRelationshipDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -177,23 +176,26 @@ export function CreateRelationshipDialog({
 
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
-            <Textarea
+            <MentionInput
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Describe the relationship..."
-              rows={3}
+              onChange={(value) => setFormData(prev => ({ ...prev, description: value }))}
+              placeholder="Describe the relationship... Use @ to mention entities"
+              className="min-h-20 resize-none"
+              maxLength={2000}
             />
+            <p className="text-xs text-muted-foreground">Type @ to mention characters, stories, sessions, etc.</p>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
-            <Textarea
+            <MentionInput
               id="notes"
               value={formData.notes}
-              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              placeholder="Additional notes..."
-              rows={2}
+              onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
+              placeholder="Additional notes... Use @ to mention entities"
+              className="min-h-16 resize-none"
+              maxLength={2000}
             />
           </div>
 

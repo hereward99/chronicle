@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { MentionInput } from "@/components/mentions/MentionInput";
 import {
   Select,
   SelectContent,
@@ -21,7 +21,6 @@ import { Character } from "@/hooks/useCharacters";
 import { useBoons, BoonSeverity } from "@/hooks/useBoons";
 import { usePlots } from "@/hooks/usePlots";
 import { useSessions } from "@/hooks/useSessions";
-
 interface CreateBoonDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -168,12 +167,14 @@ export function CreateBoonDialog({
           {/* Notes */}
           <div className="space-y-2">
             <Label>Notes (how was it accrued?)</Label>
-            <Textarea
+            <MentionInput
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Brief explanation of how this boon came to be..."
-              rows={2}
+              onChange={setNotes}
+              placeholder="Brief explanation of how this boon came to be... Use @ to mention entities"
+              className="min-h-16 resize-none"
+              maxLength={2000}
             />
+            <p className="text-xs text-muted-foreground">Type @ to mention characters, stories, sessions, etc.</p>
           </div>
 
           {/* Story link */}
