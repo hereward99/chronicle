@@ -7,6 +7,8 @@ import { usePlotCharacters } from "@/hooks/usePlotCharacters";
 import { BookOpen, Clock, Users, Flag, FileText, Image as ImageIcon, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { exportPlotToPDF } from "@/lib/pdfExport";
+import { MentionText } from "@/components/mentions/MentionText";
+
 interface ViewPlotDialogProps {
   plot: Plot | null;
   open: boolean;
@@ -98,9 +100,7 @@ export function ViewPlotDialog({ plot, open, onOpenChange }: ViewPlotDialogProps
             {plot.description && (
               <div className="space-y-2">
                 <h3 className="text-sm font-medium text-foreground">Description</h3>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {plot.description}
-                </p>
+                <MentionText text={plot.description} className="text-sm text-muted-foreground whitespace-pre-wrap" />
               </div>
             )}
 
