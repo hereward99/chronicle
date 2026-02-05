@@ -11,6 +11,7 @@ import { HelpCircle, Droplet, Download, Dices } from "lucide-react";
 import { CharacterAttachmentsGallery } from "./CharacterAttachmentsGallery";
 import { BoonsSection } from "@/components/boons/BoonsSection";
 import { exportCharacterToPDF } from "@/lib/pdfExport";
+import { MentionText } from "@/components/mentions/MentionText";
 
 interface CharacterSheetViewProps {
   character: Character;
@@ -819,7 +820,7 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
           {character.appearance && (
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-2">Appearance</h3>
-              <p className="text-sm whitespace-pre-wrap">{character.appearance}</p>
+              <MentionText text={character.appearance} className="text-sm whitespace-pre-wrap" />
             </Card>
           )}
 
@@ -833,14 +834,14 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
           {character.history && (
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-2">History</h3>
-              <p className="text-sm whitespace-pre-wrap">{character.history}</p>
+              <MentionText text={character.history} className="text-sm whitespace-pre-wrap" />
             </Card>
           )}
 
           {character.notes && (
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-2">Notes</h3>
-              <p className="text-sm whitespace-pre-wrap">{character.notes}</p>
+              <MentionText text={character.notes} className="text-sm whitespace-pre-wrap" />
             </Card>
           )}
 
