@@ -17,6 +17,7 @@ import Generator from "./pages/Generator";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+ import Locations from "./pages/Locations";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,11 @@ const App = () => (
                 </Layout>
               </ProtectedRoute>
             } />
+             <Route path="/locations" element={
+               <ProtectedRoute>
+                 <Locations />
+               </ProtectedRoute>
+             } />
             <Route path="/generator" element={
               <ProtectedRoute>
                 <Layout>

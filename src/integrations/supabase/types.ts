@@ -424,6 +424,47 @@ export type Database = {
         }
         Relationships: []
       }
+      locations: {
+        Row: {
+          chronicle_id: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chronicle_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chronicle_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "locations_chronicle_id_fkey"
+            columns: ["chronicle_id"]
+            isOneToOne: false
+            referencedRelation: "chronicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notes: {
         Row: {
           category: string | null

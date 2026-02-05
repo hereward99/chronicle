@@ -1,7 +1,7 @@
 // Mention syntax: @[Display Name](type:uuid)
 // Example: @[Marcus Blackwood](character:abc123)
 
-export type MentionType = 'character' | 'plot' | 'session' | 'note' | 'faction' | 'coterie';
+ export type MentionType = 'character' | 'plot' | 'session' | 'note' | 'faction' | 'coterie' | 'location';
 
 export interface Mention {
   raw: string;

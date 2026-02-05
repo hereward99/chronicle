@@ -4,6 +4,7 @@ import { useMentionSearch, MentionOption } from '@/hooks/useMentionSearch';
 import { createMention, MentionType } from '@/lib/mentions';
 import { cn } from '@/lib/utils';
 import { User, BookOpen, Calendar, FileText, Shield, Users } from 'lucide-react';
+ import { MapPin } from 'lucide-react';
 
 interface MentionInputProps {
   value: string;
@@ -21,6 +22,7 @@ const typeIcons: Record<MentionType, React.ComponentType<{ className?: string }>
   note: FileText,
   faction: Shield,
   coterie: Users,
+   location: MapPin,
 };
 
 const typeLabels: Record<MentionType, string> = {
@@ -30,6 +32,7 @@ const typeLabels: Record<MentionType, string> = {
   note: 'Note',
   faction: 'Faction',
   coterie: 'Coterie',
+   location: 'Location',
 };
 
 export function MentionInput({

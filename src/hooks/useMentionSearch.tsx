@@ -5,6 +5,7 @@ import { useSessions } from '@/hooks/useSessions';
 import { useNotes } from '@/hooks/useNotes';
 import { useFactions } from '@/hooks/useFactions';
 import { useCoteries } from '@/hooks/useCoteries';
+ import { useLocations } from '@/hooks/useLocations';
 import { MentionType } from '@/lib/mentions';
 
 export interface MentionOption {
@@ -21,6 +22,7 @@ export function useMentionSearch() {
   const { notes } = useNotes();
   const { factions } = useFactions();
   const { coteries } = useCoteries();
+   const { locations } = useLocations();
 
   // Build searchable options from all entities
   const allOptions = useMemo((): MentionOption[] => {
@@ -86,8 +88,18 @@ export function useMentionSearch() {
       });
     });
 
+     // Locations
+     locations.forEach(location => {
+       options.push({
+         id: location.id,
+         name: location.name,
+         type: 'location',
+         subtitle: 'Location',
+       });
+     });
+ 
     return options;
-  }, [characters, plots, sessions, notes, factions, coteries]);
+   }, [characters, plots, sessions, notes, factions, coteries, locations]);
 
   const search = useCallback((query: string, limit = 50): MentionOption[] => {
     if (!query.trim()) return allOptions.slice(0, limit);
