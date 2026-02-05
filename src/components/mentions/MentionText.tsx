@@ -14,6 +14,7 @@ const typeColors: Record<MentionType, string> = {
   note: 'text-yellow-400 hover:text-yellow-300',
   faction: 'text-green-400 hover:text-green-300',
   coterie: 'text-orange-400 hover:text-orange-300',
+   location: 'text-cyan-400 hover:text-cyan-300',
 };
 
 const typeRoutes: Record<MentionType, string> = {
@@ -23,6 +24,7 @@ const typeRoutes: Record<MentionType, string> = {
   note: '/chronicle',
   faction: '/relationships',
   coterie: '/coteries',
+   location: '/locations',
 };
 
 export function MentionText({ text, className }: MentionTextProps) {
