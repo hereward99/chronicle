@@ -3,21 +3,25 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Calendar, Loader2, FileText, Download, BookOpen, ChevronDown, ChevronRight, Pencil } from "lucide-react";
+import { Plus, Search, Calendar, Loader2, FileText, Download, BookOpen, ChevronDown, ChevronRight, Pencil, ClipboardList } from "lucide-react";
 import { CreateSessionDialog } from "@/components/dialogs/CreateSessionDialog";
 import { EditSessionDialog } from "@/components/dialogs/EditSessionDialog";
 import { useSessions, Session } from "@/hooks/useSessions";
 import { usePlots } from "@/hooks/usePlots";
+import { useChecklists } from "@/hooks/useChecklists";
 import { exportSessionToPDF } from "@/lib/pdfExport";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { MentionText } from "@/components/mentions/MentionText";
+import { CreateChecklistDialog } from "@/components/checklists/CreateChecklistDialog";
+import { ChecklistCard } from "@/components/checklists/ChecklistCard";
 
 const Sessions = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(["ungrouped"]));
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(["ungrouped", "checklists-ungrouped"]));
   const [editingSession, setEditingSession] = useState<Session | null>(null);
   const { sessions, loading } = useSessions();
   const { plots } = usePlots();
+  const { checklists, loading: checklistsLoading } = useChecklists();
 
   const filteredSessions = sessions.filter(session =>
     session.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -178,12 +182,20 @@ const Sessions = () => {
             Track your gaming sessions and chronicle progress
           </p>
         </div>
-        <CreateSessionDialog>
-          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-crimson">
-            <Plus className="h-4 w-4 mr-2" />
-            Log New Session
-          </Button>
-        </CreateSessionDialog>
+        <div className="flex gap-2">
+          <CreateChecklistDialog>
+            <Button variant="outline">
+              <ClipboardList className="h-4 w-4 mr-2" />
+              New Checklist
+            </Button>
+          </CreateChecklistDialog>
+          <CreateSessionDialog>
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-crimson">
+              <Plus className="h-4 w-4 mr-2" />
+              Log New Session
+            </Button>
+          </CreateSessionDialog>
+        </div>
       </div>
 
       {/* Search */}
@@ -197,52 +209,144 @@ const Sessions = () => {
         />
       </div>
 
-      {/* Sessions List - Grouped by Story */}
+      {/* Sessions & Checklists List - Grouped by Story */}
       <div className="space-y-4">
-        {loading ? (
+        {(loading || checklistsLoading) ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
-        ) : filteredSessions.length > 0 ? (
-          sortedGroupKeys.map((groupKey) => {
-            const groupSessions = groupedSessions[groupKey];
-            const isExpanded = expandedGroups.has(groupKey);
-            const storyName = getStoryName(groupKey === "ungrouped" ? null : groupKey);
-            const totalXP = groupSessions.reduce((sum, s) => sum + (s.experience_awarded || 0), 0);
+        ) : (filteredSessions.length > 0 || checklists.length > 0) ? (
+          <>
+            {sortedGroupKeys.map((groupKey) => {
+              const groupSessions = groupedSessions[groupKey];
+              const plotId = groupKey === "ungrouped" ? null : groupKey;
+              const groupChecklists = checklists.filter(c => c.plot_id === plotId);
+              const isExpanded = expandedGroups.has(groupKey);
+              const storyName = getStoryName(plotId);
+              const totalXP = groupSessions.reduce((sum, s) => sum + (s.experience_awarded || 0), 0);
 
-            return (
-              <Collapsible
-                key={groupKey}
-                open={isExpanded}
-                onOpenChange={() => toggleGroup(groupKey)}
-              >
-                <CollapsibleTrigger asChild>
-                  <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg cursor-pointer hover:bg-secondary/70 transition-colors">
-                    {isExpanded ? (
-                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                    ) : (
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                    )}
-                    <BookOpen className="h-5 w-5 text-primary" />
-                    <span className="font-semibold text-foreground flex-1">{storyName}</span>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs">
-                        {groupSessions.length} session{groupSessions.length !== 1 ? 's' : ''}
-                      </Badge>
-                      {totalXP > 0 && (
-                        <Badge variant="secondary" className="text-xs">
-                          {totalXP} XP
-                        </Badge>
+              return (
+                <Collapsible
+                  key={groupKey}
+                  open={isExpanded}
+                  onOpenChange={() => toggleGroup(groupKey)}
+                >
+                  <CollapsibleTrigger asChild>
+                    <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg cursor-pointer hover:bg-secondary/70 transition-colors">
+                      {isExpanded ? (
+                        <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                      ) : (
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
                       )}
+                      <BookOpen className="h-5 w-5 text-primary" />
+                      <span className="font-semibold text-foreground flex-1">{storyName}</span>
+                      <div className="flex items-center gap-2">
+                        {groupChecklists.length > 0 && (
+                          <Badge variant="outline" className="text-xs">
+                            <ClipboardList className="h-3 w-3 mr-1" />
+                            {groupChecklists.length}
+                          </Badge>
+                        )}
+                        <Badge variant="outline" className="text-xs">
+                          {groupSessions.length} session{groupSessions.length !== 1 ? 's' : ''}
+                        </Badge>
+                        {totalXP > 0 && (
+                          <Badge variant="secondary" className="text-xs">
+                            {totalXP} XP
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="space-y-4 pt-4 pl-4">
-                  {groupSessions.map(renderSessionCard)}
-                </CollapsibleContent>
-              </Collapsible>
-            );
-          })
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-4 pt-4 pl-4">
+                    {/* Checklists for this story */}
+                    {groupChecklists.length > 0 && (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                            <ClipboardList className="h-4 w-4" />
+                            Prep Checklists
+                          </h4>
+                          <CreateChecklistDialog defaultPlotId={plotId}>
+                            <Button variant="ghost" size="sm" className="h-7 text-xs">
+                              <Plus className="h-3 w-3 mr-1" />
+                              Add
+                            </Button>
+                          </CreateChecklistDialog>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          {groupChecklists.map(checklist => (
+                            <ChecklistCard key={checklist.id} checklist={checklist} />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Sessions for this story */}
+                    {groupSessions.length > 0 && (
+                      <div className="space-y-3">
+                        {groupChecklists.length > 0 && (
+                          <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            Sessions
+                          </h4>
+                        )}
+                        {groupSessions.map(renderSessionCard)}
+                      </div>
+                    )}
+                    
+                    {/* Quick add checklist if none exist */}
+                    {groupChecklists.length === 0 && (
+                      <CreateChecklistDialog defaultPlotId={plotId}>
+                        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                          <ClipboardList className="h-4 w-4 mr-2" />
+                          Add Prep Checklist
+                        </Button>
+                      </CreateChecklistDialog>
+                    )}
+                  </CollapsibleContent>
+                </Collapsible>
+              );
+            })}
+            
+            {/* Show any checklists not linked to a story that aren't in ungrouped sessions */}
+            {(() => {
+              const unlinkedChecklists = checklists.filter(c => 
+                c.plot_id === null && !sortedGroupKeys.includes("ungrouped")
+              );
+              if (unlinkedChecklists.length === 0) return null;
+              
+              const isExpanded = expandedGroups.has("checklists-ungrouped");
+              return (
+                <Collapsible
+                  open={isExpanded}
+                  onOpenChange={() => toggleGroup("checklists-ungrouped")}
+                >
+                  <CollapsibleTrigger asChild>
+                    <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg cursor-pointer hover:bg-secondary/70 transition-colors">
+                      {isExpanded ? (
+                        <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                      ) : (
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      )}
+                      <ClipboardList className="h-5 w-5 text-primary" />
+                      <span className="font-semibold text-foreground flex-1">Ungrouped Checklists</span>
+                      <Badge variant="outline" className="text-xs">
+                        {unlinkedChecklists.length} checklist{unlinkedChecklists.length !== 1 ? 's' : ''}
+                      </Badge>
+                    </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-4 pt-4 pl-4">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {unlinkedChecklists.map(checklist => (
+                        <ChecklistCard key={checklist.id} checklist={checklist} />
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              );
+            })()}
+          </>
         ) : (
           <Card className="bg-card border-border">
             <CardContent className="flex flex-col items-center justify-center py-12">
@@ -253,16 +357,24 @@ const Sessions = () => {
               <p className="text-muted-foreground text-center mb-4">
                 {searchTerm 
                   ? 'Try adjusting your search terms'
-                  : 'Start tracking your chronicle by logging your first gaming session'
+                  : 'Start tracking your chronicle by logging your first gaming session or prep checklist'
                 }
               </p>
               {!searchTerm && (
-                <CreateSessionDialog>
-                  <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Log Your First Session
-                  </Button>
-                </CreateSessionDialog>
+                <div className="flex gap-2">
+                  <CreateChecklistDialog>
+                    <Button variant="outline">
+                      <ClipboardList className="h-4 w-4 mr-2" />
+                      Create Checklist
+                    </Button>
+                  </CreateChecklistDialog>
+                  <CreateSessionDialog>
+                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Log Your First Session
+                    </Button>
+                  </CreateSessionDialog>
+                </div>
               )}
             </CardContent>
           </Card>

@@ -814,3 +814,77 @@ export async function exportCharacterToPDF(character: {
   
   pdf.save(`${character.name.replace(/[^a-z0-9]/gi, '_')}_character.pdf`);
 }
+
+// Export a Session Prep Checklist to PDF
+export function exportChecklistToPDF(checklist: {
+  title: string;
+  notes?: string | null;
+  items: { text: string; is_completed: boolean }[];
+  created_at: string;
+}) {
+  const pdf = createThemedPDF({
+    title: checklist.title,
+    subtitle: 'Session Prep Checklist'
+  });
+  
+  let y = 35;
+  
+  // Progress summary
+  const completedCount = checklist.items.filter(item => item.is_completed).length;
+  const totalCount = checklist.items.length;
+  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  
+  pdf.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+  pdf.setFontSize(10);
+  pdf.text(`Progress: ${completedCount}/${totalCount} items (${progressPercent}%)`, 20, y);
+  y += 8;
+  
+  // Notes
+  if (checklist.notes) {
+    y = addSection(pdf, 'Notes', y);
+    y = addText(pdf, checklist.notes, y + 4, { fontSize: 9 });
+    y += 8;
+  }
+  
+  // Checklist items
+  y = addSection(pdf, 'Checklist Items', y);
+  y += 4;
+  
+  checklist.items.forEach((item) => {
+    y = checkNewPage(pdf, y, 8);
+    
+    // Draw checkbox
+    const checkboxSize = 3;
+    const checkboxX = 20;
+    const checkboxY = y - 2.5;
+    
+    pdf.setDrawColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+    pdf.setLineWidth(0.3);
+    pdf.rect(checkboxX, checkboxY, checkboxSize, checkboxSize, 'S');
+    
+    if (item.is_completed) {
+      // Draw checkmark
+      pdf.setDrawColor(COLORS.primary.r, COLORS.primary.g, COLORS.primary.b);
+      pdf.setLineWidth(0.5);
+      pdf.line(checkboxX + 0.5, checkboxY + 1.5, checkboxX + 1.2, checkboxY + 2.3);
+      pdf.line(checkboxX + 1.2, checkboxY + 2.3, checkboxX + 2.5, checkboxY + 0.5);
+    }
+    
+    // Item text
+    const textColor = item.is_completed ? COLORS.muted : COLORS.foreground;
+    pdf.setTextColor(textColor.r, textColor.g, textColor.b);
+    pdf.setFontSize(10);
+    pdf.text(item.text, 26, y);
+    
+    y += 6;
+  });
+  
+  // Metadata
+  y += 5;
+  y = checkNewPage(pdf, y, 15);
+  pdf.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+  pdf.setFontSize(8);
+  pdf.text(`Created: ${new Date(checklist.created_at).toLocaleDateString()}`, 20, y);
+  
+  pdf.save(`${checklist.title.replace(/[^a-z0-9]/gi, '_')}_checklist.pdf`);
+}
