@@ -304,6 +304,41 @@ export type Database = {
           },
         ]
       }
+      checklist_items: {
+        Row: {
+          checklist_id: string
+          created_at: string
+          id: string
+          is_completed: boolean
+          sort_order: number
+          text: string
+        }
+        Insert: {
+          checklist_id: string
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          sort_order?: number
+          text: string
+        }
+        Update: {
+          checklist_id?: string
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          sort_order?: number
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_items_checklist_id_fkey"
+            columns: ["checklist_id"]
+            isOneToOne: false
+            referencedRelation: "session_checklists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chronicles: {
         Row: {
           created_at: string
@@ -630,6 +665,54 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      session_checklists: {
+        Row: {
+          chronicle_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          plot_id: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chronicle_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          plot_id?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chronicle_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          plot_id?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_checklists_chronicle_id_fkey"
+            columns: ["chronicle_id"]
+            isOneToOne: false
+            referencedRelation: "chronicles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_checklists_plot_id_fkey"
+            columns: ["plot_id"]
+            isOneToOne: false
+            referencedRelation: "plots"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sessions: {
         Row: {
