@@ -156,12 +156,12 @@ export function CreateChecklistDialog({ children, defaultPlotId }: CreateCheckli
             {/* Link to Story */}
             <div className="grid gap-2">
               <Label>Link to Story (Optional)</Label>
-              <Select value={plotId || ""} onValueChange={(v) => setPlotId(v || null)}>
+              <Select value={plotId || "__none__"} onValueChange={(v) => setPlotId(v === "__none__" ? null : v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="No story linked" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No story linked</SelectItem>
+                  <SelectItem value="__none__">No story linked</SelectItem>
                   {plots.map((plot) => (
                     <SelectItem key={plot.id} value={plot.id}>{plot.title}</SelectItem>
                   ))}
