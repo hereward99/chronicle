@@ -37,16 +37,19 @@ import {
 
 interface ChecklistCardProps {
   checklist: SessionChecklist;
+  toggleItem: (itemId: string, isCompleted: boolean) => Promise<void>;
+  addItem: (checklistId: string, text: string) => Promise<any>;
+  updateItem: (itemId: string, text: string) => Promise<void>;
+  deleteItem: (itemId: string) => Promise<void>;
+  deleteChecklist: (id: string) => Promise<void>;
 }
 
-export function ChecklistCard({ checklist }: ChecklistCardProps) {
+export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, deleteItem, deleteChecklist }: ChecklistCardProps) {
   const [newItemText, setNewItemText] = useState("");
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editingItemText, setEditingItemText] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
-  const { toggleItem, addItem, updateItem, deleteItem, deleteChecklist } = useChecklists();
 
   const completedCount = checklist.items.filter(item => item.is_completed).length;
   const totalCount = checklist.items.length;
