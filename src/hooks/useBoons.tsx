@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -22,18 +22,14 @@ export type BoonSeverity = 'trivial' | 'minor' | 'major' | 'life';
 export type BoonStatus = 'outstanding' | 'fulfilled' | 'forgiven';
 
 export function useBoons(chronicleId?: string) {
-  const [boons, setBoons] = useState<Boon[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const fetchBoons = async () => {
-    if (!chronicleId) {
-      setBoons([]);
-      setLoading(false);
-      return;
-    }
+  const { data: boons = [], isLoading: loading } = useQuery({
+    queryKey: ['boons', chronicleId],
+    queryFn: async () => {
+      if (!chronicleId) return [];
 
-    try {
       const { data, error } = await supabase
         .from('boons')
         .select('*')
@@ -41,20 +37,13 @@ export function useBoons(chronicleId?: string) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setBoons((data as unknown as Boon[]) || []);
-    } catch (error: any) {
-      toast({
-        title: "Error fetching boons",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+      return (data as unknown as Boon[]) || [];
+    },
+    enabled: !!chronicleId,
+  });
 
-  const createBoon = async (boon: Omit<Boon, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    try {
+  const createBoonMutation = useMutation({
+    mutationFn: async (boon: Omit<Boon, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -65,26 +54,19 @@ export function useBoons(chronicleId?: string) {
         .single();
 
       if (error) throw error;
-      
-      setBoons(prev => [data as unknown as Boon, ...prev]);
-      toast({
-        title: "Boon created",
-        description: "The boon has been recorded.",
-      });
-      
       return data;
-    } catch (error: any) {
-      toast({
-        title: "Error creating boon",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['boons'] });
+      toast({ title: "Boon created", description: "The boon has been recorded." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error creating boon", description: error.message, variant: "destructive" });
+    },
+  });
 
-  const updateBoon = async (id: string, updates: Partial<Boon>) => {
-    try {
+  const updateBoonMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Boon> }) => {
       const { data, error } = await supabase
         .from('boons')
         .update(updates as any)
@@ -93,66 +75,58 @@ export function useBoons(chronicleId?: string) {
         .single();
 
       if (error) throw error;
-      
-      setBoons(prev => prev.map(b => b.id === id ? data as unknown as Boon : b));
-      toast({
-        title: "Boon updated",
-        description: "The boon has been updated.",
-      });
-      
       return data;
-    } catch (error: any) {
-      toast({
-        title: "Error updating boon",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['boons'] });
+      toast({ title: "Boon updated", description: "The boon has been updated." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error updating boon", description: error.message, variant: "destructive" });
+    },
+  });
 
-  const deleteBoon = async (id: string) => {
-    try {
+  const deleteBoonMutation = useMutation({
+    mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('boons')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
-      
-      setBoons(prev => prev.filter(b => b.id !== id));
-      toast({
-        title: "Boon deleted",
-        description: "The boon has been removed.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error deleting boon",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['boons'] });
+      toast({ title: "Boon deleted", description: "The boon has been removed." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error deleting boon", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const createBoon = async (boon: Omit<Boon, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    return createBoonMutation.mutateAsync(boon);
   };
 
-  // Get boons where a character is the creditor (boons held)
+  const updateBoon = async (id: string, updates: Partial<Boon>) => {
+    return updateBoonMutation.mutateAsync({ id, updates });
+  };
+
+  const deleteBoon = async (id: string) => {
+    return deleteBoonMutation.mutateAsync(id);
+  };
+
   const getBoonsHeld = (characterId: string) => {
     return boons.filter(b => b.creditor_id === characterId);
   };
 
-  // Get boons where a character is the debtor (debts owed)
   const getDebtsOwed = (characterId: string) => {
     return boons.filter(b => b.debtor_id === characterId);
   };
 
-  // Get all boons involving a character (either as creditor or debtor)
   const getBoonsForCharacter = (characterId: string) => {
     return boons.filter(b => b.creditor_id === characterId || b.debtor_id === characterId);
   };
-
-  useEffect(() => {
-    fetchBoons();
-  }, [chronicleId]);
 
   return {
     boons,
@@ -163,6 +137,6 @@ export function useBoons(chronicleId?: string) {
     getBoonsHeld,
     getDebtsOwed,
     getBoonsForCharacter,
-    refetch: fetchBoons,
+    refetch: () => queryClient.invalidateQueries({ queryKey: ['boons'] }),
   };
 }

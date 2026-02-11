@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -13,13 +14,13 @@ export interface Chronicle {
 }
 
 export function useChronicles() {
-  const [chronicles, setChronicles] = useState<Chronicle[]>([]);
   const [currentChronicle, setCurrentChronicle] = useState<Chronicle | null>(null);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const fetchChronicles = async () => {
-    try {
+  const { data: chronicles = [], isLoading: loading } = useQuery({
+    queryKey: ['chronicles'],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('chronicles')
         .select('*')
@@ -27,25 +28,18 @@ export function useChronicles() {
 
       if (error) throw error;
       const chronicleData = data as Chronicle[] || [];
-      setChronicles(chronicleData);
       
       // Set current chronicle to the first one if none selected
       if (chronicleData.length > 0 && !currentChronicle) {
         setCurrentChronicle(chronicleData[0]);
       }
-    } catch (error: any) {
-      toast({
-        title: "Error fetching chronicles",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+      
+      return chronicleData;
+    },
+  });
 
-  const createChronicle = async (chronicle: Omit<Chronicle, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    try {
+  const createChronicleMutation = useMutation({
+    mutationFn: async (chronicle: Omit<Chronicle, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -56,29 +50,31 @@ export function useChronicles() {
         .single();
 
       if (error) throw error;
+      return data as Chronicle;
+    },
+    onSuccess: (newChronicle, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['chronicles'] });
       
-      const newChronicle = data as Chronicle;
-      setChronicles(prev => [newChronicle, ...prev]);
-      
-      // Set as current chronicle if it's the first one
       if (!currentChronicle) {
         setCurrentChronicle(newChronicle);
       }
       
       toast({
         title: "Chronicle created",
-        description: `${chronicle.name} has been created.`,
+        description: `${variables.name} has been created.`,
       });
-      
-      return newChronicle;
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       toast({
         title: "Error creating chronicle",
         description: error.message,
         variant: "destructive",
       });
-      throw error;
-    }
+    },
+  });
+
+  const createChronicle = async (chronicle: Omit<Chronicle, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    return createChronicleMutation.mutateAsync(chronicle);
   };
 
   const createDefaultChronicle = async () => {
@@ -89,10 +85,6 @@ export function useChronicles() {
     });
   };
 
-  useEffect(() => {
-    fetchChronicles();
-  }, []);
-
   return {
     chronicles,
     currentChronicle,
@@ -100,6 +92,6 @@ export function useChronicles() {
     loading,
     createChronicle,
     createDefaultChronicle,
-    refetch: fetchChronicles,
+    refetch: () => queryClient.invalidateQueries({ queryKey: ['chronicles'] }),
   };
 }

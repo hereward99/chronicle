@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -22,13 +22,12 @@ export interface CharacterFaction {
 }
 
 export function useFactions(chronicleId?: string) {
-  const [factions, setFactions] = useState<Faction[]>([]);
-  const [characterFactions, setCharacterFactions] = useState<CharacterFaction[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const fetchFactions = async () => {
-    try {
+  const { data: factions = [], isLoading: loading } = useQuery({
+    queryKey: ['factions', chronicleId],
+    queryFn: async () => {
       let query = supabase
         .from('factions')
         .select('*')
@@ -39,39 +38,25 @@ export function useFactions(chronicleId?: string) {
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
-      setFactions(data as Faction[] || []);
-    } catch (error: any) {
-      toast({
-        title: "Error fetching factions",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+      return data as Faction[] || [];
+    },
+  });
 
-  const fetchCharacterFactions = async () => {
-    try {
+  const { data: characterFactions = [] } = useQuery({
+    queryKey: ['characterFactions', chronicleId],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('character_factions')
         .select('*');
 
       if (error) throw error;
-      setCharacterFactions(data as CharacterFaction[] || []);
-    } catch (error: any) {
-      toast({
-        title: "Error fetching character factions",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
+      return data as CharacterFaction[] || [];
+    },
+  });
 
-  const createFaction = async (faction: Omit<Faction, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    try {
+  const createFactionMutation = useMutation({
+    mutationFn: async (faction: Omit<Faction, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -82,26 +67,19 @@ export function useFactions(chronicleId?: string) {
         .single();
 
       if (error) throw error;
-      
-      setFactions(prev => [...prev, data as Faction]);
-      toast({
-        title: "Faction created",
-        description: "New faction has been added.",
-      });
-      
       return data;
-    } catch (error: any) {
-      toast({
-        title: "Error creating faction",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['factions'] });
+      toast({ title: "Faction created", description: "New faction has been added." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error creating faction", description: error.message, variant: "destructive" });
+    },
+  });
 
-  const updateFaction = async (id: string, updates: Partial<Faction>) => {
-    try {
+  const updateFactionMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Faction> }) => {
       const { data, error } = await supabase
         .from('factions')
         .update(updates)
@@ -110,50 +88,37 @@ export function useFactions(chronicleId?: string) {
         .single();
 
       if (error) throw error;
-      
-      setFactions(prev => prev.map(faction => faction.id === id ? data as Faction : faction));
-      toast({
-        title: "Faction updated",
-        description: "Faction has been successfully updated.",
-      });
-      
       return data;
-    } catch (error: any) {
-      toast({
-        title: "Error updating faction",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['factions'] });
+      toast({ title: "Faction updated", description: "Faction has been successfully updated." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error updating faction", description: error.message, variant: "destructive" });
+    },
+  });
 
-  const deleteFaction = async (id: string) => {
-    try {
+  const deleteFactionMutation = useMutation({
+    mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('factions')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
-      
-      setFactions(prev => prev.filter(faction => faction.id !== id));
-      toast({
-        title: "Faction deleted",
-        description: "Faction has been successfully deleted.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error deleting faction",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['factions'] });
+      toast({ title: "Faction deleted", description: "Faction has been successfully deleted." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error deleting faction", description: error.message, variant: "destructive" });
+    },
+  });
 
-  const addCharacterToFaction = async (characterId: string, factionId: string, role?: string) => {
-    try {
+  const addCharacterToFactionMutation = useMutation({
+    mutationFn: async ({ characterId, factionId, role }: { characterId: string; factionId: string; role?: string }) => {
       const { data, error } = await supabase
         .from('character_factions')
         .insert([{ character_id: characterId, faction_id: factionId, role }])
@@ -161,26 +126,19 @@ export function useFactions(chronicleId?: string) {
         .single();
 
       if (error) throw error;
-      
-      setCharacterFactions(prev => [...prev, data as CharacterFaction]);
-      toast({
-        title: "Character added to faction",
-        description: "Character has been added to the faction.",
-      });
-      
       return data;
-    } catch (error: any) {
-      toast({
-        title: "Error adding character to faction",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['characterFactions'] });
+      toast({ title: "Character added to faction", description: "Character has been added to the faction." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error adding character to faction", description: error.message, variant: "destructive" });
+    },
+  });
 
-  const removeCharacterFromFaction = async (characterId: string, factionId: string) => {
-    try {
+  const removeCharacterFromFactionMutation = useMutation({
+    mutationFn: async ({ characterId, factionId }: { characterId: string; factionId: string }) => {
       const { error } = await supabase
         .from('character_factions')
         .delete()
@@ -188,28 +146,35 @@ export function useFactions(chronicleId?: string) {
         .eq('faction_id', factionId);
 
       if (error) throw error;
-      
-      setCharacterFactions(prev => 
-        prev.filter(cf => !(cf.character_id === characterId && cf.faction_id === factionId))
-      );
-      toast({
-        title: "Character removed from faction",
-        description: "Character has been removed from the faction.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error removing character from faction",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['characterFactions'] });
+      toast({ title: "Character removed from faction", description: "Character has been removed from the faction." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error removing character from faction", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const createFaction = async (faction: Omit<Faction, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    return createFactionMutation.mutateAsync(faction);
   };
 
-  useEffect(() => {
-    fetchFactions();
-    fetchCharacterFactions();
-  }, [chronicleId]);
+  const updateFaction = async (id: string, updates: Partial<Faction>) => {
+    return updateFactionMutation.mutateAsync({ id, updates });
+  };
+
+  const deleteFaction = async (id: string) => {
+    return deleteFactionMutation.mutateAsync(id);
+  };
+
+  const addCharacterToFaction = async (characterId: string, factionId: string, role?: string) => {
+    return addCharacterToFactionMutation.mutateAsync({ characterId, factionId, role });
+  };
+
+  const removeCharacterFromFaction = async (characterId: string, factionId: string) => {
+    return removeCharacterFromFactionMutation.mutateAsync({ characterId, factionId });
+  };
 
   return {
     factions,
@@ -221,8 +186,8 @@ export function useFactions(chronicleId?: string) {
     addCharacterToFaction,
     removeCharacterFromFaction,
     refetch: () => {
-      fetchFactions();
-      fetchCharacterFactions();
+      queryClient.invalidateQueries({ queryKey: ['factions'] });
+      queryClient.invalidateQueries({ queryKey: ['characterFactions'] });
     },
   };
 }
