@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -22,12 +22,12 @@ export interface CoterieMember {
 }
 
 export function useCoteries(chronicleId?: string) {
-  const [coteries, setCoteries] = useState<Coterie[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const fetchCoteries = async () => {
-    try {
+  const { data: coteries = [], isLoading: loading } = useQuery({
+    queryKey: ['coteries', chronicleId],
+    queryFn: async () => {
       let query = supabase
         .from('coteries')
         .select('*')
@@ -38,22 +38,13 @@ export function useCoteries(chronicleId?: string) {
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
-      setCoteries(data || []);
-    } catch (error: any) {
-      toast({
-        title: "Error fetching coteries",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+      return data as Coterie[] || [];
+    },
+  });
 
-  const createCoterie = async (coterie: Omit<Coterie, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    try {
+  const createCoterieMutation = useMutation({
+    mutationFn: async (coterie: Omit<Coterie, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -64,26 +55,19 @@ export function useCoteries(chronicleId?: string) {
         .single();
 
       if (error) throw error;
-      
-      setCoteries(prev => [data as Coterie, ...prev]);
-      toast({
-        title: "Coterie created",
-        description: `${coterie.name} has been created.`,
-      });
-      
       return data;
-    } catch (error: any) {
-      toast({
-        title: "Error creating coterie",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['coteries'] });
+      toast({ title: "Coterie created", description: `${variables.name} has been created.` });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error creating coterie", description: error.message, variant: "destructive" });
+    },
+  });
 
-  const updateCoterie = async (id: string, updates: Partial<Coterie>) => {
-    try {
+  const updateCoterieMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Coterie> }) => {
       const { data, error } = await supabase
         .from('coteries')
         .update(updates)
@@ -92,72 +76,53 @@ export function useCoteries(chronicleId?: string) {
         .single();
 
       if (error) throw error;
-      
-      setCoteries(prev => prev.map(c => c.id === id ? data as Coterie : c));
-      toast({
-        title: "Coterie updated",
-        description: "Coterie has been successfully updated.",
-      });
-      
       return data;
-    } catch (error: any) {
-      toast({
-        title: "Error updating coterie",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coteries'] });
+      toast({ title: "Coterie updated", description: "Coterie has been successfully updated." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error updating coterie", description: error.message, variant: "destructive" });
+    },
+  });
 
-  const deleteCoterie = async (id: string) => {
-    try {
+  const deleteCoterieMutation = useMutation({
+    mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('coteries')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
-      
-      setCoteries(prev => prev.filter(c => c.id !== id));
-      toast({
-        title: "Coterie deleted",
-        description: "Coterie has been successfully deleted.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error deleting coterie",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coteries'] });
+      toast({ title: "Coterie deleted", description: "Coterie has been successfully deleted." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error deleting coterie", description: error.message, variant: "destructive" });
+    },
+  });
 
-  const addMember = async (coterieId: string, characterId: string, role?: string) => {
-    try {
+  const addMemberMutation = useMutation({
+    mutationFn: async ({ coterieId, characterId, role }: { coterieId: string; characterId: string; role?: string }) => {
       const { error } = await supabase
         .from('coterie_members')
         .insert({ coterie_id: coterieId, character_id: characterId, role });
 
       if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "Member added", description: "Character has been added to the coterie." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error adding member", description: error.message, variant: "destructive" });
+    },
+  });
 
-      toast({
-        title: "Member added",
-        description: "Character has been added to the coterie.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error adding member",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
-
-  const removeMember = async (coterieId: string, characterId: string) => {
-    try {
+  const removeMemberMutation = useMutation({
+    mutationFn: async ({ coterieId, characterId }: { coterieId: string; characterId: string }) => {
       const { error } = await supabase
         .from('coterie_members')
         .delete()
@@ -165,19 +130,33 @@ export function useCoteries(chronicleId?: string) {
         .eq('character_id', characterId);
 
       if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "Member removed", description: "Character has been removed from the coterie." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error removing member", description: error.message, variant: "destructive" });
+    },
+  });
 
-      toast({
-        title: "Member removed",
-        description: "Character has been removed from the coterie.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error removing member",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
+  const createCoterie = async (coterie: Omit<Coterie, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    return createCoterieMutation.mutateAsync(coterie);
+  };
+
+  const updateCoterie = async (id: string, updates: Partial<Coterie>) => {
+    return updateCoterieMutation.mutateAsync({ id, updates });
+  };
+
+  const deleteCoterie = async (id: string) => {
+    return deleteCoterieMutation.mutateAsync(id);
+  };
+
+  const addMember = async (coterieId: string, characterId: string, role?: string) => {
+    return addMemberMutation.mutateAsync({ coterieId, characterId, role });
+  };
+
+  const removeMember = async (coterieId: string, characterId: string) => {
+    return removeMemberMutation.mutateAsync({ coterieId, characterId });
   };
 
   const getCoterieMembers = async (coterieId: string): Promise<string[]> => {
@@ -190,18 +169,10 @@ export function useCoteries(chronicleId?: string) {
       if (error) throw error;
       return data.map(m => m.character_id);
     } catch (error: any) {
-      toast({
-        title: "Error fetching members",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Error fetching members", description: error.message, variant: "destructive" });
       return [];
     }
   };
-
-  useEffect(() => {
-    fetchCoteries();
-  }, [chronicleId]);
 
   return {
     coteries,
@@ -212,6 +183,6 @@ export function useCoteries(chronicleId?: string) {
     addMember,
     removeMember,
     getCoterieMembers,
-    refetch: fetchCoteries,
+    refetch: () => queryClient.invalidateQueries({ queryKey: ['coteries'] }),
   };
 }

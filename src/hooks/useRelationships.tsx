@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -17,12 +17,12 @@ export interface Relationship {
 }
 
 export function useRelationships(characterId?: string) {
-  const [relationships, setRelationships] = useState<Relationship[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const fetchRelationships = async () => {
-    try {
+  const { data: relationships = [], isLoading: loading } = useQuery({
+    queryKey: ['relationships', characterId],
+    queryFn: async () => {
       let query = supabase
         .from('relationships')
         .select('*')
@@ -33,22 +33,13 @@ export function useRelationships(characterId?: string) {
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
-      setRelationships(data as Relationship[] || []);
-    } catch (error: any) {
-      toast({
-        title: "Error fetching relationships",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+      return data as Relationship[] || [];
+    },
+  });
 
-  const createRelationship = async (relationship: Omit<Relationship, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    try {
+  const createRelationshipMutation = useMutation({
+    mutationFn: async (relationship: Omit<Relationship, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -59,26 +50,19 @@ export function useRelationships(characterId?: string) {
         .single();
 
       if (error) throw error;
-      
-      setRelationships(prev => [data as Relationship, ...prev]);
-      toast({
-        title: "Relationship created",
-        description: "New relationship has been added.",
-      });
-      
       return data;
-    } catch (error: any) {
-      toast({
-        title: "Error creating relationship",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['relationships'] });
+      toast({ title: "Relationship created", description: "New relationship has been added." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error creating relationship", description: error.message, variant: "destructive" });
+    },
+  });
 
-  const updateRelationship = async (id: string, updates: Partial<Relationship>) => {
-    try {
+  const updateRelationshipMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Relationship> }) => {
       const { data, error } = await supabase
         .from('relationships')
         .update(updates)
@@ -87,51 +71,46 @@ export function useRelationships(characterId?: string) {
         .single();
 
       if (error) throw error;
-      
-      setRelationships(prev => prev.map(rel => rel.id === id ? data as Relationship : rel));
-      toast({
-        title: "Relationship updated",
-        description: "Relationship has been successfully updated.",
-      });
-      
       return data;
-    } catch (error: any) {
-      toast({
-        title: "Error updating relationship",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['relationships'] });
+      toast({ title: "Relationship updated", description: "Relationship has been successfully updated." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error updating relationship", description: error.message, variant: "destructive" });
+    },
+  });
 
-  const deleteRelationship = async (id: string) => {
-    try {
+  const deleteRelationshipMutation = useMutation({
+    mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('relationships')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
-      
-      setRelationships(prev => prev.filter(rel => rel.id !== id));
-      toast({
-        title: "Relationship deleted",
-        description: "Relationship has been successfully deleted.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error deleting relationship",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['relationships'] });
+      toast({ title: "Relationship deleted", description: "Relationship has been successfully deleted." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error deleting relationship", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const createRelationship = async (relationship: Omit<Relationship, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    return createRelationshipMutation.mutateAsync(relationship);
   };
 
-  useEffect(() => {
-    fetchRelationships();
-  }, [characterId]);
+  const updateRelationship = async (id: string, updates: Partial<Relationship>) => {
+    return updateRelationshipMutation.mutateAsync({ id, updates });
+  };
+
+  const deleteRelationship = async (id: string) => {
+    return deleteRelationshipMutation.mutateAsync(id);
+  };
 
   return {
     relationships,
@@ -139,6 +118,6 @@ export function useRelationships(characterId?: string) {
     createRelationship,
     updateRelationship,
     deleteRelationship,
-    refetch: fetchRelationships,
+    refetch: () => queryClient.invalidateQueries({ queryKey: ['relationships'] }),
   };
 }

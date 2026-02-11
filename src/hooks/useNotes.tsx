@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -14,32 +14,24 @@ export interface Note {
 }
 
 export function useNotes() {
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const fetchNotes = async () => {
-    try {
+  const { data: notes = [], isLoading: loading } = useQuery({
+    queryKey: ['notes'],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('notes')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setNotes(data as Note[] || []);
-    } catch (error: any) {
-      toast({
-        title: "Error fetching notes",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+      return data as Note[] || [];
+    },
+  });
 
-  const createNote = async (note: Omit<Note, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    try {
+  const createNoteMutation = useMutation({
+    mutationFn: async (note: Omit<Note, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -50,32 +42,32 @@ export function useNotes() {
         .single();
 
       if (error) throw error;
-      
-      setNotes(prev => [data as Note, ...prev]);
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
       toast({
         title: "Note created",
-        description: `${note.title} has been added to your chronicle.`,
+        description: `${variables.title} has been added to your chronicle.`,
       });
-      
-      return data;
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       toast({
         title: "Error creating note",
         description: error.message,
         variant: "destructive",
       });
-      throw error;
-    }
-  };
+    },
+  });
 
-  useEffect(() => {
-    fetchNotes();
-  }, []);
+  const createNote = async (note: Omit<Note, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    return createNoteMutation.mutateAsync(note);
+  };
 
   return {
     notes,
     loading,
     createNote,
-    refetch: fetchNotes,
+    refetch: () => queryClient.invalidateQueries({ queryKey: ['notes'] }),
   };
 }

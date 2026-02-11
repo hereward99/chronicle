@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -16,35 +16,27 @@ export interface Plot {
 }
 
 export function usePlots() {
-  const [plots, setPlots] = useState<Plot[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const fetchPlots = async () => {
-    try {
+  const { data: plots = [], isLoading: loading } = useQuery({
+    queryKey: ['plots'],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('plots')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPlots((data || []).map(plot => ({
+      return (data || []).map(plot => ({
         ...plot,
         attachments: plot.attachments || []
-      })) as Plot[]);
-    } catch (error: any) {
-      toast({
-        title: "Error fetching plots",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+      })) as Plot[];
+    },
+  });
 
-  const createPlot = async (plot: Omit<Plot, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    try {
+  const createPlotMutation = useMutation({
+    mutationFn: async (plot: Omit<Plot, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -55,26 +47,26 @@ export function usePlots() {
         .single();
 
       if (error) throw error;
-      
-      setPlots(prev => [data as Plot, ...prev]);
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['plots'] });
       toast({
         title: "Story created",
-        description: `${plot.title} has been added to your chronicle.`,
+        description: `${variables.title} has been added to your chronicle.`,
       });
-      
-      return data;
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       toast({
         title: "Error creating story",
         description: error.message,
         variant: "destructive",
       });
-      throw error;
-    }
-  };
+    },
+  });
 
-  const updatePlot = async (id: string, updates: Partial<Plot>) => {
-    try {
+  const updatePlotMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Plot> }) => {
       const { data, error } = await supabase
         .from('plots')
         .update(updates)
@@ -83,51 +75,60 @@ export function usePlots() {
         .single();
 
       if (error) throw error;
-      
-      setPlots(prev => prev.map(plot => plot.id === id ? data as Plot : plot));
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['plots'] });
       toast({
         title: "Story updated",
         description: "Your story has been updated successfully.",
       });
-      
-      return data;
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       toast({
         title: "Error updating story",
         description: error.message,
         variant: "destructive",
       });
-      throw error;
-    }
-  };
+    },
+  });
 
-  const deletePlot = async (id: string) => {
-    try {
+  const deletePlotMutation = useMutation({
+    mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('plots')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
-      
-      setPlots(prev => prev.filter(plot => plot.id !== id));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['plots'] });
       toast({
         title: "Story deleted",
         description: "The story has been removed from your chronicle.",
       });
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       toast({
         title: "Error deleting story",
         description: error.message,
         variant: "destructive",
       });
-      throw error;
-    }
+    },
+  });
+
+  const createPlot = async (plot: Omit<Plot, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    return createPlotMutation.mutateAsync(plot);
   };
 
-  useEffect(() => {
-    fetchPlots();
-  }, []);
+  const updatePlot = async (id: string, updates: Partial<Plot>) => {
+    return updatePlotMutation.mutateAsync({ id, updates });
+  };
 
-  return { plots, loading, createPlot, updatePlot, deletePlot, refetch: fetchPlots };
+  const deletePlot = async (id: string) => {
+    return deletePlotMutation.mutateAsync(id);
+  };
+
+  return { plots, loading, createPlot, updatePlot, deletePlot, refetch: () => queryClient.invalidateQueries({ queryKey: ['plots'] }) };
 }
