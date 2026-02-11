@@ -7,9 +7,11 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { HelpCircle, Droplet, Download, Dices } from "lucide-react";
+import { HelpCircle, Droplet, Download, Dices, X } from "lucide-react";
 import { CharacterAttachmentsGallery } from "./CharacterAttachmentsGallery";
 import { BoonsSection } from "@/components/boons/BoonsSection";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState } from "react";
 import { exportCharacterToPDF } from "@/lib/pdfExport";
 import { MentionText } from "@/components/mentions/MentionText";
 
@@ -303,6 +305,12 @@ export function CharacterSheetView({ character }: CharacterSheetViewProps) {
 }
 
 function CharacterSheetContent({ character }: CharacterSheetViewProps) {
+  const [lightboxImage, setLightboxImage] = useState<{ url: string; name: string } | null>(null);
+
+  const imageAttachments = (character.attachments || []).filter((a: any) =>
+    a.type?.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(a.name || '')
+  );
+
   // Use stored max values (which may be overridden), fallback to computed values
   const computedHealthMax = (character.stamina || 1) + 3;
   const computedWillpowerMax = (character.composure || 1) + (character.resolve || 1);
@@ -403,9 +411,49 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                 <ResonanceDisplay resonance={character.resonance} />
               </div>
             )}
+
+            {/* Image Attachment Thumbnails */}
+            {imageAttachments.length > 0 && (
+              <div>
+                <span className="text-sm text-muted-foreground">Attachments:</span>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {imageAttachments.map((att: any) => (
+                    <button
+                      key={att.id}
+                      onClick={() => setLightboxImage({ url: att.url, name: att.name })}
+                      className="w-12 h-12 rounded-md overflow-hidden border border-border hover:border-primary transition-colors cursor-pointer group relative"
+                    >
+                      <img
+                        src={att.url}
+                        alt={att.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </Card>
+
+      {/* Image Lightbox */}
+      <Dialog open={!!lightboxImage} onOpenChange={() => setLightboxImage(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+          <DialogHeader className="p-4 pb-0">
+            <DialogTitle className="truncate">{lightboxImage?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="p-4 pt-2 flex items-center justify-center">
+            {lightboxImage && (
+              <img
+                src={lightboxImage.url}
+                alt={lightboxImage.name}
+                className="max-w-full max-h-[70vh] object-contain rounded-lg"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Tabs defaultValue="stats" className="w-full">
         <TabsList className="grid w-full grid-cols-6">
