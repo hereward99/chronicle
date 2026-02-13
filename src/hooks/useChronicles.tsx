@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -30,20 +31,22 @@ export function useChronicles() {
   });
 
   // Store currentChronicle selection in a separate query cache entry
-  const { data: currentChronicle = null } = useQuery<Chronicle | null>({
+  const { data: selectedChronicle } = useQuery<Chronicle | null>({
     queryKey: ['currentChronicle'],
-    queryFn: () => null, // never actually fetches; value is set imperatively
-    enabled: false, // disable automatic fetching
+    queryFn: () => null,
+    enabled: false,
     staleTime: Infinity,
+    initialData: null,
   });
 
   // Auto-select first chronicle when chronicles load and none is selected
-  const resolvedChronicle = currentChronicle ?? (chronicles.length > 0 ? chronicles[0] : null);
+  const currentChronicle = selectedChronicle ?? (chronicles.length > 0 ? chronicles[0] : null);
 
-  // Keep the cache in sync so all consumers see the same value
-  if (resolvedChronicle && !currentChronicle && chronicles.length > 0) {
-    queryClient.setQueryData<Chronicle | null>(['currentChronicle'], chronicles[0]);
-  }
+  useEffect(() => {
+    if (!selectedChronicle && chronicles.length > 0) {
+      queryClient.setQueryData<Chronicle | null>(['currentChronicle'], chronicles[0]);
+    }
+  }, [selectedChronicle, chronicles, queryClient]);
 
   const setCurrentChronicle = (chronicle: Chronicle | null) => {
     queryClient.setQueryData<Chronicle | null>(['currentChronicle'], chronicle);
@@ -100,7 +103,7 @@ export function useChronicles() {
 
   return {
     chronicles,
-    currentChronicle: resolvedChronicle,
+    currentChronicle,
     setCurrentChronicle,
     loading,
     createChronicle,
