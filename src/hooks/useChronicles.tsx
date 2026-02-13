@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -14,7 +13,6 @@ export interface Chronicle {
 }
 
 export function useChronicles() {
-  const [currentChronicle, setCurrentChronicle] = useState<Chronicle | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -27,16 +25,29 @@ export function useChronicles() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      const chronicleData = data as Chronicle[] || [];
-      
-      // Set current chronicle to the first one if none selected
-      if (chronicleData.length > 0 && !currentChronicle) {
-        setCurrentChronicle(chronicleData[0]);
-      }
-      
-      return chronicleData;
+      return (data as Chronicle[]) || [];
     },
   });
+
+  // Store currentChronicle selection in a separate query cache entry
+  const { data: currentChronicle = null } = useQuery<Chronicle | null>({
+    queryKey: ['currentChronicle'],
+    queryFn: () => null, // never actually fetches; value is set imperatively
+    enabled: false, // disable automatic fetching
+    staleTime: Infinity,
+  });
+
+  // Auto-select first chronicle when chronicles load and none is selected
+  const resolvedChronicle = currentChronicle ?? (chronicles.length > 0 ? chronicles[0] : null);
+
+  // Keep the cache in sync so all consumers see the same value
+  if (resolvedChronicle && !currentChronicle && chronicles.length > 0) {
+    queryClient.setQueryData<Chronicle | null>(['currentChronicle'], chronicles[0]);
+  }
+
+  const setCurrentChronicle = (chronicle: Chronicle | null) => {
+    queryClient.setQueryData<Chronicle | null>(['currentChronicle'], chronicle);
+  };
 
   const createChronicleMutation = useMutation({
     mutationFn: async (chronicle: Omit<Chronicle, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
@@ -54,11 +65,13 @@ export function useChronicles() {
     },
     onSuccess: (newChronicle, variables) => {
       queryClient.invalidateQueries({ queryKey: ['chronicles'] });
-      
-      if (!currentChronicle) {
-        setCurrentChronicle(newChronicle);
+
+      // Auto-select if none selected
+      const current = queryClient.getQueryData<Chronicle | null>(['currentChronicle']);
+      if (!current) {
+        queryClient.setQueryData<Chronicle | null>(['currentChronicle'], newChronicle);
       }
-      
+
       toast({
         title: "Chronicle created",
         description: `${variables.name} has been created.`,
@@ -87,7 +100,7 @@ export function useChronicles() {
 
   return {
     chronicles,
-    currentChronicle,
+    currentChronicle: resolvedChronicle,
     setCurrentChronicle,
     loading,
     createChronicle,
