@@ -41,7 +41,8 @@ export function Navigation() {
   return (
     <>
       {/* Mobile menu button */}
-      <div className="md:hidden fixed top-4 left-4 z-50">
+      <div className="hidden">
+        {/* Hidden: mobile navigation now handled by MobileBottomNav */}
         <Button
           variant="outline"
           size="icon"

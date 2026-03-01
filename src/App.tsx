@@ -72,11 +72,13 @@ const App = () => (
                 </Layout>
               </ProtectedRoute>
             } />
-             <Route path="/locations" element={
-               <ProtectedRoute>
-                 <Locations />
-               </ProtectedRoute>
-             } />
+            <Route path="/locations" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Locations />
+                </Layout>
+              </ProtectedRoute>
+            } />
             <Route path="/generator" element={
               <ProtectedRoute>
                 <Layout>
@@ -86,12 +88,16 @@ const App = () => (
             } />
             <Route path="/settings" element={
               <ProtectedRoute>
-                <Settings />
+                <Layout>
+                  <Settings />
+                </Layout>
               </ProtectedRoute>
             } />
             <Route path="/import" element={
               <ProtectedRoute>
-                <Import />
+                <Layout>
+                  <Import />
+                </Layout>
               </ProtectedRoute>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

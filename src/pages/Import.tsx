@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Layout } from "@/components/Layout";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, Upload, FileJson, Users, BookOpen, Calendar, Scroll, Check, Loader2, AlertCircle, Save, RefreshCw } from "lucide-react";
@@ -561,7 +561,7 @@ export default function Import() {
   ];
 
   return (
-    <Layout>
+    <>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Import Data</h1>
@@ -1036,6 +1036,6 @@ Return ONLY the completed JSON, maintaining the exact structure.`}
           </TabsContent>
         </Tabs>
       </div>
-    </Layout>
+    </>
   );
 }

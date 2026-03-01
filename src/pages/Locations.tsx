@@ -1,5 +1,4 @@
  import { useState } from 'react';
- import { Layout } from '@/components/Layout';
  import { Button } from '@/components/ui/button';
  import { Card } from '@/components/ui/card';
  import { Input } from '@/components/ui/input';
@@ -45,9 +44,9 @@
      setDeleteTarget(null);
    };
  
-   return (
-     <Layout>
-       <div className="space-y-6">
+    return (
+      <>
+        <div className="space-y-6">
          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
            <div>
              <h1 className="text-3xl font-bold">Locations</h1>
@@ -171,7 +170,7 @@
              </AlertDialogAction>
            </AlertDialogFooter>
          </AlertDialogContent>
-       </AlertDialog>
-     </Layout>
-   );
+      </AlertDialog>
+    </>
+  );
  }
