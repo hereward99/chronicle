@@ -1,4 +1,5 @@
 import { Navigation } from "./Navigation";
+import { MobileBottomNav } from "./MobileBottomNav";
 import { useChronicles } from "@/hooks/useChronicles";
 import { useEffect, useRef } from "react";
 
@@ -21,11 +22,12 @@ export function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <main className="md:ml-64 min-h-screen">
+      <main className="md:ml-64 min-h-screen pb-20 md:pb-0">
         <div className="p-6 md:p-8">
           {children}
         </div>
       </main>
+      <MobileBottomNav />
     </div>
   );
 }

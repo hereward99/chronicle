@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -389,7 +388,7 @@ export default function Settings() {
   };
 
   return (
-    <Layout>
+    <>
       <div className="container mx-auto py-8 px-4 max-w-3xl">
         <h1 className="text-3xl font-bold mb-8">Settings</h1>
 
@@ -616,6 +615,6 @@ export default function Settings() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </Layout>
+    </>
   );
 }
