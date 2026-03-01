@@ -176,7 +176,7 @@ export default function Chronicle() {
                   <Skeleton className="h-3 w-full" />
                 </div>
               ))
-            ) : plots.length === 0 ? (
+            ) : plots.filter(p => p.status === 'Active').length === 0 ? (
               <div className="text-center py-4">
                 <p className="text-sm text-muted-foreground">No active plots</p>
                 <CreatePlotDialog>
@@ -186,7 +186,7 @@ export default function Chronicle() {
                 </CreatePlotDialog>
               </div>
             ) : (
-              plots.map((plot) => (
+              plots.filter(p => p.status === 'Active').map((plot) => (
                 <div key={plot.id} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <h4 className="font-medium text-foreground">{plot.title}</h4>
