@@ -1,0 +1,1 @@
+ALTER TABLE public.plots ADD COLUMN summary text;

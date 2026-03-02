@@ -48,6 +48,7 @@ const Stories = () => {
   const getFilteredStories = (status?: string) => {
     let filtered = plots.filter(story =>
       story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (story.summary && story.summary.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (story.description && story.description.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
@@ -90,13 +91,13 @@ const Stories = () => {
         </div>
         {searchTerm ? (
           <TextHighlight 
-            text={story.description || "No description provided"} 
+            text={story.summary || story.description || "No summary provided"} 
             className="text-sm text-muted-foreground line-clamp-3 block"
             highlight={searchTerm}
           />
         ) : (
           <MentionText 
-            text={story.description || "No description provided"} 
+            text={story.summary || story.description || "No summary provided"} 
             className="text-sm text-muted-foreground line-clamp-3 block"
           />
         )}

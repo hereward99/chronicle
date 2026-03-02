@@ -180,6 +180,7 @@ export default function Generator() {
         await createPlot({
           chronicle_id: currentChronicle.id,
           title: parsed.title || "Generated Content",
+          summary: null,
           description: parsed.description || "",
           status: parsed.status || "Active",
           priority: parsed.priority || "Medium"

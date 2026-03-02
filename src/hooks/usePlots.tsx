@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 export interface Plot {
   id: string;
   title: string;
+  summary: string | null;
   description: string | null;
   status: string;
   priority: string;

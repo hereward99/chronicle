@@ -14,6 +14,7 @@ import { FileUpload } from "@/components/ui/file-upload";
 
 const plotSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
+  summary: z.string().max(500, "Summary must be less than 500 characters").optional(),
   description: z.string().max(10000, "Description must be less than 10000 characters").optional(),
   status: z.enum(["Active", "Planned", "Completed", "Critical"]),
   priority: z.enum(["Low", "Medium", "High", "Critical"]),
@@ -29,6 +30,7 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
+    summary: "",
     description: "",
     status: "Active" as "Active" | "Planned" | "Completed" | "Critical",
     priority: "Medium" as "Low" | "Medium" | "High" | "Critical",
@@ -45,6 +47,7 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
     try {
       const validated = plotSchema.parse({
         ...formData,
+        summary: formData.summary || undefined,
         description: formData.description || undefined,
       });
       
@@ -59,6 +62,7 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
 
       await createPlot({
         title: validated.title,
+        summary: validated.summary || null,
         description: validated.description || null,
         status: validated.status,
         priority: validated.priority,
@@ -69,6 +73,7 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
       // Reset form
       setFormData({
         title: "",
+        summary: "",
         description: "",
         status: "Active",
         priority: "Medium",
@@ -146,6 +151,19 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="plot-summary">Summary</Label>
+            <MentionInput
+              id="plot-summary"
+              value={formData.summary}
+              onChange={(value) => setFormData(prev => ({ ...prev, summary: value }))}
+              placeholder="A brief summary for the story tile... Use @ to mention entities (optional)"
+              className="bg-input border-border min-h-16 resize-none"
+              maxLength={500}
+            />
+            <p className="text-xs text-muted-foreground">{formData.summary.length}/500 characters</p>
           </div>
 
           <div className="space-y-2">
