@@ -199,8 +199,8 @@ export default function Chronicle() {
                     </Badge>
                   </div>
                   <MentionText 
-                    text={plot.description || 'No description provided'} 
-                    className="text-sm text-muted-foreground block"
+                    text={plot.summary || plot.description || 'No summary provided'} 
+                    className="text-sm text-muted-foreground block line-clamp-2"
                   />
                 </div>
               ))

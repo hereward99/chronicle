@@ -96,6 +96,14 @@ export function ViewPlotDialog({ plot, open, onOpenChange }: ViewPlotDialogProps
               </div>
             </div>
 
+            {/* Summary */}
+            {plot.summary && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-foreground">Summary</h3>
+                <MentionText text={plot.summary} className="text-sm text-muted-foreground whitespace-pre-wrap" />
+              </div>
+            )}
+
             {/* Description */}
             {plot.description && (
               <div className="space-y-2">
