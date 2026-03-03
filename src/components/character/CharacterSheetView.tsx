@@ -870,6 +870,16 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
           <BoonsTabContent character={character} />
         </TabsContent>
 
+        {/* Stories Tab */}
+        <TabsContent value="stories" className="space-y-6">
+          <CharacterStoriesTab character={character} />
+        </TabsContent>
+
+        {/* Sessions Tab */}
+        <TabsContent value="sessions" className="space-y-6">
+          <CharacterSessionsTab character={character} />
+        </TabsContent>
+
         {/* Details Tab */}
         <TabsContent value="details" className="space-y-6">
           {character.appearance && (
