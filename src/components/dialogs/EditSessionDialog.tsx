@@ -47,6 +47,8 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
 
   const chronicleCharacters = characters.filter(c => c.chronicle_id === session.chronicle_id);
 
+  const chroniclePlots = plots.filter(p => p.chronicle_id === session.chronicle_id);
+
   // Reset form when session changes
   useEffect(() => {
     setFormData({
@@ -57,6 +59,11 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
       plot_id: session.plot_id,
     });
   }, [session]);
+
+  // Sync character selections when loaded
+  useEffect(() => {
+    setSelectedCharacterIds(existingCharacterIds);
+  }, [existingCharacterIds]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
