@@ -84,6 +84,9 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
         experience_awarded: validated.experience_awarded,
         plot_id: validated.plot_id,
       });
+
+      // Save character associations
+      await setSessionCharacters(session.id, selectedCharacterIds);
       
       onOpenChange(false);
     } catch (error) {
