@@ -37,13 +37,15 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
     experience_awarded: session.experience_awarded || 0,
     plot_id: session.plot_id,
   });
+  const [selectedCharacterIds, setSelectedCharacterIds] = useState<string[]>([]);
   
   const { updateSession } = useSessions();
   const { plots } = usePlots();
+  const { characters } = useCharacters();
+  const { characterIds: existingCharacterIds, setSessionCharacters } = useSessionCharacters(session.id);
   const { toast } = useToast();
 
-  // Filter plots for current chronicle
-  const chroniclePlots = plots.filter(p => p.chronicle_id === session.chronicle_id);
+  const chronicleCharacters = characters.filter(c => c.chronicle_id === session.chronicle_id);
 
   // Reset form when session changes
   useEffect(() => {
