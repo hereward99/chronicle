@@ -7,13 +7,18 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { HelpCircle, Droplet, Download, Dices, X } from "lucide-react";
+import { HelpCircle, Droplet, Download, Dices, X, BookOpen, Calendar } from "lucide-react";
 import { CharacterAttachmentsGallery } from "./CharacterAttachmentsGallery";
 import { BoonsSection } from "@/components/boons/BoonsSection";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { exportCharacterToPDF } from "@/lib/pdfExport";
 import { MentionText } from "@/components/mentions/MentionText";
+import { useCharacterSessions } from "@/hooks/useSessionCharacters";
+import { useSessions } from "@/hooks/useSessions";
+import { usePlots } from "@/hooks/usePlots";
+import { usePlotCharacters } from "@/hooks/usePlotCharacters";
+import { useRelationships } from "@/hooks/useRelationships";
 
 interface CharacterSheetViewProps {
   character: Character;
