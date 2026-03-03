@@ -70,7 +70,7 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
         chronicleId = defaultChronicle.id;
       }
 
-      await createSession({
+      const newSession = await createSession({
         title: validated.title,
         summary: validated.summary || null,
         date_played: validated.date_played,
@@ -78,6 +78,11 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
         chronicle_id: chronicleId,
         plot_id: validated.plot_id,
       });
+
+      // Save character associations
+      if (selectedCharacterIds.length > 0 && newSession?.id) {
+        await setSessionCharacters(newSession.id, selectedCharacterIds);
+      }
 
       // Reset form
       setFormData({
@@ -87,6 +92,7 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
         experience_awarded: 1,
         plot_id: null,
       });
+      setSelectedCharacterIds([]);
       
       setOpen(false);
     } catch (error) {
