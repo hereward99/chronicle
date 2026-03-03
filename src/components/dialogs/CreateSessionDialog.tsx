@@ -5,9 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MentionInput } from "@/components/mentions/MentionInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSessions } from "@/hooks/useSessions";
 import { useChronicles } from "@/hooks/useChronicles";
 import { usePlots } from "@/hooks/usePlots";
+import { useCharacters } from "@/hooks/useCharacters";
+import { useSessionCharacters } from "@/hooks/useSessionCharacters";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 
