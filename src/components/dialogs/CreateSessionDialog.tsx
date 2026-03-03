@@ -33,15 +33,20 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
   const [formData, setFormData] = useState({
     title: "",
     summary: "",
-    date_played: new Date().toISOString().split('T')[0], // Today's date
+    date_played: new Date().toISOString().split('T')[0],
     experience_awarded: 1,
     plot_id: null as string | null,
   });
+  const [selectedCharacterIds, setSelectedCharacterIds] = useState<string[]>([]);
   
   const { createSession } = useSessions();
   const { currentChronicle, createDefaultChronicle } = useChronicles();
   const { plots } = usePlots();
+  const { characters } = useCharacters();
+  const { setSessionCharacters } = useSessionCharacters();
   const { toast } = useToast();
+
+  const chronicleCharacters = characters.filter(c => c.chronicle_id === currentChronicle?.id);
 
   // Filter plots for current chronicle
   const chroniclePlots = plots.filter(p => p.chronicle_id === currentChronicle?.id);
