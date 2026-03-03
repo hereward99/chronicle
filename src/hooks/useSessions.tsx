@@ -95,7 +95,8 @@ export function useSessions() {
   });
 
   const createSession = async (session: Omit<Session, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    return createSessionMutation.mutateAsync(session);
+    const result = await createSessionMutation.mutateAsync(session);
+    return result as Session;
   };
 
   const updateSession = async (id: string, updates: Partial<Omit<Session, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => {

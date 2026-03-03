@@ -172,6 +172,33 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
             </div>
           </div>
 
+          {/* Character Picker */}
+          <div className="space-y-2">
+            <Label>Characters in Session</Label>
+            {chronicleCharacters.length > 0 ? (
+              <ScrollArea className="max-h-32 border border-border rounded-md p-2">
+                <div className="space-y-1">
+                  {chronicleCharacters.map((char) => (
+                    <label key={char.id} className="flex items-center gap-2 py-1 px-1 rounded hover:bg-muted/50 cursor-pointer text-sm">
+                      <Checkbox
+                        checked={selectedCharacterIds.includes(char.id)}
+                        onCheckedChange={(checked) => {
+                          setSelectedCharacterIds(prev =>
+                            checked ? [...prev, char.id] : prev.filter(id => id !== char.id)
+                          );
+                        }}
+                      />
+                      <span>{char.name}</span>
+                      <span className="text-xs text-muted-foreground ml-auto">{char.clan}</span>
+                    </label>
+                  ))}
+                </div>
+              </ScrollArea>
+            ) : (
+              <p className="text-xs text-muted-foreground">No characters in this chronicle yet.</p>
+            )}
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="edit-session-summary">Session Summary</Label>
             <MentionInput
