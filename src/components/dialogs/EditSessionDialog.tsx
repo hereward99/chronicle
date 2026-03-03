@@ -5,8 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MentionInput } from "@/components/mentions/MentionInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSessions, Session } from "@/hooks/useSessions";
 import { usePlots } from "@/hooks/usePlots";
+import { useCharacters } from "@/hooks/useCharacters";
+import { useSessionCharacters } from "@/hooks/useSessionCharacters";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 
@@ -33,12 +37,16 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
     experience_awarded: session.experience_awarded || 0,
     plot_id: session.plot_id,
   });
+  const [selectedCharacterIds, setSelectedCharacterIds] = useState<string[]>([]);
   
   const { updateSession } = useSessions();
   const { plots } = usePlots();
+  const { characters } = useCharacters();
+  const { characterIds: existingCharacterIds, setSessionCharacters } = useSessionCharacters(session.id);
   const { toast } = useToast();
 
-  // Filter plots for current chronicle
+  const chronicleCharacters = characters.filter(c => c.chronicle_id === session.chronicle_id);
+
   const chroniclePlots = plots.filter(p => p.chronicle_id === session.chronicle_id);
 
   // Reset form when session changes
@@ -51,6 +59,11 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
       plot_id: session.plot_id,
     });
   }, [session]);
+
+  // Sync character selections when loaded
+  useEffect(() => {
+    setSelectedCharacterIds(existingCharacterIds);
+  }, [existingCharacterIds]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,6 +84,9 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
         experience_awarded: validated.experience_awarded,
         plot_id: validated.plot_id,
       });
+
+      // Save character associations
+      await setSessionCharacters(session.id, selectedCharacterIds);
       
       onOpenChange(false);
     } catch (error) {
@@ -154,6 +170,33 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
                 className="bg-input border-border"
               />
             </div>
+          </div>
+
+          {/* Character Picker */}
+          <div className="space-y-2">
+            <Label>Characters in Session</Label>
+            {chronicleCharacters.length > 0 ? (
+              <ScrollArea className="max-h-32 border border-border rounded-md p-2">
+                <div className="space-y-1">
+                  {chronicleCharacters.map((char) => (
+                    <label key={char.id} className="flex items-center gap-2 py-1 px-1 rounded hover:bg-muted/50 cursor-pointer text-sm">
+                      <Checkbox
+                        checked={selectedCharacterIds.includes(char.id)}
+                        onCheckedChange={(checked) => {
+                          setSelectedCharacterIds(prev =>
+                            checked ? [...prev, char.id] : prev.filter(id => id !== char.id)
+                          );
+                        }}
+                      />
+                      <span>{char.name}</span>
+                      <span className="text-xs text-muted-foreground ml-auto">{char.clan}</span>
+                    </label>
+                  ))}
+                </div>
+              </ScrollArea>
+            ) : (
+              <p className="text-xs text-muted-foreground">No characters in this chronicle yet.</p>
+            )}
           </div>
 
           <div className="space-y-2">

@@ -5,9 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MentionInput } from "@/components/mentions/MentionInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSessions } from "@/hooks/useSessions";
 import { useChronicles } from "@/hooks/useChronicles";
 import { usePlots } from "@/hooks/usePlots";
+import { useCharacters } from "@/hooks/useCharacters";
+import { useSessionCharacters } from "@/hooks/useSessionCharacters";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 
@@ -29,15 +33,20 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
   const [formData, setFormData] = useState({
     title: "",
     summary: "",
-    date_played: new Date().toISOString().split('T')[0], // Today's date
+    date_played: new Date().toISOString().split('T')[0],
     experience_awarded: 1,
     plot_id: null as string | null,
   });
+  const [selectedCharacterIds, setSelectedCharacterIds] = useState<string[]>([]);
   
   const { createSession } = useSessions();
   const { currentChronicle, createDefaultChronicle } = useChronicles();
   const { plots } = usePlots();
+  const { characters } = useCharacters();
+  const { setSessionCharacters } = useSessionCharacters();
   const { toast } = useToast();
+
+  const chronicleCharacters = characters.filter(c => c.chronicle_id === currentChronicle?.id);
 
   // Filter plots for current chronicle
   const chroniclePlots = plots.filter(p => p.chronicle_id === currentChronicle?.id);
@@ -61,7 +70,7 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
         chronicleId = defaultChronicle.id;
       }
 
-      await createSession({
+      const newSession = await createSession({
         title: validated.title,
         summary: validated.summary || null,
         date_played: validated.date_played,
@@ -69,6 +78,11 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
         chronicle_id: chronicleId,
         plot_id: validated.plot_id,
       });
+
+      // Save character associations
+      if (selectedCharacterIds.length > 0 && newSession?.id) {
+        await setSessionCharacters(newSession.id, selectedCharacterIds);
+      }
 
       // Reset form
       setFormData({
@@ -78,6 +92,7 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
         experience_awarded: 1,
         plot_id: null,
       });
+      setSelectedCharacterIds([]);
       
       setOpen(false);
     } catch (error) {
@@ -164,6 +179,33 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
                 className="bg-input border-border"
               />
             </div>
+          </div>
+
+          {/* Character Picker */}
+          <div className="space-y-2">
+            <Label>Characters in Session</Label>
+            {chronicleCharacters.length > 0 ? (
+              <ScrollArea className="max-h-32 border border-border rounded-md p-2">
+                <div className="space-y-1">
+                  {chronicleCharacters.map((char) => (
+                    <label key={char.id} className="flex items-center gap-2 py-1 px-1 rounded hover:bg-muted/50 cursor-pointer text-sm">
+                      <Checkbox
+                        checked={selectedCharacterIds.includes(char.id)}
+                        onCheckedChange={(checked) => {
+                          setSelectedCharacterIds(prev =>
+                            checked ? [...prev, char.id] : prev.filter(id => id !== char.id)
+                          );
+                        }}
+                      />
+                      <span>{char.name}</span>
+                      <span className="text-xs text-muted-foreground ml-auto">{char.clan}</span>
+                    </label>
+                  ))}
+                </div>
+              </ScrollArea>
+            ) : (
+              <p className="text-xs text-muted-foreground">No characters in this chronicle yet.</p>
+            )}
           </div>
 
           <div className="space-y-2">

@@ -7,13 +7,18 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { HelpCircle, Droplet, Download, Dices, X } from "lucide-react";
+import { HelpCircle, Droplet, Download, Dices, X, BookOpen, Calendar } from "lucide-react";
 import { CharacterAttachmentsGallery } from "./CharacterAttachmentsGallery";
 import { BoonsSection } from "@/components/boons/BoonsSection";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { exportCharacterToPDF } from "@/lib/pdfExport";
 import { MentionText } from "@/components/mentions/MentionText";
+import { useCharacterSessions } from "@/hooks/useSessionCharacters";
+import { useSessions } from "@/hooks/useSessions";
+import { usePlots } from "@/hooks/usePlots";
+import { usePlotCharacters } from "@/hooks/usePlotCharacters";
+import { useRelationships } from "@/hooks/useRelationships";
 
 interface CharacterSheetViewProps {
   character: Character;
@@ -456,12 +461,14 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
       </Dialog>
 
       <Tabs defaultValue="stats" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="stats">Stats</TabsTrigger>
           <TabsTrigger value="disciplines">Disciplines</TabsTrigger>
           <TabsTrigger value="advantages">Advantages</TabsTrigger>
           <TabsTrigger value="beliefs">Beliefs</TabsTrigger>
           <TabsTrigger value="boons">Boons</TabsTrigger>
+          <TabsTrigger value="stories">Stories</TabsTrigger>
+          <TabsTrigger value="sessions">Sessions</TabsTrigger>
           <TabsTrigger value="details">Details</TabsTrigger>
         </TabsList>
 
@@ -863,6 +870,16 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
           <BoonsTabContent character={character} />
         </TabsContent>
 
+        {/* Stories Tab */}
+        <TabsContent value="stories" className="space-y-6">
+          <CharacterStoriesTab character={character} />
+        </TabsContent>
+
+        {/* Sessions Tab */}
+        <TabsContent value="sessions" className="space-y-6">
+          <CharacterSessionsTab character={character} />
+        </TabsContent>
+
         {/* Details Tab */}
         <TabsContent value="details" className="space-y-6">
           {character.appearance && (
@@ -921,5 +938,92 @@ function BoonsTabContent({ character }: { character: Character }) {
       characters={chronicleCharacters} 
       editable={false} 
     />
+  );
+}
+
+// Cross-linked Stories tab
+function CharacterStoriesTab({ character }: { character: Character }) {
+  const { plotCharacters } = usePlotCharacters();
+  const { plots } = usePlots();
+
+  const characterPlotIds = plotCharacters
+    .filter(pc => pc.character_id === character.id)
+    .map(pc => pc.plot_id);
+
+  const characterPlots = plots.filter(p => characterPlotIds.includes(p.id));
+
+  if (characterPlots.length === 0) {
+    return (
+      <Card className="p-6 text-center">
+        <BookOpen className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+        <p className="text-sm text-muted-foreground">Not assigned to any stories yet.</p>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {characterPlots.map(plot => (
+        <Card key={plot.id} className="p-4">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h4 className="font-semibold">{plot.title}</h4>
+              {plot.summary && (
+                <MentionText text={plot.summary} className="text-sm text-muted-foreground mt-1" />
+              )}
+            </div>
+            <div className="flex gap-2 ml-4">
+              <Badge variant={plot.status === 'Active' ? 'default' : 'secondary'}>{plot.status}</Badge>
+              <Badge variant="outline">{plot.priority}</Badge>
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+// Cross-linked Sessions tab
+function CharacterSessionsTab({ character }: { character: Character }) {
+  const { sessionIds, isLoading } = useCharacterSessions(character.id);
+  const { sessions } = useSessions();
+
+  const characterSessions = sessions
+    .filter(s => sessionIds.includes(s.id))
+    .sort((a, b) => new Date(b.date_played).getTime() - new Date(a.date_played).getTime());
+
+  if (isLoading) {
+    return <Card className="p-6 text-center"><p className="text-sm text-muted-foreground">Loading...</p></Card>;
+  }
+
+  if (characterSessions.length === 0) {
+    return (
+      <Card className="p-6 text-center">
+        <Calendar className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+        <p className="text-sm text-muted-foreground">Not tagged in any sessions yet.</p>
+        <p className="text-xs text-muted-foreground mt-1">Add this character to sessions via the Sessions page.</p>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {characterSessions.map(session => (
+        <Card key={session.id} className="p-4">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h4 className="font-semibold">{session.title}</h4>
+              <p className="text-xs text-muted-foreground">
+                {new Date(session.date_played).toLocaleDateString()}
+                {session.experience_awarded ? ` • ${session.experience_awarded} XP` : ''}
+              </p>
+              {session.summary && (
+                <MentionText text={session.summary} className="text-sm text-muted-foreground mt-1 line-clamp-2" />
+              )}
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
   );
 }
