@@ -461,12 +461,14 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
       </Dialog>
 
       <Tabs defaultValue="stats" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="stats">Stats</TabsTrigger>
           <TabsTrigger value="disciplines">Disciplines</TabsTrigger>
           <TabsTrigger value="advantages">Advantages</TabsTrigger>
           <TabsTrigger value="beliefs">Beliefs</TabsTrigger>
           <TabsTrigger value="boons">Boons</TabsTrigger>
+          <TabsTrigger value="stories">Stories</TabsTrigger>
+          <TabsTrigger value="sessions">Sessions</TabsTrigger>
           <TabsTrigger value="details">Details</TabsTrigger>
         </TabsList>
 
