@@ -990,13 +990,13 @@ function CharacterStoriesTab({ character }: { character: Character }) {
 // Cross-linked Sessions tab
 function CharacterSessionsTab({ character }: { character: Character }) {
   const { sessionIds, isLoading } = useCharacterSessions(character.id);
-  const { sessions } = useSessions();
+  const { sessions, loading: sessionsLoading } = useSessions();
 
   const characterSessions = sessions
     .filter(s => sessionIds.includes(s.id))
     .sort((a, b) => new Date(b.date_played).getTime() - new Date(a.date_played).getTime());
 
-  if (isLoading) {
+  if (isLoading || sessionsLoading) {
     return <Card className="p-6 text-center"><p className="text-sm text-muted-foreground">Loading...</p></Card>;
   }
 
