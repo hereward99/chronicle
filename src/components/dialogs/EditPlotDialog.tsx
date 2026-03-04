@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
@@ -44,7 +44,7 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
   
   const { updatePlot, deletePlot } = usePlots();
   const { characters } = useCharacters();
-  const { assignCharacter, unassignCharacter, getCharactersForPlot, refetch: refetchPlotCharacters } = usePlotCharacters(plot.id);
+  const { plotCharacters, assignCharacter, unassignCharacter, getCharactersForPlot, refetch: refetchPlotCharacters } = usePlotCharacters(plot.id);
   const { toast } = useToast();
 
   const handleDelete = async () => {
@@ -68,15 +68,13 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
       // Error already handled by updatePlot
     }
   };
-  // Load currently assigned characters when dialog opens
-  useState(() => {
-    if (open) {
-      refetchPlotCharacters().then(() => {
-        const assigned = getCharactersForPlot(plot.id);
-        setSelectedCharacters(assigned);
-      });
+  // Load currently assigned characters when dialog opens or plot characters load
+  useEffect(() => {
+    if (open && !loading) {
+      const assigned = getCharactersForPlot(plot.id);
+      setSelectedCharacters(assigned);
     }
-  });
+  }, [open, plotCharacters, plot.id]);
 
   const handleCharacterToggle = async (characterId: string, checked: boolean) => {
     try {
