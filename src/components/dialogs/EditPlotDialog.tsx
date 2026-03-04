@@ -44,7 +44,7 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
   
   const { updatePlot, deletePlot } = usePlots();
   const { characters } = useCharacters();
-  const { assignCharacter, unassignCharacter, getCharactersForPlot, refetch: refetchPlotCharacters } = usePlotCharacters(plot.id);
+  const { plotCharacters, assignCharacter, unassignCharacter, getCharactersForPlot, refetch: refetchPlotCharacters } = usePlotCharacters(plot.id);
   const { toast } = useToast();
 
   const handleDelete = async () => {
