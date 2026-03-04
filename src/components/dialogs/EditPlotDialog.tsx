@@ -68,15 +68,13 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
       // Error already handled by updatePlot
     }
   };
-  // Load currently assigned characters when dialog opens
-  useState(() => {
-    if (open) {
-      refetchPlotCharacters().then(() => {
-        const assigned = getCharactersForPlot(plot.id);
-        setSelectedCharacters(assigned);
-      });
+  // Load currently assigned characters when dialog opens or plot characters load
+  useEffect(() => {
+    if (open && !loading) {
+      const assigned = getCharactersForPlot(plot.id);
+      setSelectedCharacters(assigned);
     }
-  });
+  }, [open, plotCharacters, plot.id]);
 
   const handleCharacterToggle = async (characterId: string, checked: boolean) => {
     try {
