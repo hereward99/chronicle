@@ -943,14 +943,18 @@ function BoonsTabContent({ character }: { character: Character }) {
 
 // Cross-linked Stories tab
 function CharacterStoriesTab({ character }: { character: Character }) {
-  const { plotCharacters } = usePlotCharacters();
-  const { plots } = usePlots();
+  const { plotCharacters, loading: plotCharsLoading } = usePlotCharacters();
+  const { plots, loading: plotsLoading } = usePlots();
 
   const characterPlotIds = plotCharacters
     .filter(pc => pc.character_id === character.id)
     .map(pc => pc.plot_id);
 
   const characterPlots = plots.filter(p => characterPlotIds.includes(p.id));
+
+  if (plotCharsLoading || plotsLoading) {
+    return <Card className="p-6 text-center"><p className="text-sm text-muted-foreground">Loading...</p></Card>;
+  }
 
   if (characterPlots.length === 0) {
     return (
