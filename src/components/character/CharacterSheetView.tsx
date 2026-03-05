@@ -991,19 +991,13 @@ function CharacterStoriesTab({ character }: { character: Character }) {
 function CharacterSessionsTab({ character }: { character: Character }) {
   const { sessionIds, isLoading } = useCharacterSessions(character.id);
   const { sessions, loading: sessionsLoading } = useSessions();
-  const { plotCharacters, loading: plotCharsLoading } = usePlotCharacters();
 
-  // Get plot IDs this character is assigned to
-  const characterPlotIds = plotCharacters
-    .filter(pc => pc.character_id === character.id)
-    .map(pc => pc.plot_id);
-
-  // Include sessions directly linked AND sessions belonging to the character's plots
+  // Only show sessions the character is directly tagged in
   const characterSessions = sessions
-    .filter(s => sessionIds.includes(s.id) || (s.plot_id && characterPlotIds.includes(s.plot_id)))
+    .filter(s => sessionIds.includes(s.id))
     .sort((a, b) => new Date(b.date_played).getTime() - new Date(a.date_played).getTime());
 
-  if (isLoading || sessionsLoading || plotCharsLoading) {
+  if (isLoading || sessionsLoading) {
     return <Card className="p-6 text-center"><p className="text-sm text-muted-foreground">Loading...</p></Card>;
   }
 
