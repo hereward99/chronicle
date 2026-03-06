@@ -94,6 +94,38 @@ export function useSessions() {
     },
   });
 
+  const deleteSessionMutation = useMutation({
+    mutationFn: async (id: string) => {
+      // Delete associated session_characters first
+      const { error: scError } = await supabase
+        .from('session_characters')
+        .delete()
+        .eq('session_id', id);
+      if (scError) throw scError;
+
+      const { error } = await supabase
+        .from('sessions')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['session-characters'] });
+      toast({
+        title: "Session deleted",
+        description: "Session has been successfully deleted.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error deleting session",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const createSession = async (session: Omit<Session, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     const result = await createSessionMutation.mutateAsync(session);
     return result as Session;
@@ -103,11 +135,16 @@ export function useSessions() {
     return updateSessionMutation.mutateAsync({ id, updates });
   };
 
+  const deleteSession = async (id: string) => {
+    return deleteSessionMutation.mutateAsync(id);
+  };
+
   return {
     sessions,
     loading,
     createSession,
     updateSession,
+    deleteSession,
     refetch: () => queryClient.invalidateQueries({ queryKey: ['sessions'] }),
   };
 }

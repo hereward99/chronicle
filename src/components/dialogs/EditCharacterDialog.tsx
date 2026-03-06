@@ -1,5 +1,15 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -251,12 +261,15 @@ export function EditCharacterDialog({
     }
   };
 
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
   const handleDelete = async () => {
-    if (!character || !window.confirm('Are you sure you want to delete this character? This action cannot be undone.')) return;
+    if (!character) return;
     
     setDeleteLoading(true);
     try {
       await onDelete(character.id);
+      setShowDeleteDialog(false);
       onOpenChange(false);
     } catch (error) {
       console.error('Error deleting character:', error);
@@ -443,6 +456,7 @@ export function EditCharacterDialog({
   if (!character) return null;
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl h-[90vh] flex flex-col min-h-0">
         <DialogHeader>
@@ -1648,10 +1662,10 @@ export function EditCharacterDialog({
         <DialogFooter className="flex justify-between border-t pt-4">
           <Button
             variant="destructive"
-            onClick={handleDelete}
+            onClick={() => setShowDeleteDialog(true)}
             disabled={deleteLoading}
           >
-            {deleteLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+            <Trash2 className="h-4 w-4 mr-2" />
             Delete
           </Button>
           
@@ -1667,6 +1681,29 @@ export function EditCharacterDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Character</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete "{character?.name}"? This will also remove all associated relationships, session tags, and boons. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deleteLoading}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={deleteLoading}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {deleteLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+            Delete Character
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </>
   );
 }
 

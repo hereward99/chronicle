@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Calendar, Loader2, FileText, Download, BookOpen, ChevronDown, ChevronRight, Pencil, ClipboardList } from "lucide-react";
+import { Plus, Search, Calendar, Loader2, FileText, Download, BookOpen, ChevronDown, ChevronRight, Pencil, ClipboardList, Trash2 } from "lucide-react";
 import { CreateSessionDialog } from "@/components/dialogs/CreateSessionDialog";
 import { EditSessionDialog } from "@/components/dialogs/EditSessionDialog";
 import { useSessions, Session } from "@/hooks/useSessions";
@@ -14,12 +14,23 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { MentionText } from "@/components/mentions/MentionText";
 import { CreateChecklistDialog } from "@/components/checklists/CreateChecklistDialog";
 import { ChecklistCard } from "@/components/checklists/ChecklistCard";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Sessions = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(["ungrouped", "checklists-ungrouped"]));
   const [editingSession, setEditingSession] = useState<Session | null>(null);
-  const { sessions, loading } = useSessions();
+  const [deleteTarget, setDeleteTarget] = useState<Session | null>(null);
+  const { sessions, loading, deleteSession } = useSessions();
   const { plots } = usePlots();
   const { checklists, loading: checklistsLoading, toggleItem, addItem, updateItem, deleteItem, deleteChecklist } = useChecklists();
 
@@ -118,6 +129,14 @@ const Sessions = () => {
               onClick={() => exportSessionToPDF(session)}
             >
               <Download className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-destructive hover:text-destructive"
+              onClick={() => setDeleteTarget(session)}
+            >
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -389,6 +408,32 @@ const Sessions = () => {
           onOpenChange={(open) => !open && setEditingSession(null)}
         />
       )}
+
+      {/* Delete Session Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Session</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deleteTarget?.title}"? This will also remove all character tags for this session. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (deleteTarget) {
+                  await deleteSession(deleteTarget.id);
+                  setDeleteTarget(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Session
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

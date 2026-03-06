@@ -14,6 +14,7 @@ import { useCharacters } from "@/hooks/useCharacters";
 import { useSessionCharacters } from "@/hooks/useSessionCharacters";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
+import { useFormDraft } from "@/hooks/useFormDraft";
 
 const sessionSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
@@ -45,6 +46,13 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
   const { characters } = useCharacters();
   const { setSessionCharacters } = useSessionCharacters();
   const { toast } = useToast();
+
+  const { clearDraft, hasDraft } = useFormDraft(
+    'create-session',
+    formData,
+    setFormData,
+    { enabled: open }
+  );
 
   const chronicleCharacters = characters.filter(c => c.chronicle_id === currentChronicle?.id);
 
@@ -84,7 +92,8 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
         await setSessionCharacters(newSession.id, selectedCharacterIds);
       }
 
-      // Reset form
+      // Clear draft and reset form
+      clearDraft();
       setFormData({
         title: "",
         summary: "",
