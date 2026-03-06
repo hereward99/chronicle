@@ -227,10 +227,10 @@ export function EditRelationshipDialog({
             <Button 
               type="button" 
               variant="destructive" 
-              onClick={handleDelete}
+              onClick={() => setShowDeleteDialog(true)}
               disabled={deleteLoading || loading}
             >
-              {deleteLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Delete"}
+              Delete
             </Button>
             <div className="flex space-x-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
@@ -244,5 +244,28 @@ export function EditRelationshipDialog({
         </form>
       </DialogContent>
     </Dialog>
+
+    <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Relationship</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete the relationship between {getCharacterName(formData.character_id)} and {getCharacterName(formData.related_character_id)}? This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deleteLoading}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={deleteLoading}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {deleteLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </>
   );
 }
