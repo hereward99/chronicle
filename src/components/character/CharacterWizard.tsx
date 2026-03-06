@@ -166,7 +166,12 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
   const { currentChronicle, createDefaultChronicle } = useChronicles();
   const { toast } = useToast();
 
-  const [characterData, setCharacterData] = useState({
+  const { clearDraft } = useFormDraft(
+    'character-wizard',
+    characterData,
+    setCharacterData,
+    { enabled: open }
+  );
     // Creation Method: "full" | "simple" | "general" | "standard"
     creationMethod: "full" as "full" | "simple" | "general" | "standard",
     
