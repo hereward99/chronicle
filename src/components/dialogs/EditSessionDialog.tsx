@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,10 +60,19 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
     });
   }, [session]);
 
-  // Sync character selections when loaded
+  // Sync character selections only once when loaded
+  const initializedRef = useRef(false);
   useEffect(() => {
-    setSelectedCharacterIds(existingCharacterIds);
+    if (existingCharacterIds.length > 0 && !initializedRef.current) {
+      setSelectedCharacterIds(existingCharacterIds);
+      initializedRef.current = true;
+    }
   }, [existingCharacterIds]);
+
+  // Reset initialization flag when dialog reopens with a different session
+  useEffect(() => {
+    initializedRef.current = false;
+  }, [session.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -176,7 +185,7 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
           <div className="space-y-2">
             <Label>Characters in Session</Label>
             {chronicleCharacters.length > 0 ? (
-              <ScrollArea className="max-h-32 border border-border rounded-md p-2">
+              <ScrollArea className="h-32 border border-border rounded-md p-2">
                 <div className="space-y-1">
                   {chronicleCharacters.map((char) => (
                     <label key={char.id} className="flex items-center gap-2 py-1 px-1 rounded hover:bg-muted/50 cursor-pointer text-sm">
