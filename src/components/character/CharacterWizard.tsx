@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useCharacters, DicePoolConfig, SimpleDicePool, GeneralDicePool, StandardDicePool, CombinedDicePool, ExceptionalPool } from "@/hooks/useCharacters";
 import { useChronicles } from "@/hooks/useChronicles";
 import { useToast } from "@/hooks/use-toast";
+import { useFormDraft } from "@/hooks/useFormDraft";
 import { ChevronLeft, ChevronRight, Check, Wand2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
