@@ -92,7 +92,8 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
         await setSessionCharacters(newSession.id, selectedCharacterIds);
       }
 
-      // Reset form
+      // Clear draft and reset form
+      clearDraft();
       setFormData({
         title: "",
         summary: "",
