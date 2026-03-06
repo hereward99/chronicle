@@ -47,6 +47,13 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
   const { setSessionCharacters } = useSessionCharacters();
   const { toast } = useToast();
 
+  const { clearDraft, hasDraft } = useFormDraft(
+    'create-session',
+    formData,
+    setFormData,
+    { enabled: open }
+  );
+
   const chronicleCharacters = characters.filter(c => c.chronicle_id === currentChronicle?.id);
 
   // Filter plots for current chronicle
