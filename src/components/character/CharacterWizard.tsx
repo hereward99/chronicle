@@ -165,6 +165,8 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
   const { createCharacter } = useCharacters();
   const { currentChronicle, createDefaultChronicle } = useChronicles();
   const { toast } = useToast();
+
+  const [characterData, setCharacterData] = useState({
     // Creation Method: "full" | "simple" | "general" | "standard"
     creationMethod: "full" as "full" | "simple" | "general" | "standard",
     
