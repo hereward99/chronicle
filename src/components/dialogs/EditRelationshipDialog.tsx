@@ -89,12 +89,15 @@ export function EditRelationshipDialog({
     }
   };
 
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
   const handleDelete = async () => {
-    if (!relationship || !window.confirm('Are you sure you want to delete this relationship? This action cannot be undone.')) return;
+    if (!relationship) return;
     
     setDeleteLoading(true);
     try {
       await onDelete(relationship.id);
+      setShowDeleteDialog(false);
       onOpenChange(false);
     } catch (error) {
       console.error('Error deleting relationship:', error);
