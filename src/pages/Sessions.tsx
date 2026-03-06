@@ -29,7 +29,8 @@ const Sessions = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(["ungrouped", "checklists-ungrouped"]));
   const [editingSession, setEditingSession] = useState<Session | null>(null);
-  const { sessions, loading } = useSessions();
+  const [deleteTarget, setDeleteTarget] = useState<Session | null>(null);
+  const { sessions, loading, deleteSession } = useSessions();
   const { plots } = usePlots();
   const { checklists, loading: checklistsLoading, toggleItem, addItem, updateItem, deleteItem, deleteChecklist } = useChecklists();
 
