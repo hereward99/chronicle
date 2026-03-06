@@ -60,10 +60,19 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
     });
   }, [session]);
 
-  // Sync character selections when loaded
+  // Sync character selections only once when loaded
+  const initializedRef = useRef(false);
   useEffect(() => {
-    setSelectedCharacterIds(existingCharacterIds);
+    if (existingCharacterIds.length > 0 && !initializedRef.current) {
+      setSelectedCharacterIds(existingCharacterIds);
+      initializedRef.current = true;
+    }
   }, [existingCharacterIds]);
+
+  // Reset initialization flag when dialog reopens with a different session
+  useEffect(() => {
+    initializedRef.current = false;
+  }, [session.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
