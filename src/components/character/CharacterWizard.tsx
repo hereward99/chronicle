@@ -227,6 +227,13 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
     willpower_max: 3,
   });
 
+  const { clearDraft } = useFormDraft(
+    'character-wizard',
+    characterData,
+    setCharacterData,
+    { enabled: open }
+  );
+
   // Determine which steps to use based on creation method
   const getSteps = () => {
     if (characterData.creationMethod !== "full") {
