@@ -422,6 +422,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
   };
 
   const resetWizard = () => {
+    clearDraft();
     setStep(0);
     setCharacterData({
       creationMethod: "full",
