@@ -261,12 +261,15 @@ export function EditCharacterDialog({
     }
   };
 
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
   const handleDelete = async () => {
-    if (!character || !window.confirm('Are you sure you want to delete this character? This action cannot be undone.')) return;
+    if (!character) return;
     
     setDeleteLoading(true);
     try {
       await onDelete(character.id);
+      setShowDeleteDialog(false);
       onOpenChange(false);
     } catch (error) {
       console.error('Error deleting character:', error);
