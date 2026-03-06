@@ -172,6 +172,8 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
     setCharacterData,
     { enabled: open }
   );
+
+  const [characterData, setCharacterData] = useState({
     // Creation Method: "full" | "simple" | "general" | "standard"
     creationMethod: "full" as "full" | "simple" | "general" | "standard",
     
