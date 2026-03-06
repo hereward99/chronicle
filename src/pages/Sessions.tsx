@@ -130,6 +130,14 @@ const Sessions = () => {
             >
               <Download className="h-4 w-4" />
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-destructive hover:text-destructive"
+              onClick={() => setDeleteTarget(session)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </CardHeader>
