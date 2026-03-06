@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Calendar, Loader2, FileText, Download, BookOpen, ChevronDown, ChevronRight, Pencil, ClipboardList } from "lucide-react";
+import { Plus, Search, Calendar, Loader2, FileText, Download, BookOpen, ChevronDown, ChevronRight, Pencil, ClipboardList, Trash2 } from "lucide-react";
 import { CreateSessionDialog } from "@/components/dialogs/CreateSessionDialog";
 import { EditSessionDialog } from "@/components/dialogs/EditSessionDialog";
 import { useSessions, Session } from "@/hooks/useSessions";
@@ -14,6 +14,16 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { MentionText } from "@/components/mentions/MentionText";
 import { CreateChecklistDialog } from "@/components/checklists/CreateChecklistDialog";
 import { ChecklistCard } from "@/components/checklists/ChecklistCard";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Sessions = () => {
   const [searchTerm, setSearchTerm] = useState("");
