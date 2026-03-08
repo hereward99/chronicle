@@ -23,6 +23,7 @@ const Stories = () => {
   const [viewingPlot, setViewingPlot] = useState<Plot | null>(null);
   const [editingPlot, setEditingPlot] = useState<Plot | null>(null);
   const { plots, loading, refetch } = usePlots();
+  const { searchQuery: highlightQuery } = useSearchHighlight();
   const { getCharactersForPlot } = usePlotCharacters();
   const { sessions } = useSessions();
 
