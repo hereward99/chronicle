@@ -24,8 +24,7 @@ export default function Chronicle() {
   const { activities, loading: activitiesLoading } = useRecentActivity();
   return (
     <div className="space-y-8">
-      {/* Chronicle Manager */}
-      <ChronicleManager />
+      {/* Header */}
 
       {/* Header */}
       <div className="flex items-center justify-between">
