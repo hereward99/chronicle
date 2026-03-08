@@ -173,6 +173,14 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
             </div>
           </div>
 
+          <InGameDateInput
+            startValue={formData.in_game_date_start}
+            endValue={formData.in_game_date_end}
+            onStartChange={(v) => setFormData(prev => ({ ...prev, in_game_date_start: v }))}
+            onEndChange={(v) => setFormData(prev => ({ ...prev, in_game_date_end: v }))}
+            className="space-y-2"
+          />
+
           <div className="space-y-2">
             <Label htmlFor="plot-summary">Summary</Label>
             <MentionInput

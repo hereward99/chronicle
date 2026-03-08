@@ -116,6 +116,8 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
         status: validated.status,
         priority: validated.priority,
         attachments: formData.attachments,
+        in_game_date_start: formData.in_game_date_start || null,
+        in_game_date_end: formData.in_game_date_end || null,
       });
 
       onOpenChange(false);
