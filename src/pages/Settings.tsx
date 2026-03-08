@@ -50,6 +50,7 @@ export default function Settings() {
   const [importing, setImporting] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [pendingImportData, setPendingImportData] = useState<BackupData | null>(null);
+  const [showTour, setShowTour] = useState(false);
 
   // Dev notes (Supabase-backed)
   const { devNotes, addNote, toggleNote, removeNote } = useDevNotes();
