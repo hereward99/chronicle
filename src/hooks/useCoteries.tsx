@@ -9,6 +9,7 @@ export interface Coterie {
   name: string;
   description: string | null;
   domain: string | null;
+  is_primary: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -185,6 +186,30 @@ export function useCoteries(chronicleId?: string) {
     }
   };
 
+  const setPrimaryCoterie = async (coterieId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      // Clear all primary flags for this user's coteries
+      await supabase
+        .from('coteries')
+        .update({ is_primary: false })
+        .eq('user_id', user.id);
+
+      // Set the selected one as primary
+      await supabase
+        .from('coteries')
+        .update({ is_primary: true })
+        .eq('id', coterieId);
+
+      queryClient.invalidateQueries({ queryKey: ['coteries'] });
+      toast({ title: "Primary coterie set", description: "This coterie will appear at the centre of the relationship map." });
+    } catch (error: any) {
+      toast({ title: "Error setting primary coterie", description: error.message, variant: "destructive" });
+    }
+  };
+
   return {
     coteries,
     loading,
@@ -195,6 +220,7 @@ export function useCoteries(chronicleId?: string) {
     addMember,
     removeMember,
     getCoterieMembers,
+    setPrimaryCoterie,
     refetch: () => queryClient.invalidateQueries({ queryKey: ['coteries'] }),
   };
 }

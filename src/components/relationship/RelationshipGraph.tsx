@@ -35,6 +35,7 @@ interface RelationshipGraphProps {
   characters: Character[];
   factions?: Faction[];
   characterFactions?: CharacterFaction[];
+  primaryCharacterIds?: string[];
   onNodeClick?: (characterId: string) => void;
   onEdgeClick?: (relationship: Relationship) => void;
   onCreateRelationship?: (sourceId: string, targetId: string) => void;
@@ -76,24 +77,63 @@ const getNodeColor = (clan: string): string => {
 function getLayoutedNodes(
   nodes: Node[],
   edges: Edge[],
-  layout: LayoutType
+  layout: LayoutType,
+  primaryCharacterIds: string[] = []
 ): Node[] {
   if (nodes.length === 0) return nodes;
 
+  const centerX = 600;
+  const centerY = 400;
+
+  // Helper: reposition so primary characters are at center
+  const centerPrimaryNodes = (positioned: Node[]): Node[] => {
+    if (primaryCharacterIds.length === 0) return positioned;
+    
+    const primaryNodes = positioned.filter(n => primaryCharacterIds.includes(n.id));
+    if (primaryNodes.length === 0) return positioned;
+
+    // Calculate centroid of primary nodes
+    const avgX = primaryNodes.reduce((sum, n) => sum + n.position.x, 0) / primaryNodes.length;
+    const avgY = primaryNodes.reduce((sum, n) => sum + n.position.y, 0) / primaryNodes.length;
+    
+    // Shift all nodes so the primary centroid is at the center
+    const offsetX = centerX - avgX;
+    const offsetY = centerY - avgY;
+    
+    return positioned.map(node => ({
+      ...node,
+      position: {
+        x: node.position.x + offsetX,
+        y: node.position.y + offsetY,
+      },
+    }));
+  };
+
   if (layout === 'circular') {
-    const centerX = 600;
-    const centerY = 400;
-    const radius = Math.max(200, nodes.length * 40);
-    return nodes.map((node, index) => {
-      const angle = (index / nodes.length) * 2 * Math.PI - Math.PI / 2;
-      return {
+    // Place primary characters in the inner ring, others on the outer ring
+    const primaryNodes = nodes.filter(n => primaryCharacterIds.includes(n.id));
+    const otherNodes = nodes.filter(n => !primaryCharacterIds.includes(n.id));
+    
+    const innerRadius = primaryNodes.length > 1 ? Math.max(100, primaryNodes.length * 30) : 0;
+    const outerRadius = Math.max(250, (primaryNodes.length + otherNodes.length) * 35);
+
+    const positioned = [
+      ...primaryNodes.map((node, index) => ({
         ...node,
         position: {
-          x: centerX + radius * Math.cos(angle),
-          y: centerY + radius * Math.sin(angle),
+          x: centerX + innerRadius * Math.cos((index / Math.max(primaryNodes.length, 1)) * 2 * Math.PI - Math.PI / 2),
+          y: centerY + innerRadius * Math.sin((index / Math.max(primaryNodes.length, 1)) * 2 * Math.PI - Math.PI / 2),
         },
-      };
-    });
+      })),
+      ...otherNodes.map((node, index) => ({
+        ...node,
+        position: {
+          x: centerX + outerRadius * Math.cos((index / Math.max(otherNodes.length, 1)) * 2 * Math.PI - Math.PI / 2),
+          y: centerY + outerRadius * Math.sin((index / Math.max(otherNodes.length, 1)) * 2 * Math.PI - Math.PI / 2),
+        },
+      })),
+    ];
+    return positioned;
   }
 
   if (layout === 'hierarchical') {
@@ -101,8 +141,10 @@ function getLayoutedNodes(
     g.setDefaultEdgeLabel(() => ({}));
     g.setGraph({ rankdir: 'TB', nodesep: 80, ranksep: 120 });
 
+    // Place primary characters at the top rank
     nodes.forEach((node) => {
-      g.setNode(node.id, { width: 180, height: 80 });
+      const isPrimary = primaryCharacterIds.includes(node.id);
+      g.setNode(node.id, { width: 180, height: 80, ...(isPrimary ? { rank: 0 } : {}) });
     });
 
     edges.forEach((edge) => {
@@ -111,7 +153,7 @@ function getLayoutedNodes(
 
     dagre.layout(g);
 
-    return nodes.map((node) => {
+    const positioned = nodes.map((node) => {
       const nodeWithPosition = g.node(node.id);
       return {
         ...node,
@@ -121,10 +163,12 @@ function getLayoutedNodes(
         },
       };
     });
+
+    return centerPrimaryNodes(positioned);
   }
 
-  // 'force' layout — use faction-based grouping (original logic)
-  return nodes;
+  // 'force' layout — use faction-based grouping (original logic), then center primary
+  return nodes; // centering handled separately since these already get positioned
 }
 
 export function RelationshipGraph({ 
@@ -132,6 +176,7 @@ export function RelationshipGraph({
   characters,
   factions = [],
   characterFactions = [],
+  primaryCharacterIds = [],
   onNodeClick,
   onEdgeClick,
   onCreateRelationship 
@@ -288,8 +333,27 @@ export function RelationshipGraph({
   }, [relationships]);
 
   const layoutedNodes = useMemo(() => {
-    return getLayoutedNodes(rawNodes, initialEdges, layout);
-  }, [rawNodes, initialEdges, layout]);
+    const nodes = getLayoutedNodes(rawNodes, initialEdges, layout, primaryCharacterIds);
+    
+    // For force layout, center primary nodes after faction-based positioning
+    if (layout === 'force' && primaryCharacterIds.length > 0) {
+      const primaryNodes = nodes.filter(n => primaryCharacterIds.includes(n.id));
+      if (primaryNodes.length > 0) {
+        const avgX = primaryNodes.reduce((sum, n) => sum + n.position.x, 0) / primaryNodes.length;
+        const avgY = primaryNodes.reduce((sum, n) => sum + n.position.y, 0) / primaryNodes.length;
+        const offsetX = 600 - avgX;
+        const offsetY = 400 - avgY;
+        return nodes.map(node => ({
+          ...node,
+          position: {
+            x: node.position.x + offsetX,
+            y: node.position.y + offsetY,
+          },
+        }));
+      }
+    }
+    return nodes;
+  }, [rawNodes, initialEdges, layout, primaryCharacterIds]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);

@@ -13,7 +13,7 @@ import { useCoteries } from '@/hooks/useCoteries';
 import { useChronicles } from '@/hooks/useChronicles';
 import { useSearchHighlight } from '@/hooks/useSearchHighlight';
 import { TextHighlight } from '@/components/ui/text-highlight';
-import { Plus, Users, Heart, Swords, Handshake, UserCircle, Edit, Network, Flag, UserPlus, Search, Filter, X, UsersRound, MapPin, Trash2 } from 'lucide-react';
+import { Plus, Users, Heart, Swords, Handshake, UserCircle, Edit, Network, Flag, UserPlus, Search, Filter, X, UsersRound, MapPin, Trash2, Star } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -59,7 +59,7 @@ export default function Relationships() {
     addCharacterToFaction,
     removeCharacterFromFaction 
   } = useFactions(currentChronicle?.id);
-  const { coteries, loading: coteriesLoading, getCoterieMembers, allCoterieMembers } = useCoteries();
+  const { coteries, loading: coteriesLoading, getCoterieMembers, allCoterieMembers, setPrimaryCoterie } = useCoteries();
   const { searchQuery: highlightQuery } = useSearchHighlight();
   
   const [selectedCharacter, setSelectedCharacter] = useState<string>('all');
@@ -87,7 +87,16 @@ export default function Relationships() {
       fetchMemberCounts();
     }
   }, [coteries]);
-  
+
+  // Primary coterie member IDs for graph centering
+  const primaryCharacterIds = useMemo(() => {
+    const primaryCoterie = coteries.find(c => c.is_primary);
+    if (!primaryCoterie) return [];
+    return allCoterieMembers
+      .filter(cm => cm.coterie_id === primaryCoterie.id)
+      .map(cm => cm.character_id);
+  }, [coteries, allCoterieMembers]);
+
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
@@ -548,6 +557,7 @@ export default function Relationships() {
                 characters={characters}
                 factions={factions}
                 characterFactions={characterFactions}
+                primaryCharacterIds={primaryCharacterIds}
                 onNodeClick={handleNodeClick}
                 onEdgeClick={handleEdit}
                 onCreateRelationship={handleCreateRelationshipFromGraph}
@@ -797,13 +807,19 @@ export default function Relationships() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {coteries.map((coterie) => (
-              <Card key={coterie.id} data-entity-id={coterie.id} className="hover:shadow-lg transition-shadow">
+              <Card key={coterie.id} data-entity-id={coterie.id} className={`hover:shadow-lg transition-shadow ${coterie.is_primary ? 'ring-2 ring-primary' : ''}`}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <CardTitle className="flex items-center gap-2">
                         <UsersRound className="h-5 w-5" />
                         <TextHighlight text={coterie.name} highlight={highlightQuery} />
+                        {coterie.is_primary && (
+                          <Badge variant="default" className="text-xs gap-1">
+                            <Star className="h-3 w-3" />
+                            Primary
+                          </Badge>
+                        )}
                       </CardTitle>
                       {coterie.description && (
                         <CardDescription className="mt-2">
@@ -811,13 +827,25 @@ export default function Relationships() {
                         </CardDescription>
                       )}
                     </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setSelectedCoterie(coterie)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      {!coterie.is_primary && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setPrimaryCoterie(coterie.id)}
+                          title="Set as primary coterie"
+                        >
+                          <Star className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setSelectedCoterie(coterie)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
