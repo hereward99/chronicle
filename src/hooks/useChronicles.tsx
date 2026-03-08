@@ -101,6 +101,57 @@ export function useChronicles() {
     });
   };
 
+  const updateChronicleMutation = useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string } & Partial<Pick<Chronicle, 'name' | 'description' | 'setting'>>) => {
+      const { data, error } = await supabase
+        .from('chronicles')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as Chronicle;
+    },
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ['chronicles'] });
+      const current = queryClient.getQueryData<Chronicle | null>(['currentChronicle']);
+      if (current?.id === updated.id) {
+        queryClient.setQueryData<Chronicle | null>(['currentChronicle'], updated);
+      }
+      toast({ title: "Chronicle updated", description: `${updated.name} has been updated.` });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error updating chronicle", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const updateChronicle = async (id: string, updates: Partial<Pick<Chronicle, 'name' | 'description' | 'setting'>>) => {
+    return updateChronicleMutation.mutateAsync({ id, ...updates });
+  };
+
+  const deleteChronicleMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('chronicles').delete().eq('id', id);
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: (deletedId) => {
+      queryClient.invalidateQueries({ queryKey: ['chronicles'] });
+      const current = queryClient.getQueryData<Chronicle | null>(['currentChronicle']);
+      if (current?.id === deletedId) {
+        queryClient.setQueryData<Chronicle | null>(['currentChronicle'], null);
+      }
+      toast({ title: "Chronicle deleted" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error deleting chronicle", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteChronicle = async (id: string) => {
+    return deleteChronicleMutation.mutateAsync(id);
+  };
+
   return {
     chronicles,
     currentChronicle,
@@ -108,6 +159,8 @@ export function useChronicles() {
     loading,
     createChronicle,
     createDefaultChronicle,
+    updateChronicle,
+    deleteChronicle,
     refetch: () => queryClient.invalidateQueries({ queryKey: ['chronicles'] }),
   };
 }
