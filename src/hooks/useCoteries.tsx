@@ -9,6 +9,7 @@ export interface Coterie {
   name: string;
   description: string | null;
   domain: string | null;
+  is_primary: boolean;
   created_at: string;
   updated_at: string;
 }
