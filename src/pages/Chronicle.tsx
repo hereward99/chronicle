@@ -17,6 +17,7 @@ import { MentionText } from "@/components/mentions/MentionText";
 import { ChronicleManager } from "@/components/chronicle/ChronicleManager";
 
 export default function Chronicle() {
+  const { currentChronicle } = useChronicles();
   const { stats, loading: statsLoading } = useChronicleStats();
   const { plots, loading: plotsLoading } = usePlots();
   const { notes, loading: notesLoading } = useNotes();
