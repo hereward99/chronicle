@@ -45,6 +45,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
     generation: 13,
     status: "Active",
     difficulty: 3,
+    avatarUrl: null as string | null,
   });
   
   const { createCharacter } = useCharacters();
