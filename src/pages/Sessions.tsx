@@ -35,7 +35,7 @@ const Sessions = () => {
   const [deleteTarget, setDeleteTarget] = useState<Session | null>(null);
   const { sessions, loading, deleteSession } = useSessions();
   const { plots } = usePlots();
-  const { checklists, loading: checklistsLoading, toggleItem, addItem, updateItem, deleteItem, deleteChecklist } = useChecklists();
+  const { checklists, loading: checklistsLoading, toggleItem, addItem, updateItem, updateChecklist, deleteItem, deleteChecklist } = useChecklists();
 
   const filteredSessions = sessions.filter(session =>
     session.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
