@@ -216,6 +216,14 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
             <p className="text-xs text-muted-foreground">Type @ to mention characters, sessions, etc.</p>
           </div>
 
+          <InGameDateInput
+            startValue={formData.in_game_date_start}
+            endValue={formData.in_game_date_end}
+            onStartChange={(v) => setFormData(prev => ({ ...prev, in_game_date_start: v }))}
+            onEndChange={(v) => setFormData(prev => ({ ...prev, in_game_date_end: v }))}
+            className="space-y-2"
+          />
+
           <FileUpload
             bucket="story-files"
             entityId={plot.id}
