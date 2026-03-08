@@ -19,7 +19,8 @@ import {
   FileDown,
   Clock,
   MapPin,
-  Dices
+  Dices,
+  Search
 } from "lucide-react";
 
 const navigationItems = [
@@ -79,8 +80,24 @@ export function Navigation() {
             </div>
           </div>
 
+          {/* Search shortcut */}
+          <div className="px-4 pt-4">
+            <button
+              onClick={() => {
+                window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
+              }}
+              className="flex items-center w-full gap-2 px-4 py-2 rounded-lg border border-border bg-secondary/50 text-muted-foreground text-sm hover:text-foreground hover:bg-secondary transition-colors"
+            >
+              <Search className="h-4 w-4" />
+              <span className="flex-1 text-left">Search…</span>
+              <kbd className="hidden md:inline-flex h-5 items-center gap-0.5 rounded border border-border bg-muted px-1.5 text-[10px] font-medium text-muted-foreground">
+                ⌘K
+              </kbd>
+            </button>
+          </div>
+
           {/* Navigation Items */}
-          <div className="flex-1 px-4 py-6">
+          <div className="flex-1 px-4 py-4">
             <ul className="space-y-2">
               {navigationItems.map((item) => {
                 const isActive = location.pathname === item.href;

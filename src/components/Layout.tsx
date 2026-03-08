@@ -1,6 +1,7 @@
 import { Navigation } from "./Navigation";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { OfflineBanner } from "./OfflineBanner";
+import { CommandPalette } from "./CommandPalette";
 import { useChronicles } from "@/hooks/useChronicles";
 import { useEffect, useRef, useState } from "react";
 import { ChronicleSetupDialog } from "./onboarding/ChronicleSetupDialog";
@@ -50,6 +51,7 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-background">
+      <CommandPalette />
       <OfflineBanner />
       <a href="#main-content" className="skip-to-content">
         Skip to content
