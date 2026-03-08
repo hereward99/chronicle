@@ -13,7 +13,6 @@ import {
   X,
   Skull,
   LogOut,
-  UsersRound,
   Network,
   Settings,
   FileDown,
