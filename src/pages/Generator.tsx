@@ -39,6 +39,7 @@ export default function Generator() {
   const { createCharacter } = useCharacters();
   const { createPlot } = usePlots();
   const { settings: generatorSettings } = useGeneratorSettings();
+  const { requireOnline } = useOnlineStatus();
   
   // NPC Generation Dialog State
   const [showNPCDialog, setShowNPCDialog] = useState(false);
