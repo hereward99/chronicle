@@ -254,6 +254,7 @@ export default function Relationships() {
     setSearchQuery('');
     setSelectedRelTypes([]);
     setSelectedFactions([]);
+    setSelectedCoteries([]);
     setSelectedCharTypes([]);
     setSelectedStatuses([]);
     setSelectedClans([]);
@@ -263,6 +264,7 @@ export default function Relationships() {
     (searchQuery ? 1 : 0) +
     selectedRelTypes.length +
     selectedFactions.length +
+    selectedCoteries.length +
     selectedCharTypes.length +
     selectedStatuses.length +
     selectedClans.length;
