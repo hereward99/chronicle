@@ -59,7 +59,7 @@ export default function Relationships() {
     addCharacterToFaction,
     removeCharacterFromFaction 
   } = useFactions(currentChronicle?.id);
-  const { coteries, loading: coteriesLoading, getCoterieMembers } = useCoteries();
+  const { coteries, loading: coteriesLoading, getCoterieMembers, allCoterieMembers } = useCoteries();
   const { searchQuery: highlightQuery } = useSearchHighlight();
   
   const [selectedCharacter, setSelectedCharacter] = useState<string>('all');
@@ -93,6 +93,7 @@ export default function Relationships() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedRelTypes, setSelectedRelTypes] = useState<string[]>([]);
   const [selectedFactions, setSelectedFactions] = useState<string[]>([]);
+  const [selectedCoteries, setSelectedCoteries] = useState<string[]>([]);
   const [selectedCharTypes, setSelectedCharTypes] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedClans, setSelectedClans] = useState<string[]>([]);
@@ -156,7 +157,7 @@ export default function Relationships() {
     }
 
     // Filter by character search, faction, type, status, or clan
-    if (searchQuery || selectedFactions.length > 0 || selectedCharTypes.length > 0 || 
+    if (searchQuery || selectedFactions.length > 0 || selectedCoteries.length > 0 || selectedCharTypes.length > 0 || 
         selectedStatuses.length > 0 || selectedClans.length > 0) {
       filtered = filtered.filter(r => {
         const char1 = characters.find(c => c.id === r.character_id);
@@ -187,6 +188,22 @@ export default function Relationships() {
             char2Factions.some(f => selectedFactions.includes(f));
           
           if (!hasMatchingFaction) return false;
+        }
+
+        // Coterie filter
+        if (selectedCoteries.length > 0) {
+          const char1Coteries = allCoterieMembers
+            .filter(cm => cm.character_id === char1.id)
+            .map(cm => cm.coterie_id);
+          const char2Coteries = allCoterieMembers
+            .filter(cm => cm.character_id === char2.id)
+            .map(cm => cm.coterie_id);
+          
+          const hasMatchingCoterie = 
+            char1Coteries.some(c => selectedCoteries.includes(c)) ||
+            char2Coteries.some(c => selectedCoteries.includes(c));
+          
+          if (!hasMatchingCoterie) return false;
         }
 
         // Character type filter
@@ -223,18 +240,21 @@ export default function Relationships() {
     selectedCharacter, 
     selectedRelTypes, 
     searchQuery, 
-    selectedFactions, 
+    selectedFactions,
+    selectedCoteries,
     selectedCharTypes, 
     selectedStatuses, 
     selectedClans,
     characters,
-    characterFactions
+    characterFactions,
+    allCoterieMembers
   ]);
 
   const clearFilters = () => {
     setSearchQuery('');
     setSelectedRelTypes([]);
     setSelectedFactions([]);
+    setSelectedCoteries([]);
     setSelectedCharTypes([]);
     setSelectedStatuses([]);
     setSelectedClans([]);
@@ -244,6 +264,7 @@ export default function Relationships() {
     (searchQuery ? 1 : 0) +
     selectedRelTypes.length +
     selectedFactions.length +
+    selectedCoteries.length +
     selectedCharTypes.length +
     selectedStatuses.length +
     selectedClans.length;
@@ -375,6 +396,33 @@ export default function Relationships() {
                     ))}
                   </div>
                 </div>
+
+                {/* Coterie Filter */}
+                {coteries.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Coterie</Label>
+                    <div className="space-y-2">
+                      {coteries.map(coterie => (
+                        <div key={coterie.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`coterie-${coterie.id}`}
+                            checked={selectedCoteries.includes(coterie.id)}
+                            onCheckedChange={(checked) => {
+                              setSelectedCoteries(
+                                checked 
+                                  ? [...selectedCoteries, coterie.id]
+                                  : selectedCoteries.filter(c => c !== coterie.id)
+                              );
+                            }}
+                          />
+                          <label htmlFor={`coterie-${coterie.id}`} className="text-sm cursor-pointer">
+                            {coterie.name}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Character Type Filter */}
                 <div className="space-y-2">
