@@ -29,8 +29,9 @@
  import { TextHighlight } from '@/components/ui/text-highlight';
  
  export default function Locations() {
-   const { locations, isLoading, deleteLocation } = useLocations();
-   const [searchQuery, setSearchQuery] = useState('');
+  const { locations, isLoading, deleteLocation } = useLocations();
+  const [searchQuery, setSearchQuery] = useState('');
+  const { searchQuery: highlightQuery } = useSearchHighlight();
    const [createOpen, setCreateOpen] = useState(false);
    const [editLocation, setEditLocation] = useState<Location | null>(null);
    const [viewLocation, setViewLocation] = useState<Location | null>(null);
