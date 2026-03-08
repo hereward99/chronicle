@@ -7,12 +7,14 @@ import { useChronicleStats } from "@/hooks/useChronicleStats";
 import { usePlots } from "@/hooks/usePlots";
 import { useNotes } from "@/hooks/useNotes";
 import { useRecentActivity } from "@/hooks/useRecentActivity";
+import { useChronicles } from "@/hooks/useChronicles";
 import { formatDistanceToNow } from "date-fns";
 import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialog";
 import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
 import { CreateSessionDialog } from "@/components/dialogs/CreateSessionDialog";
 import { CreateNoteDialog } from "@/components/dialogs/CreateNoteDialog";
 import { MentionText } from "@/components/mentions/MentionText";
+import { ChronicleManager } from "@/components/chronicle/ChronicleManager";
 
 export default function Chronicle() {
   const { stats, loading: statsLoading } = useChronicleStats();
