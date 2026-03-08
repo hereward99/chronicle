@@ -157,7 +157,7 @@ export default function Relationships() {
     }
 
     // Filter by character search, faction, type, status, or clan
-    if (searchQuery || selectedFactions.length > 0 || selectedCharTypes.length > 0 || 
+    if (searchQuery || selectedFactions.length > 0 || selectedCoteries.length > 0 || selectedCharTypes.length > 0 || 
         selectedStatuses.length > 0 || selectedClans.length > 0) {
       filtered = filtered.filter(r => {
         const char1 = characters.find(c => c.id === r.character_id);
