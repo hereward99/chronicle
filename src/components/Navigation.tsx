@@ -18,7 +18,8 @@ import {
   Settings,
   FileDown,
   Clock,
-  MapPin
+  MapPin,
+  Dices
 } from "lucide-react";
 
 const navigationItems = [
@@ -30,6 +31,7 @@ const navigationItems = [
   { name: "Sessions", href: "/sessions", icon: Scroll },
   { name: "Timeline", href: "/timeline", icon: Clock },
   { name: "Locations", href: "/locations", icon: MapPin },
+  { name: "Dice Roller", href: "/dice", icon: Dices },
   { name: "Generator", href: "/generator", icon: Sparkles },
   { name: "Import", href: "/import", icon: FileDown },
   { name: "Settings", href: "/settings", icon: Settings },

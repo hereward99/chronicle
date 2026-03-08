@@ -19,6 +19,7 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Locations from "./pages/Locations";
 import Timeline from "./pages/Timeline";
+import DiceRollerPage from "./pages/DiceRoller";
 import { toast } from "@/hooks/use-toast";
 
 const queryClient = new QueryClient({
@@ -105,6 +106,13 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <Generator />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/dice" element={
+              <ProtectedRoute>
+                <Layout>
+                  <DiceRollerPage />
                 </Layout>
               </ProtectedRoute>
             } />

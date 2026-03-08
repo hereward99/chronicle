@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { HelpCircle, Droplet, Download, Dices, X, BookOpen, Calendar } from "lucide-react";
+import { QuickRollButton } from "@/components/dice/QuickRollButton";
 import { CharacterAttachmentsGallery } from "./CharacterAttachmentsGallery";
 import { BoonsSection } from "@/components/boons/BoonsSection";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -573,7 +574,10 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                       >
                         <span className="text-sm">{attr.name}</span>
                       </RuleTooltip>
-                      <DotRating current={attr.value} />
+                      <div className="flex items-center gap-1">
+                        <DotRating current={attr.value} />
+                        <QuickRollButton basePool={attr.value} hunger={character.hunger || 1} label={attr.name} />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -590,7 +594,10 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                       >
                         <span className="text-sm">{attr.name}</span>
                       </RuleTooltip>
-                      <DotRating current={attr.value} />
+                      <div className="flex items-center gap-1">
+                        <DotRating current={attr.value} />
+                        <QuickRollButton basePool={attr.value} hunger={character.hunger || 1} label={attr.name} />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -607,7 +614,10 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                       >
                         <span className="text-sm">{attr.name}</span>
                       </RuleTooltip>
-                      <DotRating current={attr.value} />
+                      <div className="flex items-center gap-1">
+                        <DotRating current={attr.value} />
+                        <QuickRollButton basePool={attr.value} hunger={character.hunger || 1} label={attr.name} />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -645,7 +655,12 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                                 <span className="text-xs text-muted-foreground ml-1">({skill.specialty})</span>
                               )}
                             </div>
-                            {rating > 0 && <DotRating current={rating} />}
+                            <div className="flex items-center gap-1">
+                              {rating > 0 && <DotRating current={rating} />}
+                              {rating > 0 && (
+                                <QuickRollButton basePool={rating} hunger={character.hunger || 1} label={displayName} />
+                              )}
+                            </div>
                           </div>
                         );
                       })}
