@@ -70,6 +70,22 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
       // Error already handled by updatePlot
     }
   };
+  // Sync form data when dialog opens or plot prop changes
+  useEffect(() => {
+    if (open) {
+      setFormData({
+        title: plot.title,
+        summary: (plot as any).summary || "",
+        description: plot.description || "",
+        status: plot.status as "Active" | "Planned" | "Completed" | "Critical",
+        priority: plot.priority as "Low" | "Medium" | "High" | "Critical",
+        attachments: (plot as any).attachments || [],
+        in_game_date_start: plot.in_game_date_start || "",
+        in_game_date_end: plot.in_game_date_end || "",
+      });
+    }
+  }, [open, plot.id]);
+
   // Load currently assigned characters when dialog opens or plot characters load
   useEffect(() => {
     if (open && !loading) {
