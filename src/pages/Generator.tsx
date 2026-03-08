@@ -14,6 +14,7 @@ import { useGeneratorSettings } from "@/hooks/useGeneratorSettings";
 import { generateWithOllama } from "@/lib/ollama";
 import { GenerateNPCDialog } from "@/components/dialogs/GenerateNPCDialog";
 import { NPCWizardDialog } from "@/components/dialogs/NPCWizardDialog";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 type CreationMethod = "full" | "simple" | "general" | "standard";
 type CreatureType = "vampire" | "human" | "ghoul";
@@ -36,6 +37,7 @@ export default function Generator() {
   const { createCharacter } = useCharacters();
   const { createPlot } = usePlots();
   const { settings: generatorSettings } = useGeneratorSettings();
+  const { requireOnline } = useOnlineStatus();
   
   // NPC Generation Dialog State
   const [showNPCDialog, setShowNPCDialog] = useState(false);
@@ -53,6 +55,7 @@ export default function Generator() {
 
   const generateContent = async () => {
     if (!prompt.trim()) return;
+    if (!generatorSettings.useLocalLLM && !requireOnline("Generate content")) return;
     
     setIsGenerating(true);
     setGeneratedData(null);

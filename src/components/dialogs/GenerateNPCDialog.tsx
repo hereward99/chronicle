@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useGeneratorSettings } from "@/hooks/useGeneratorSettings";
 import { generateWithOllama } from "@/lib/ollama";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 type CreationMethod = "full" | "simple" | "general" | "standard";
 type CreatureType = "vampire" | "human" | "ghoul";
@@ -75,6 +76,7 @@ export function GenerateNPCDialog({ open, onOpenChange, onComplete }: GenerateNP
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
   const { settings: generatorSettings } = useGeneratorSettings();
+  const { requireOnline } = useOnlineStatus();
 
   const handleMethodSelect = (method: CreationMethod) => {
     setCreationMethod(method);
@@ -83,6 +85,7 @@ export function GenerateNPCDialog({ open, onOpenChange, onComplete }: GenerateNP
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
+    if (!generatorSettings.useLocalLLM && !requireOnline("Generate NPC")) return;
 
     setStep("generating");
     setIsGenerating(true);
