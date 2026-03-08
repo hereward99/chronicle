@@ -16,6 +16,7 @@ import { usePlotCharacters } from "@/hooks/usePlotCharacters";
 import { useSessions } from "@/hooks/useSessions";
 import { MentionText } from "@/components/mentions/MentionText";
 import { TextHighlight } from "@/components/ui/text-highlight";
+import { useSearchHighlight } from "@/hooks/useSearchHighlight";
 
 const Stories = () => {
   const [searchTerm, setSearchTerm] = useState("");
