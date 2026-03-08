@@ -57,6 +57,7 @@ export default function Generator() {
 
   const generateContent = async () => {
     if (!prompt.trim()) return;
+    if (!generatorSettings.useLocalLLM && !requireOnline("Generate content")) return;
     
     setIsGenerating(true);
     setGeneratedData(null);
