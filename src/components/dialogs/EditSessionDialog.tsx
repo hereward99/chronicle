@@ -97,6 +97,8 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
         date_played: validated.date_played,
         experience_awarded: validated.experience_awarded,
         plot_id: validated.plot_id,
+        in_game_date_start: formData.in_game_date_start || null,
+        in_game_date_end: formData.in_game_date_end || null,
       });
 
       // Save character associations
