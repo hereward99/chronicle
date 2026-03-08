@@ -109,6 +109,13 @@ const App = () => (
                 </Layout>
               </ProtectedRoute>
             } />
+            <Route path="/dice" element={
+              <ProtectedRoute>
+                <Layout>
+                  <DiceRollerPage />
+                </Layout>
+              </ProtectedRoute>
+            } />
             <Route path="/settings" element={
               <ProtectedRoute>
                 <Layout>
