@@ -96,6 +96,8 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
         experience_awarded: validated.experience_awarded,
         chronicle_id: chronicleId,
         plot_id: validated.plot_id,
+        in_game_date_start: formData.in_game_date_start || null,
+        in_game_date_end: formData.in_game_date_end || null,
       });
 
       if (selectedCharacterIds.length > 0 && newSession?.id) {
