@@ -59,7 +59,7 @@ export default function Relationships() {
     addCharacterToFaction,
     removeCharacterFromFaction 
   } = useFactions(currentChronicle?.id);
-  const { coteries, loading: coteriesLoading, getCoterieMembers, allCoterieMembers } = useCoteries();
+  const { coteries, loading: coteriesLoading, getCoterieMembers, allCoterieMembers, setPrimaryCoterie } = useCoteries();
   const { searchQuery: highlightQuery } = useSearchHighlight();
   
   const [selectedCharacter, setSelectedCharacter] = useState<string>('all');
