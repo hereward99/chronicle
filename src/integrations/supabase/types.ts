@@ -600,6 +600,8 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          in_game_date_end: string | null
+          in_game_date_start: string | null
           priority: string
           status: string
           summary: string | null
@@ -613,6 +615,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          in_game_date_end?: string | null
+          in_game_date_start?: string | null
           priority?: string
           status?: string
           summary?: string | null
@@ -626,6 +630,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          in_game_date_end?: string | null
+          in_game_date_start?: string | null
           priority?: string
           status?: string
           summary?: string | null
@@ -780,6 +786,8 @@ export type Database = {
           date_played: string
           experience_awarded: number | null
           id: string
+          in_game_date_end: string | null
+          in_game_date_start: string | null
           plot_id: string | null
           summary: string | null
           title: string
@@ -793,6 +801,8 @@ export type Database = {
           date_played?: string
           experience_awarded?: number | null
           id?: string
+          in_game_date_end?: string | null
+          in_game_date_start?: string | null
           plot_id?: string | null
           summary?: string | null
           title: string
@@ -806,6 +816,8 @@ export type Database = {
           date_played?: string
           experience_awarded?: number | null
           id?: string
+          in_game_date_end?: string | null
+          in_game_date_start?: string | null
           plot_id?: string | null
           summary?: string | null
           title?: string
