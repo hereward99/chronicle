@@ -18,7 +18,8 @@ import {
   Settings,
   FileDown,
   Clock,
-  MapPin
+  MapPin,
+  Dices
 } from "lucide-react";
 
 const navigationItems = [
