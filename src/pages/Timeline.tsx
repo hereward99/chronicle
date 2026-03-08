@@ -90,9 +90,9 @@ export default function Timeline() {
       <div className="space-y-6">
         <h1 className="text-3xl font-bold font-[var(--font-gothic)] text-foreground">Timeline</h1>
         <div className="space-y-4">
-          <CardSkeleton />
-          <CardSkeleton />
-          <CardSkeleton />
+          <SessionCardSkeleton />
+          <SessionCardSkeleton />
+          <SessionCardSkeleton />
         </div>
       </div>
     );
