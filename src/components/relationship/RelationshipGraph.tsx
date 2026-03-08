@@ -119,24 +119,26 @@ function getLayoutedNodes(
       g.setNode(node.id, { width: 180, height: 80 });
     });
 
-    // Add invisible edges from a virtual root to primary nodes to force them to top rank
-    if (primaryCharacterIds.length > 0) {
-      g.setNode('__root__', { width: 0, height: 0 });
-      primaryCharacterIds.forEach(id => {
-        if (nodes.some(n => n.id === id)) {
-          g.setEdge('__root__', id);
-        }
-      });
-    }
-
     edges.forEach((edge) => {
       g.setEdge(edge.source, edge.target);
     });
 
+    // Force primary nodes to top rank by pinning them to rank 0
+    if (primaryCharacterIds.length > 0) {
+      // Create a subgraph / rank constraint: add a virtual root connected only to primary nodes
+      // and then remove edges TO primary nodes from non-primary sources to prevent rank pull-down
+      const virtualRoot = '__virtual_root__';
+      g.setNode(virtualRoot, { width: 0, height: 0 });
+      primaryCharacterIds.forEach(id => {
+        if (nodes.some(n => n.id === id)) {
+          g.setEdge(virtualRoot, id);
+        }
+      });
+    }
+
     dagre.layout(g);
 
-    // Remove virtual root and position nodes
-    return nodes.map((node) => {
+    const layoutedResult = nodes.map((node) => {
       const nodeWithPosition = g.node(node.id);
       return {
         ...node,
@@ -146,41 +148,47 @@ function getLayoutedNodes(
         },
       };
     });
+
+    // Center the graph so primary nodes are at the middle horizontally
+    if (primaryCharacterIds.length > 0) {
+      const primaryPositioned = layoutedResult.filter(n => primaryCharacterIds.includes(n.id));
+      if (primaryPositioned.length > 0) {
+        const avgX = primaryPositioned.reduce((sum, n) => sum + n.position.x, 0) / primaryPositioned.length;
+        const offsetX = centerX - avgX;
+        const minY = Math.min(...layoutedResult.map(n => n.position.y));
+        const offsetY = centerY - minY;
+        return layoutedResult.map(n => ({
+          ...n,
+          position: {
+            x: n.position.x + offsetX,
+            y: n.position.y + offsetY,
+          },
+        }));
+      }
+    }
+
+    return layoutedResult;
   }
 
-  // 'force' layout — reposition with primary coterie at center
+  // 'force' (Grouped) layout — keep faction-based clustering, but shift so primary coterie is central
   if (primaryCharacterIds.length > 0) {
-    const isPrimary = (id: string) => primaryCharacterIds.includes(id);
-    const primaryNodes = nodes.filter(n => isPrimary(n.id));
-    const otherNodes = nodes.filter(n => !isPrimary(n.id));
+    // Use the original faction-grouped positions from rawNodes, then shift so primary is centered
+    const primaryNodes = nodes.filter(n => primaryCharacterIds.includes(n.id));
 
-    // Place primary nodes in a tight cluster at center
-    const primaryPositioned = primaryNodes.map((node, index) => {
-      const angle = (index / Math.max(primaryNodes.length, 1)) * 2 * Math.PI;
-      const radius = primaryNodes.length === 1 ? 0 : Math.min(120, 50 + primaryNodes.length * 15);
-      return {
-        ...node,
+    if (primaryNodes.length > 0) {
+      const avgX = primaryNodes.reduce((sum, n) => sum + n.position.x, 0) / primaryNodes.length;
+      const avgY = primaryNodes.reduce((sum, n) => sum + n.position.y, 0) / primaryNodes.length;
+      const offsetX = centerX - avgX;
+      const offsetY = centerY - avgY;
+
+      return nodes.map(n => ({
+        ...n,
         position: {
-          x: centerX + radius * Math.cos(angle),
-          y: centerY + radius * Math.sin(angle),
+          x: n.position.x + offsetX,
+          y: n.position.y + offsetY,
         },
-      };
-    });
-
-    // Place other nodes in an outer ring, spaced further out
-    const outerRadius = Math.max(400, (primaryNodes.length + otherNodes.length) * 30);
-    const otherPositioned = otherNodes.map((node, index) => {
-      const angle = (index / Math.max(otherNodes.length, 1)) * 2 * Math.PI;
-      return {
-        ...node,
-        position: {
-          x: centerX + outerRadius * Math.cos(angle),
-          y: centerY + outerRadius * Math.sin(angle),
-        },
-      };
-    });
-
-    return [...primaryPositioned, ...otherPositioned];
+      }));
+    }
   }
 
   // No primary coterie — return original faction-grouped positions
