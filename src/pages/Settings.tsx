@@ -10,7 +10,8 @@ import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useChronicles } from '@/hooks/useChronicles';
 import { useGeneratorSettings } from '@/hooks/useGeneratorSettings';
-import { Download, Upload, Loader2, AlertTriangle, Bot, AtSign, ClipboardList, Plus, X, Check, Pencil } from 'lucide-react';
+import { Download, Upload, Loader2, AlertTriangle, Bot, AtSign, ClipboardList, Plus, X, Check, Pencil, RotateCcw } from 'lucide-react';
+import { GuidedTour } from '@/components/onboarding/GuidedTour';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
@@ -49,6 +50,7 @@ export default function Settings() {
   const [importing, setImporting] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [pendingImportData, setPendingImportData] = useState<BackupData | null>(null);
+  const [showTour, setShowTour] = useState(false);
 
   // Dev notes (Supabase-backed)
   const { devNotes, addNote, toggleNote, removeNote } = useDevNotes();
@@ -566,6 +568,25 @@ export default function Settings() {
           </Card>
 
 
+          {/* Guided Tour */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <RotateCcw className="h-5 w-5" />
+                Guided Tour
+              </CardTitle>
+              <CardDescription>
+                Re-watch the onboarding walkthrough that introduces the main features of Chronicle Keeper.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" onClick={() => setShowTour(true)}>
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Replay Guided Tour
+              </Button>
+            </CardContent>
+          </Card>
+
           {/* Dev Notes */}
           <Card>
             <CardHeader>
@@ -770,6 +791,8 @@ export default function Settings() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
+
+      <GuidedTour open={showTour} onClose={() => setShowTour(false)} />
     </>
   );
 }
