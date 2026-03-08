@@ -16,9 +16,10 @@ import {
   UsersRound,
   Network,
   Settings,
-  FileDown
+  FileDown,
+  Clock,
+  MapPin
 } from "lucide-react";
- import { MapPin } from "lucide-react";
 
 const navigationItems = [
   { name: "Chronicle", href: "/", icon: Home },
