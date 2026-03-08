@@ -35,6 +35,7 @@ export function CreateCoterieDialog({ open, onOpenChange }: CreateCoterieDialogP
         description: description.trim() || null,
         domain: domain.trim() || null,
         chronicle_id: chronicleId,
+        is_primary: false,
       });
       
       setName("");
