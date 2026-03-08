@@ -199,7 +199,7 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
                           : 'text-foreground'
                       }`}
                     >
-                      {item.text}
+                      <MentionText text={item.text} />
                     </span>
                     <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
                       <Button

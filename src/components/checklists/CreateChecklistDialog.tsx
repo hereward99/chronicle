@@ -172,13 +172,15 @@ export function CreateChecklistDialog({ children, defaultPlotId }: CreateCheckli
             {/* Notes */}
             <div className="grid gap-2">
               <Label htmlFor="notes">Notes (Optional)</Label>
-              <Textarea
+              <MentionInput
                 id="notes"
                 value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="General notes for this prep..."
-                rows={2}
+                onChange={(value) => setNotes(value)}
+                placeholder="General notes for this prep... Use @ to mention characters"
+                className="min-h-[60px] resize-none"
+                maxLength={2000}
               />
+              <p className="text-xs text-muted-foreground">Type @ to mention characters, stories, etc.</p>
             </div>
 
             {/* Template Items */}
