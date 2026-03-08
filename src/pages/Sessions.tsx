@@ -309,7 +309,7 @@ const Sessions = () => {
                         </div>
                         <div className="grid gap-3 sm:grid-cols-2">
                           {groupChecklists.map(checklist => (
-                            <ChecklistCard key={checklist.id} checklist={checklist} toggleItem={toggleItem} addItem={addItem} updateItem={updateItem} deleteItem={deleteItem} deleteChecklist={deleteChecklist} />
+                            <ChecklistCard key={checklist.id} checklist={checklist} toggleItem={toggleItem} addItem={addItem} updateItem={updateItem} deleteItem={deleteItem} updateChecklist={updateChecklist} deleteChecklist={deleteChecklist} />
                           ))}
                         </div>
                       </div>
