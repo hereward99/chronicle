@@ -24,6 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { SessionGroupSkeleton } from "@/components/skeletons/CardSkeleton";
 
 const Sessions = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -231,9 +232,7 @@ const Sessions = () => {
       {/* Sessions & Checklists List - Grouped by Story */}
       <div className="space-y-4">
         {(loading || checklistsLoading) ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
+          <SessionGroupSkeleton />
         ) : (filteredSessions.length > 0 || checklists.length > 0) ? (
           <>
             {sortedGroupKeys.map((groupKey) => {

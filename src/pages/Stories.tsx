@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, BookOpen, Clock, Users, Loader2, Eye, Edit, FileText, Image as ImageIcon } from "lucide-react";
+import { Plus, Search, BookOpen, Clock, Users, Eye, Edit, FileText, Image as ImageIcon } from "lucide-react";
+import { StoryCardSkeleton } from "@/components/skeletons/CardSkeleton";
 import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
 import { EditPlotDialog } from "@/components/dialogs/EditPlotDialog";
 import { ViewPlotDialog } from "@/components/dialogs/ViewPlotDialog";
@@ -219,8 +220,8 @@ const Stories = () => {
 
         <TabsContent value="all" className="space-y-4">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {[...Array(6)].map((_, i) => <StoryCardSkeleton key={i} />)}
             </div>
           ) : getFilteredStories().length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -254,8 +255,8 @@ const Stories = () => {
 
         <TabsContent value="active" className="space-y-4">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {[...Array(3)].map((_, i) => <StoryCardSkeleton key={i} />)}
             </div>
           ) : getFilteredStories('active').length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -270,8 +271,8 @@ const Stories = () => {
 
         <TabsContent value="planned" className="space-y-4">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {[...Array(3)].map((_, i) => <StoryCardSkeleton key={i} />)}
             </div>
           ) : getFilteredStories('planned').length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -286,8 +287,8 @@ const Stories = () => {
 
         <TabsContent value="completed" className="space-y-4">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {[...Array(3)].map((_, i) => <StoryCardSkeleton key={i} />)}
             </div>
           ) : getFilteredStories('completed').length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
