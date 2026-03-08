@@ -252,19 +252,34 @@ export default function Characters() {
             )}
 
           {!loading && filteredCharacters.length === 0 && (
-            <div className="text-center py-12">
-              <div className="mb-4">
-                <Users className="h-12 w-12 text-muted-foreground mx-auto" />
-              </div>
-              <h3 className="text-lg font-medium text-foreground mb-2">No characters found</h3>
-              <p className="text-muted-foreground mb-4">
-                {searchTerm ? "Try adjusting your search terms." : "Create your first character to get started."}
-              </p>
-              <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Character
-              </Button>
-            </div>
+            searchTerm ? (
+              <EmptyState
+                icon={<Users className="h-7 w-7" />}
+                title="No characters found"
+                description="Try adjusting your search terms."
+              />
+            ) : (
+              <EmptyState
+                icon={<Users className="h-7 w-7" />}
+                title="No characters yet"
+                description="Characters are the heart of your chronicle — add your PCs and the NPCs they'll encounter."
+                tip="Start with 1-2 Player Characters, then add NPCs as your story unfolds. Use the Wizard for guided creation."
+                action={
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => setWizardOpen(true)} className="border-primary/50">
+                      <Wand2 className="w-4 h-4 mr-2" />
+                      Character Wizard
+                    </Button>
+                    <CreateCharacterDialog>
+                      <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Quick Create
+                      </Button>
+                    </CreateCharacterDialog>
+                  </div>
+                }
+              />
+            )
           )}
         </TabsContent>
       </Tabs>

@@ -68,21 +68,18 @@ export default function Coteries() {
             ))}
           </div>
         ) : coteries.length === 0 ? (
-          <Card className="p-12 text-center">
-            <div className="flex flex-col items-center gap-4">
-              <Users className="h-12 w-12 text-muted-foreground" />
-              <div>
-                <h3 className="text-lg font-semibold mb-2">No coteries yet</h3>
-                <p className="text-muted-foreground mb-4">
-                  Create your first coterie to organize your characters
-                </p>
-                <Button onClick={() => setShowCreateDialog(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Coterie
-                </Button>
-              </div>
-            </div>
-          </Card>
+          <EmptyState
+            icon={<Users className="h-7 w-7" />}
+            title="No coteries yet"
+            description="Coteries are groups of vampires who band together for survival, politics, or shared goals. Create one and assign characters to it."
+            tip="Create your characters first, then group them into coteries. You can assign roles like Leader or Enforcer."
+            action={
+              <Button onClick={() => setShowCreateDialog(true)} className="bg-gradient-blood hover:opacity-90 shadow-crimson">
+                <Plus className="h-4 w-4 mr-2" />
+                Create First Coterie
+              </Button>
+            }
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {coteries.map((coterie) => (
