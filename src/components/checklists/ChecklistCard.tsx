@@ -43,6 +43,7 @@ interface ChecklistCardProps {
   addItem: (checklistId: string, text: string) => Promise<any>;
   updateItem: (itemId: string, text: string) => Promise<void>;
   deleteItem: (itemId: string) => Promise<void>;
+  updateChecklist: (id: string, updates: { title?: string; notes?: string; plot_id?: string | null }) => Promise<void>;
   deleteChecklist: (id: string) => Promise<void>;
 }
 
