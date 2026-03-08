@@ -47,7 +47,7 @@ interface ChecklistCardProps {
   deleteChecklist: (id: string) => Promise<void>;
 }
 
-export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, deleteItem, deleteChecklist }: ChecklistCardProps) {
+export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, deleteItem, updateChecklist, deleteChecklist }: ChecklistCardProps) {
   const [newItemText, setNewItemText] = useState("");
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
