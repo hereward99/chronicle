@@ -32,12 +32,9 @@ export function MentionText({ text, className }: MentionTextProps) {
   const segments = parseMentions(text);
 
   const handleMentionClick = (mention: Mention) => {
-    // Navigate to the entity's page
-    // For now, navigate to the section and let the user find it
-    // In future, could open a modal or scroll to the entity
     const route = typeRoutes[mention.type];
     if (route) {
-      navigate(route);
+      navigate(`${route}?highlight=${mention.id}&q=${encodeURIComponent(mention.name)}`);
     }
   };
 
