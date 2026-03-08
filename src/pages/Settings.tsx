@@ -129,7 +129,9 @@ export default function Settings() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `chronicle-backup-${currentChronicle.name.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.json`;
+      const now = new Date();
+      const timestamp = `${now.toISOString().split('T')[0]}_${now.toTimeString().slice(0, 8).replace(/:/g, '-')}`;
+      a.download = `chronicle-backup-${currentChronicle.name.replace(/\s+/g, '-').toLowerCase()}-${timestamp}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
