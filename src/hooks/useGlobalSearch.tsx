@@ -48,7 +48,7 @@ export function useGlobalSearch() {
           .from('plots')
           .select('id, title, status')
           .eq('chronicle_id', chronicleId)
-          .or(`title.ilike.${q},description.ilike.${q}`)
+          .or(`title.ilike.${q},description.ilike.${q},summary.ilike.${q}`)
           .limit(8),
         supabase
           .from('sessions')
@@ -82,6 +82,52 @@ export function useGlobalSearch() {
           .limit(5),
       ]);
 
+      // Collect matching character IDs to find linked plots/sessions
+      const matchedCharIds = (characters.data || []).map((c: any) => c.id);
+
+      let linkedPlots: any[] = [];
+      let linkedSessions: any[] = [];
+
+      if (matchedCharIds.length > 0) {
+        const [plotLinks, sessionLinks] = await Promise.all([
+          supabase
+            .from('plot_characters')
+            .select('plot_id')
+            .in('character_id', matchedCharIds),
+          supabase
+            .from('session_characters')
+            .select('session_id')
+            .in('character_id', matchedCharIds),
+        ]);
+
+        const existingPlotIds = new Set((plots.data || []).map((p: any) => p.id));
+        const existingSessionIds = new Set((sessions.data || []).map((s: any) => s.id));
+
+        const linkedPlotIds = [...new Set((plotLinks.data || []).map((r: any) => r.plot_id))]
+          .filter(id => !existingPlotIds.has(id));
+        const linkedSessionIds = [...new Set((sessionLinks.data || []).map((r: any) => r.session_id))]
+          .filter(id => !existingSessionIds.has(id));
+
+        const [extraPlots, extraSessions] = await Promise.all([
+          linkedPlotIds.length > 0
+            ? supabase.from('plots').select('id, title, status').in('id', linkedPlotIds).limit(8)
+            : Promise.resolve({ data: [] }),
+          linkedSessionIds.length > 0
+            ? supabase.from('sessions').select('id, title, date_played').in('id', linkedSessionIds).limit(8)
+            : Promise.resolve({ data: [] }),
+        ]);
+
+        linkedPlots = extraPlots.data || [];
+        linkedSessions = extraSessions.data || [];
+      }
+
+      // Build a character name lookup for subtitles
+      const charNameMap = new Map((characters.data || []).map((c: any) => [c.id, c.name]));
+      const getLinkedCharNames = (entityId: string, links: any[], idField: string) => {
+        const charIds = links.filter((l: any) => l[idField] === entityId).map((l: any) => l.character_id);
+        return charIds.map((cid: string) => charNameMap.get(cid)).filter(Boolean).join(', ');
+      };
+
       const mapped: SearchResult[] = [
         ...(characters.data || []).map((c: any) => ({
           id: c.id,
@@ -97,11 +143,25 @@ export function useGlobalSearch() {
           subtitle: p.status,
           route: '/stories',
         })),
+        ...linkedPlots.map((p: any) => ({
+          id: p.id,
+          type: 'plot' as const,
+          title: p.title,
+          subtitle: `${p.status} · linked character`,
+          route: '/stories',
+        })),
         ...(sessions.data || []).map((s: any) => ({
           id: s.id,
           type: 'session' as const,
           title: s.title,
           subtitle: s.date_played,
+          route: '/sessions',
+        })),
+        ...linkedSessions.map((s: any) => ({
+          id: s.id,
+          type: 'session' as const,
+          title: s.title,
+          subtitle: `${s.date_played} · linked character`,
           route: '/sessions',
         })),
         ...(locations.data || []).map((l: any) => ({
