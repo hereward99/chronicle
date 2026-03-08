@@ -93,6 +93,7 @@ export default function Relationships() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedRelTypes, setSelectedRelTypes] = useState<string[]>([]);
   const [selectedFactions, setSelectedFactions] = useState<string[]>([]);
+  const [selectedCoteries, setSelectedCoteries] = useState<string[]>([]);
   const [selectedCharTypes, setSelectedCharTypes] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedClans, setSelectedClans] = useState<string[]>([]);
