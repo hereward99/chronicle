@@ -349,26 +349,7 @@ export function RelationshipGraph({
   }, [relationships]);
 
   const layoutedNodes = useMemo(() => {
-    const nodes = getLayoutedNodes(rawNodes, initialEdges, layout, primaryCharacterIds);
-    
-    // For force layout, center primary nodes after faction-based positioning
-    if (layout === 'force' && primaryCharacterIds.length > 0) {
-      const primaryNodes = nodes.filter(n => primaryCharacterIds.includes(n.id));
-      if (primaryNodes.length > 0) {
-        const avgX = primaryNodes.reduce((sum, n) => sum + n.position.x, 0) / primaryNodes.length;
-        const avgY = primaryNodes.reduce((sum, n) => sum + n.position.y, 0) / primaryNodes.length;
-        const offsetX = 600 - avgX;
-        const offsetY = 400 - avgY;
-        return nodes.map(node => ({
-          ...node,
-          position: {
-            x: node.position.x + offsetX,
-            y: node.position.y + offsetY,
-          },
-        }));
-      }
-    }
-    return nodes;
+    return getLayoutedNodes(rawNodes, initialEdges, layout, primaryCharacterIds);
   }, [rawNodes, initialEdges, layout, primaryCharacterIds]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
