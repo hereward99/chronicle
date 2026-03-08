@@ -53,6 +53,7 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editingItemText, setEditingItemText] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const completedCount = checklist.items.filter(item => item.is_completed).length;
   const totalCount = checklist.items.length;
