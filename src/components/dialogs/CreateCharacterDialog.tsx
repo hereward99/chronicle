@@ -145,6 +145,19 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* AI Portrait Generator */}
+          <div className="flex justify-center py-1">
+            <PortraitGenerator
+              characterName={formData.name}
+              clan={formData.clan}
+              concept={formData.concept}
+              avatarUrl={formData.avatarUrl}
+              onPortraitGenerated={(url) => setFormData(prev => ({ ...prev, avatarUrl: url }))}
+              onPortraitRemoved={() => setFormData(prev => ({ ...prev, avatarUrl: null }))}
+              size="sm"
+            />
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
             <Input
