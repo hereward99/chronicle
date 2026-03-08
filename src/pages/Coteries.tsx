@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { EmptyState } from "@/components/onboarding/EmptyState";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
