@@ -1,4 +1,5 @@
  import { useState } from 'react';
+ import { EmptyState } from '@/components/onboarding/EmptyState';
  import { Button } from '@/components/ui/button';
  import { Card } from '@/components/ui/card';
  import { Input } from '@/components/ui/input';
