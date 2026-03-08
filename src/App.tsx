@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import Import from "./pages/Import";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, MutationCache } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { AuthProvider } from "@/hooks/useAuth";
@@ -17,9 +17,23 @@ import Generator from "./pages/Generator";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
- import Locations from "./pages/Locations";
+import Locations from "./pages/Locations";
+import { toast } from "@/hooks/use-toast";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  mutationCache: new MutationCache({
+    onMutate: () => {
+      if (!navigator.onLine) {
+        toast({
+          title: "You're offline",
+          description: "Data changes are not available without an internet connection.",
+          variant: "destructive",
+        });
+        throw new Error("Offline: mutation blocked");
+      }
+    },
+  }),
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
