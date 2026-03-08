@@ -9,7 +9,6 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Chronicle from "./pages/Chronicle";
 import Characters from "./pages/Characters";
-import Coteries from "./pages/Coteries";
 import Relationships from "./pages/Relationships";
 import Stories from "./pages/Stories";
 import Sessions from "./pages/Sessions";
@@ -57,13 +56,6 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <Characters />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/coteries" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Coteries />
                 </Layout>
               </ProtectedRoute>
             } />

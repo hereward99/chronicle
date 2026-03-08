@@ -1,26 +1,34 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useRelationships, Relationship } from '@/hooks/useRelationships';
 import { useCharacters, Character } from '@/hooks/useCharacters';
 import { useFactions, Faction } from '@/hooks/useFactions';
+import { useCoteries } from '@/hooks/useCoteries';
 import { useChronicles } from '@/hooks/useChronicles';
-import { Plus, Users, Heart, Swords, Handshake, UserCircle, Edit, Network, Flag, UserPlus, Search, Filter, X } from 'lucide-react';
+import { useSearchHighlight } from '@/hooks/useSearchHighlight';
+import { TextHighlight } from '@/components/ui/text-highlight';
+import { Plus, Users, Heart, Swords, Handshake, UserCircle, Edit, Network, Flag, UserPlus, Search, Filter, X, UsersRound, MapPin, Trash2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { CreateRelationshipDialog } from '@/components/dialogs/CreateRelationshipDialog';
 import { EditRelationshipDialog } from '@/components/dialogs/EditRelationshipDialog';
+import { CreateCoterieDialog } from '@/components/dialogs/CreateCoterieDialog';
+import { ManageCoterieDialog } from '@/components/dialogs/ManageCoterieDialog';
 import { RelationshipGraph } from '@/components/relationship/RelationshipGraph';
 import { ReactFlowProvider } from 'reactflow';
 import { ViewCharacterDialog } from '@/components/dialogs/ViewCharacterDialog';
 import { CreateFactionDialog } from '@/components/dialogs/CreateFactionDialog';
 import { EditFactionDialog } from '@/components/dialogs/EditFactionDialog';
 import { ManageFactionMembersDialog } from '@/components/dialogs/ManageFactionMembersDialog';
+import { EmptyState } from '@/components/onboarding/EmptyState';
+import type { Coterie } from '@/hooks/useCoteries';
 
 const relationshipIcons: Record<string, any> = {
   'Ally': Handshake,
@@ -51,6 +59,8 @@ export default function Relationships() {
     addCharacterToFaction,
     removeCharacterFromFaction 
   } = useFactions(currentChronicle?.id);
+  const { coteries, loading: coteriesLoading, getCoterieMembers } = useCoteries();
+  const { searchQuery: highlightQuery } = useSearchHighlight();
   
   const [selectedCharacter, setSelectedCharacter] = useState<string>('all');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -62,6 +72,21 @@ export default function Relationships() {
   const [editFactionDialogOpen, setEditFactionDialogOpen] = useState(false);
   const [selectedFaction, setSelectedFaction] = useState<Faction | null>(null);
   const [manageMembersDialogOpen, setManageMembersDialogOpen] = useState(false);
+  const [showCreateCoterieDialog, setShowCreateCoterieDialog] = useState(false);
+  const [selectedCoterie, setSelectedCoterie] = useState<Coterie | null>(null);
+  const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const fetchMemberCounts = async () => {
+      for (const coterie of coteries) {
+        const members = await getCoterieMembers(coterie.id);
+        setMemberCounts(prev => ({ ...prev, [coterie.id]: members.length }));
+      }
+    };
+    if (coteries.length > 0) {
+      fetchMemberCounts();
+    }
+  }, [coteries]);
   
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
@@ -676,6 +701,96 @@ export default function Relationships() {
         </TabsContent>
       </Tabs>
 
+      {/* Coteries Section */}
+      <div className="border-t border-border pt-8 mt-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <UsersRound className="h-6 w-6" />
+              Coteries
+            </h2>
+            <p className="text-muted-foreground text-sm mt-1">
+              Manage your vampire coteries and their members
+            </p>
+          </div>
+          <Button onClick={() => setShowCreateCoterieDialog(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            New Coterie
+          </Button>
+        </div>
+
+        {coteriesLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-6 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-full" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-4 w-1/2" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : coteries.length === 0 ? (
+          <EmptyState
+            icon={<UsersRound className="h-7 w-7" />}
+            title="No coteries yet"
+            description="Coteries are groups of vampires who band together for survival, politics, or shared goals. Create one and assign characters to it."
+            tip="Create your characters first, then group them into coteries. You can assign roles like Leader or Enforcer."
+            action={
+              <Button onClick={() => setShowCreateCoterieDialog(true)} className="bg-gradient-blood hover:opacity-90 shadow-crimson">
+                <Plus className="h-4 w-4 mr-2" />
+                Create First Coterie
+              </Button>
+            }
+          />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {coteries.map((coterie) => (
+              <Card key={coterie.id} data-entity-id={coterie.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="flex items-center gap-2">
+                        <UsersRound className="h-5 w-5" />
+                        <TextHighlight text={coterie.name} highlight={highlightQuery} />
+                      </CardTitle>
+                      {coterie.description && (
+                        <CardDescription className="mt-2">
+                          {coterie.description}
+                        </CardDescription>
+                      )}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setSelectedCoterie(coterie)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {coterie.domain && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <MapPin className="h-4 w-4" />
+                      {coterie.domain}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">
+                      {memberCounts[coterie.id] || 0} members
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
       <CreateRelationshipDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
@@ -726,6 +841,17 @@ export default function Relationships() {
           />
         </>
       )}
+
+      <CreateCoterieDialog
+        open={showCreateCoterieDialog}
+        onOpenChange={setShowCreateCoterieDialog}
+      />
+
+      <ManageCoterieDialog
+        open={!!selectedCoterie}
+        onOpenChange={(open) => !open && setSelectedCoterie(null)}
+        coterie={selectedCoterie}
+      />
     </div>
   );
 }
