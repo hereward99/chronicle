@@ -13,6 +13,8 @@ import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialo
 import { ViewCharacterDialog } from "@/components/dialogs/ViewCharacterDialog";
 import { EditCharacterDialog } from "@/components/dialogs/EditCharacterDialog";
 import { CharacterWizard } from "@/components/character/CharacterWizard";
+import { useSearchHighlight } from "@/hooks/useSearchHighlight";
+import { TextHighlight } from "@/components/ui/text-highlight";
 
 export default function Characters() {
   const [searchTerm, setSearchTerm] = useState("");
