@@ -23,6 +23,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { SessionChecklist, useChecklists } from "@/hooks/useChecklists";
+import { EditChecklistDialog } from "@/components/checklists/EditChecklistDialog";
 import { exportChecklistToPDF } from "@/lib/pdfExport";
 import { 
   MoreVertical, 
@@ -42,15 +43,17 @@ interface ChecklistCardProps {
   addItem: (checklistId: string, text: string) => Promise<any>;
   updateItem: (itemId: string, text: string) => Promise<void>;
   deleteItem: (itemId: string) => Promise<void>;
+  updateChecklist: (id: string, updates: { title?: string; notes?: string; plot_id?: string | null }) => Promise<void>;
   deleteChecklist: (id: string) => Promise<void>;
 }
 
-export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, deleteItem, deleteChecklist }: ChecklistCardProps) {
+export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, deleteItem, updateChecklist, deleteChecklist }: ChecklistCardProps) {
   const [newItemText, setNewItemText] = useState("");
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editingItemText, setEditingItemText] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const completedCount = checklist.items.filter(item => item.is_completed).length;
   const totalCount = checklist.items.length;
@@ -125,6 +128,10 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setEditDialogOpen(true)}>
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Edit Checklist
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleMarkAllComplete}>
                   <CheckSquare className="h-4 w-4 mr-2" />
                   Mark All Complete
@@ -288,6 +295,12 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <EditChecklistDialog
+        checklist={checklist}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSave={updateChecklist}
+      />
     </>
   );
 }

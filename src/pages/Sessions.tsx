@@ -35,7 +35,7 @@ const Sessions = () => {
   const [deleteTarget, setDeleteTarget] = useState<Session | null>(null);
   const { sessions, loading, deleteSession } = useSessions();
   const { plots } = usePlots();
-  const { checklists, loading: checklistsLoading, toggleItem, addItem, updateItem, deleteItem, deleteChecklist } = useChecklists();
+  const { checklists, loading: checklistsLoading, toggleItem, addItem, updateItem, updateChecklist, deleteItem, deleteChecklist } = useChecklists();
 
   const filteredSessions = sessions.filter(session =>
     session.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -309,7 +309,7 @@ const Sessions = () => {
                         </div>
                         <div className="grid gap-3 sm:grid-cols-2">
                           {groupChecklists.map(checklist => (
-                            <ChecklistCard key={checklist.id} checklist={checklist} toggleItem={toggleItem} addItem={addItem} updateItem={updateItem} deleteItem={deleteItem} deleteChecklist={deleteChecklist} />
+                            <ChecklistCard key={checklist.id} checklist={checklist} toggleItem={toggleItem} addItem={addItem} updateItem={updateItem} deleteItem={deleteItem} updateChecklist={updateChecklist} deleteChecklist={deleteChecklist} />
                           ))}
                         </div>
                       </div>
@@ -372,7 +372,7 @@ const Sessions = () => {
                   <CollapsibleContent className="space-y-4 pt-4 pl-4">
                     <div className="grid gap-3 sm:grid-cols-2">
                       {unlinkedChecklists.map(checklist => (
-                        <ChecklistCard key={checklist.id} checklist={checklist} toggleItem={toggleItem} addItem={addItem} updateItem={updateItem} deleteItem={deleteItem} deleteChecklist={deleteChecklist} />
+                        <ChecklistCard key={checklist.id} checklist={checklist} toggleItem={toggleItem} addItem={addItem} updateItem={updateItem} deleteItem={deleteItem} updateChecklist={updateChecklist} deleteChecklist={deleteChecklist} />
                       ))}
                     </div>
                   </CollapsibleContent>
