@@ -10,6 +10,7 @@ import { Plus } from "lucide-react";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
+import { PortraitGenerator } from "@/components/character/PortraitGenerator";
 
 const characterSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
@@ -44,6 +45,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
     generation: 13,
     status: "Active",
     difficulty: 3,
+    avatarUrl: null as string | null,
   });
   
   const { createCharacter } = useCharacters();
@@ -91,7 +93,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
         sire: null,
         coterie: null,
         chronicle_id: chronicleId,
-        avatar_url: null,
+        avatar_url: formData.avatarUrl,
         use_dice_pools: isNpcWithDicePools,
         skip_attributes: isNpcWithDicePools,
         dice_pools: dicePoolConfig,
@@ -106,6 +108,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
         generation: 13,
         status: "Active",
         difficulty: 3,
+        avatarUrl: null,
       });
       
       setOpen(false);
@@ -142,6 +145,19 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* AI Portrait Generator */}
+          <div className="flex justify-center py-1">
+            <PortraitGenerator
+              characterName={formData.name}
+              clan={formData.clan}
+              concept={formData.concept}
+              avatarUrl={formData.avatarUrl}
+              onPortraitGenerated={(url) => setFormData(prev => ({ ...prev, avatarUrl: url }))}
+              onPortraitRemoved={() => setFormData(prev => ({ ...prev, avatarUrl: null }))}
+              size="sm"
+            />
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
             <Input

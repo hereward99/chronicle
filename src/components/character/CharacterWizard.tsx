@@ -12,6 +12,7 @@ import { useChronicles } from "@/hooks/useChronicles";
 import { useToast } from "@/hooks/use-toast";
 import { useFormDraft } from "@/hooks/useFormDraft";
 import { ChevronLeft, ChevronRight, Check, Wand2 } from "lucide-react";
+import { PortraitGenerator } from "@/components/character/PortraitGenerator";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
@@ -169,6 +170,9 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
   const [characterData, setCharacterData] = useState({
     // Creation Method: "full" | "simple" | "general" | "standard"
     creationMethod: "full" as "full" | "simple" | "general" | "standard",
+    
+    // Portrait
+    avatarUrl: null as string | null,
     
     // Type & Basic Info
     characterType: "vampire" as "vampire" | "ghoul" | "human",
@@ -353,7 +357,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
         sire: characterData.sire || null,
         coterie: characterData.coterie || null,
         chronicle_id: chronicleId,
-        avatar_url: null,
+        avatar_url: characterData.avatarUrl,
         predator_type: characterData.characterType === "vampire" ? characterData.predatorType : null,
         
         // Dice Pools
@@ -426,6 +430,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
     setStep(0);
     setCharacterData({
       creationMethod: "full",
+      avatarUrl: null,
       characterType: "vampire",
       pcOrNpc: "PC",
       name: "",
@@ -810,6 +815,18 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
       case "Basic Info":
         return (
           <div className="space-y-4">
+            {/* AI Portrait Generator */}
+            <div className="flex justify-center py-2">
+              <PortraitGenerator
+                characterName={characterData.name}
+                clan={characterData.clan}
+                concept={characterData.concept}
+                avatarUrl={characterData.avatarUrl}
+                onPortraitGenerated={(url) => setCharacterData(prev => ({ ...prev, avatarUrl: url }))}
+                onPortraitRemoved={() => setCharacterData(prev => ({ ...prev, avatarUrl: null }))}
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="name">Name *</Label>
               <Input
@@ -1649,6 +1666,12 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Review Your Character</h3>
             
+            {characterData.avatarUrl && (
+              <div className="flex justify-center">
+                <img src={characterData.avatarUrl} alt={characterData.name} className="h-24 w-24 rounded-full object-cover border-2 border-border" />
+              </div>
+            )}
+
             <Card className="p-4 space-y-3">
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="font-semibold">Name:</div>
