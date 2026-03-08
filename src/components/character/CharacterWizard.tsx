@@ -1666,6 +1666,12 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Review Your Character</h3>
             
+            {characterData.avatarUrl && (
+              <div className="flex justify-center">
+                <img src={characterData.avatarUrl} alt={characterData.name} className="h-24 w-24 rounded-full object-cover border-2 border-border" />
+              </div>
+            )}
+
             <Card className="p-4 space-y-3">
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="font-semibold">Name:</div>
