@@ -188,6 +188,7 @@ export function useCoteries(chronicleId?: string) {
   return {
     coteries,
     loading,
+    allCoterieMembers,
     createCoterie,
     updateCoterie,
     deleteCoterie,
