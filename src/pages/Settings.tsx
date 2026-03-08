@@ -633,7 +633,7 @@ export default function Settings() {
                               {note.category}
                             </span>
                             <span className="text-[10px] text-muted-foreground">
-                              {new Date(note.createdAt).toLocaleDateString()}
+                              {new Date(note.created_at).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
