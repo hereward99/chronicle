@@ -26,7 +26,7 @@ serve(async (req) => {
     }
 
     // Build a detailed portrait prompt
-    const prompt = `Create a detailed portrait artwork for a Vampire: The Masquerade character. ${characterDescription}. Professional digital art style, dramatic lighting, detailed facial features, mysterious atmosphere. Portrait orientation, character centered, fantasy art quality.`;
+    const prompt = `Create a detailed portrait artwork for a Vampire: The Masquerade character with the following details: ${characterDescription}. Style: Professional digital art, dramatic chiaroscuro lighting, detailed facial features, dark gothic atmosphere. Portrait orientation, head and shoulders composition, painterly fantasy art quality. Do NOT include any text or words in the image.`;
 
     console.log("Generating portrait with prompt:", prompt);
 
