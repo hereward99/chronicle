@@ -434,6 +434,33 @@ export type Database = {
           },
         ]
       }
+      dev_notes: {
+        Row: {
+          category: string
+          created_at: string
+          done: boolean
+          id: string
+          text: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          done?: boolean
+          id?: string
+          text: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          done?: boolean
+          id?: string
+          text?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       factions: {
         Row: {
           chronicle_id: string

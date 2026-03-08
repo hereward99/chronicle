@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useDevNotes } from '@/hooks/useDevNotes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,51 +50,28 @@ export default function Settings() {
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [pendingImportData, setPendingImportData] = useState<BackupData | null>(null);
 
-  // Dev notes state
-  interface DevNote {
-    id: string;
-    text: string;
-    category: 'fix' | 'feature' | 'change' | 'idea';
-    done: boolean;
-    createdAt: string;
-  }
-
-  const DEV_NOTES_KEY = 'chronicle-keeper-dev-notes';
-
-  const [devNotes, setDevNotes] = useState<DevNote[]>(() => {
-    try {
-      const stored = localStorage.getItem(DEV_NOTES_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch { return []; }
-  });
+  // Dev notes (Supabase-backed)
+  const { devNotes, addNote, toggleNote, removeNote } = useDevNotes();
   const [newNoteText, setNewNoteText] = useState('');
-  const [newNoteCategory, setNewNoteCategory] = useState<DevNote['category']>('idea');
-
-  useEffect(() => {
-    localStorage.setItem(DEV_NOTES_KEY, JSON.stringify(devNotes));
-  }, [devNotes]);
+  type DevNoteCategory = 'fix' | 'feature' | 'change' | 'idea';
+  const [newNoteCategory, setNewNoteCategory] = useState<DevNoteCategory>('idea');
 
   const addDevNote = () => {
     if (!newNoteText.trim()) return;
-    setDevNotes(prev => [{
-      id: crypto.randomUUID(),
-      text: newNoteText.trim(),
-      category: newNoteCategory,
-      done: false,
-      createdAt: new Date().toISOString(),
-    }, ...prev]);
+    addNote.mutate({ text: newNoteText.trim(), category: newNoteCategory });
     setNewNoteText('');
   };
 
   const toggleDevNote = (id: string) => {
-    setDevNotes(prev => prev.map(n => n.id === id ? { ...n, done: !n.done } : n));
+    const note = devNotes.find(n => n.id === id);
+    if (note) toggleNote.mutate({ id, done: !note.done });
   };
 
   const removeDevNote = (id: string) => {
-    setDevNotes(prev => prev.filter(n => n.id !== id));
+    removeNote.mutate(id);
   };
 
-  const categoryColors: Record<DevNote['category'], string> = {
+  const categoryColors: Record<DevNoteCategory, string> = {
     fix: 'bg-destructive/15 text-destructive border-destructive/30',
     feature: 'bg-primary/15 text-primary border-primary/30',
     change: 'bg-accent text-accent-foreground border-border',
@@ -655,7 +633,7 @@ export default function Settings() {
                               {note.category}
                             </span>
                             <span className="text-[10px] text-muted-foreground">
-                              {new Date(note.createdAt).toLocaleDateString()}
+                              {new Date(note.created_at).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
