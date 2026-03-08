@@ -14,6 +14,8 @@ import { useChecklists } from "@/hooks/useChecklists";
 import { exportSessionToPDF } from "@/lib/pdfExport";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { MentionText } from "@/components/mentions/MentionText";
+import { useSearchHighlight } from "@/hooks/useSearchHighlight";
+import { TextHighlight } from "@/components/ui/text-highlight";
 import { CreateChecklistDialog } from "@/components/checklists/CreateChecklistDialog";
 import { ChecklistCard } from "@/components/checklists/ChecklistCard";
 import {
