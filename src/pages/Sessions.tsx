@@ -24,6 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { SessionGroupSkeleton } from "@/components/skeletons/CardSkeleton";
 
 const Sessions = () => {
   const [searchTerm, setSearchTerm] = useState("");
