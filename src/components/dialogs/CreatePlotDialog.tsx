@@ -91,6 +91,8 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
         status: "Active",
         priority: "Medium",
         attachments: [],
+        in_game_date_start: "",
+        in_game_date_end: "",
       });
       
       setOpen(false);
