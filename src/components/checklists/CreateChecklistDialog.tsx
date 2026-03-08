@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { MentionInput } from "@/components/mentions/MentionInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useChecklists, CHECKLIST_TEMPLATES } from "@/hooks/useChecklists";
@@ -172,13 +172,15 @@ export function CreateChecklistDialog({ children, defaultPlotId }: CreateCheckli
             {/* Notes */}
             <div className="grid gap-2">
               <Label htmlFor="notes">Notes (Optional)</Label>
-              <Textarea
+              <MentionInput
                 id="notes"
                 value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="General notes for this prep..."
-                rows={2}
+                onChange={(value) => setNotes(value)}
+                placeholder="General notes for this prep... Use @ to mention characters"
+                className="min-h-[60px] resize-none"
+                maxLength={2000}
               />
+              <p className="text-xs text-muted-foreground">Type @ to mention characters, stories, etc.</p>
             </div>
 
             {/* Template Items */}

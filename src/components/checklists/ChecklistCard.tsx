@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MentionText } from "@/components/mentions/MentionText";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -113,7 +114,7 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
               </CardTitle>
               {checklist.notes && (
                 <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                  {checklist.notes}
+                  <MentionText text={checklist.notes} />
                 </p>
               )}
             </div>
@@ -198,7 +199,7 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
                           : 'text-foreground'
                       }`}
                     >
-                      {item.text}
+                      <MentionText text={item.text} />
                     </span>
                     <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
                       <Button
