@@ -35,6 +35,7 @@ interface RelationshipGraphProps {
   characters: Character[];
   factions?: Faction[];
   characterFactions?: CharacterFaction[];
+  primaryCharacterIds?: string[];
   onNodeClick?: (characterId: string) => void;
   onEdgeClick?: (relationship: Relationship) => void;
   onCreateRelationship?: (sourceId: string, targetId: string) => void;

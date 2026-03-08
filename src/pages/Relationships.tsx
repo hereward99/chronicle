@@ -807,13 +807,19 @@ export default function Relationships() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {coteries.map((coterie) => (
-              <Card key={coterie.id} data-entity-id={coterie.id} className="hover:shadow-lg transition-shadow">
+              <Card key={coterie.id} data-entity-id={coterie.id} className={`hover:shadow-lg transition-shadow ${coterie.is_primary ? 'ring-2 ring-primary' : ''}`}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <CardTitle className="flex items-center gap-2">
                         <UsersRound className="h-5 w-5" />
                         <TextHighlight text={coterie.name} highlight={highlightQuery} />
+                        {coterie.is_primary && (
+                          <Badge variant="default" className="text-xs gap-1">
+                            <Star className="h-3 w-3" />
+                            Primary
+                          </Badge>
+                        )}
                       </CardTitle>
                       {coterie.description && (
                         <CardDescription className="mt-2">
@@ -821,13 +827,25 @@ export default function Relationships() {
                         </CardDescription>
                       )}
                     </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setSelectedCoterie(coterie)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      {!coterie.is_primary && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setPrimaryCoterie(coterie.id)}
+                          title="Set as primary coterie"
+                        >
+                          <Star className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setSelectedCoterie(coterie)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
