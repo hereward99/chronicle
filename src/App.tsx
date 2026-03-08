@@ -87,6 +87,13 @@ const App = () => (
                 </Layout>
               </ProtectedRoute>
             } />
+            <Route path="/timeline" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Timeline />
+                </Layout>
+              </ProtectedRoute>
+            } />
             <Route path="/locations" element={
               <ProtectedRoute>
                 <Layout>
