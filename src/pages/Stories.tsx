@@ -234,12 +234,17 @@ const Stories = () => {
                 <h3 className="text-lg font-medium text-foreground mb-2">
                   {searchTerm ? 'No stories found' : 'No stories yet'}
                 </h3>
-                <p className="text-muted-foreground text-center mb-4">
+                <p className="text-muted-foreground text-center mb-2">
                   {searchTerm 
                     ? 'Try adjusting your search terms'
                     : 'Create your first story to begin weaving tales of darkness and intrigue'
                   }
                 </p>
+                {!searchTerm && (
+                  <p className="text-xs text-muted-foreground text-center mb-4">
+                    💡 Tip: Use <kbd className="px-1 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">@</kbd> in descriptions to link characters, sessions, and other entities.
+                  </p>
+                )}
                 {!searchTerm && (
                   <CreatePlotDialog onCreated={refetch}>
                     <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
