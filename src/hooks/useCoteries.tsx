@@ -43,6 +43,17 @@ export function useCoteries(chronicleId?: string) {
     },
   });
 
+  const { data: allCoterieMembers = [] } = useQuery({
+    queryKey: ['coterie_members'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('coterie_members')
+        .select('*');
+      if (error) throw error;
+      return data as CoterieMember[] || [];
+    },
+  });
+
   const createCoterieMutation = useMutation({
     mutationFn: async (coterie: Omit<Coterie, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
       const { data: { user } } = await supabase.auth.getUser();
