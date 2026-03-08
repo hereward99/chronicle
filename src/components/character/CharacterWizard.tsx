@@ -811,6 +811,18 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
       case "Basic Info":
         return (
           <div className="space-y-4">
+            {/* AI Portrait Generator */}
+            <div className="flex justify-center py-2">
+              <PortraitGenerator
+                characterName={characterData.name}
+                clan={characterData.clan}
+                concept={characterData.concept}
+                avatarUrl={characterData.avatarUrl}
+                onPortraitGenerated={(url) => setCharacterData(prev => ({ ...prev, avatarUrl: url }))}
+                onPortraitRemoved={() => setCharacterData(prev => ({ ...prev, avatarUrl: null }))}
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="name">Name *</Label>
               <Input
