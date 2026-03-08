@@ -80,6 +80,8 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
         priority: validated.priority,
         chronicle_id: chronicleId,
         attachments: formData.attachments,
+        in_game_date_start: formData.in_game_date_start || null,
+        in_game_date_end: formData.in_game_date_end || null,
       });
 
       setFormData({
