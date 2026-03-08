@@ -93,7 +93,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
         sire: null,
         coterie: null,
         chronicle_id: chronicleId,
-        avatar_url: null,
+        avatar_url: formData.avatarUrl,
         use_dice_pools: isNpcWithDicePools,
         skip_attributes: isNpcWithDicePools,
         dice_pools: dicePoolConfig,
