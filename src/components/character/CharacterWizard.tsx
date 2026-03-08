@@ -357,7 +357,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
         sire: characterData.sire || null,
         coterie: characterData.coterie || null,
         chronicle_id: chronicleId,
-        avatar_url: null,
+        avatar_url: characterData.avatarUrl,
         predator_type: characterData.characterType === "vampire" ? characterData.predatorType : null,
         
         // Dice Pools
