@@ -14,6 +14,9 @@ import { useGeneratorSettings } from "@/hooks/useGeneratorSettings";
 import { generateWithOllama } from "@/lib/ollama";
 import { GenerateNPCDialog } from "@/components/dialogs/GenerateNPCDialog";
 import { NPCWizardDialog } from "@/components/dialogs/NPCWizardDialog";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { GenerateNPCDialog } from "@/components/dialogs/GenerateNPCDialog";
+import { NPCWizardDialog } from "@/components/dialogs/NPCWizardDialog";
 
 type CreationMethod = "full" | "simple" | "general" | "standard";
 type CreatureType = "vampire" | "human" | "ghoul";
