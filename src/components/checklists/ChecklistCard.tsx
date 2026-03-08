@@ -295,6 +295,12 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <EditChecklistDialog
+        checklist={checklist}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSave={updateChecklist}
+      />
     </>
   );
 }

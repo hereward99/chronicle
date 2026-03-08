@@ -372,7 +372,7 @@ const Sessions = () => {
                   <CollapsibleContent className="space-y-4 pt-4 pl-4">
                     <div className="grid gap-3 sm:grid-cols-2">
                       {unlinkedChecklists.map(checklist => (
-                        <ChecklistCard key={checklist.id} checklist={checklist} toggleItem={toggleItem} addItem={addItem} updateItem={updateItem} deleteItem={deleteItem} deleteChecklist={deleteChecklist} />
+                        <ChecklistCard key={checklist.id} checklist={checklist} toggleItem={toggleItem} addItem={addItem} updateItem={updateItem} deleteItem={deleteItem} updateChecklist={updateChecklist} deleteChecklist={deleteChecklist} />
                       ))}
                     </div>
                   </CollapsibleContent>
