@@ -1,22 +1,51 @@
 import { Navigation } from "./Navigation";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { useChronicles } from "@/hooks/useChronicles";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ChronicleSetupDialog } from "./onboarding/ChronicleSetupDialog";
+import { GuidedTour } from "./onboarding/GuidedTour";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
+const ONBOARDING_KEY = "chronicle-keeper-onboarded";
+
 export function Layout({ children }: LayoutProps) {
-  const { createDefaultChronicle, currentChronicle, chronicles, loading } = useChronicles();
+  const { createChronicle, currentChronicle, chronicles, loading } = useChronicles();
   const hasCreatedChronicle = useRef(false);
+  const [showSetup, setShowSetup] = useState(false);
+  const [showTour, setShowTour] = useState(false);
 
   useEffect(() => {
+    // Show setup dialog if user has no chronicles and hasn't been onboarded
     if (!loading && !currentChronicle && chronicles.length === 0 && !hasCreatedChronicle.current) {
-      hasCreatedChronicle.current = true;
-      createDefaultChronicle();
+      const wasOnboarded = localStorage.getItem(ONBOARDING_KEY);
+      if (!wasOnboarded) {
+        setShowSetup(true);
+      } else {
+        // Returning user who deleted chronicles — silently create default
+        hasCreatedChronicle.current = true;
+        createChronicle({
+          name: "My Chronicle",
+          description: "Default chronicle for your Vampire: The Masquerade game",
+          setting: "Modern Nights",
+        });
+      }
     }
   }, [loading, currentChronicle, chronicles.length]);
+
+  const handleSetupComplete = async (data: { name: string; description: string; setting: string }) => {
+    hasCreatedChronicle.current = true;
+    setShowSetup(false);
+    await createChronicle(data);
+    localStorage.setItem(ONBOARDING_KEY, "true");
+    setShowTour(true);
+  };
+
+  const handleTourClose = () => {
+    setShowTour(false);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -30,6 +59,9 @@ export function Layout({ children }: LayoutProps) {
         </div>
       </main>
       <MobileBottomNav />
+
+      <ChronicleSetupDialog open={showSetup} onComplete={handleSetupComplete} />
+      <GuidedTour open={showTour} onClose={handleTourClose} />
     </div>
   );
 }
