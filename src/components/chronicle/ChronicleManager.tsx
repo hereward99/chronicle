@@ -51,7 +51,7 @@ export function ChronicleManager({ title = "Chronicle" }: { title?: string }) {
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-foreground flex items-center gap-2">
             <BookMarked className="h-5 w-5 text-primary" />
-            Chronicles
+            {title}
           </CardTitle>
           <Button size="sm" variant="outline" onClick={openCreate} className="border-border">
             <Plus className="h-4 w-4 mr-1" />
