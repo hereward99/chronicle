@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Pencil, Trash2, BookMarked } from "lucide-react";
 
-export function ChronicleManager() {
+export function ChronicleManager({ title = "Chronicle" }: { title?: string }) {
   const { chronicles, currentChronicle, setCurrentChronicle, createChronicle, updateChronicle, deleteChronicle } = useChronicles();
   const [showCreate, setShowCreate] = useState(false);
   const [editingChronicle, setEditingChronicle] = useState<Chronicle | null>(null);
@@ -51,7 +51,7 @@ export function ChronicleManager() {
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-foreground flex items-center gap-2">
             <BookMarked className="h-5 w-5 text-primary" />
-            Chronicles
+            {title}
           </CardTitle>
           <Button size="sm" variant="outline" onClick={openCreate} className="border-border">
             <Plus className="h-4 w-4 mr-1" />
