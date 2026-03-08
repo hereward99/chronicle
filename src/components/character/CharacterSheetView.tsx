@@ -655,7 +655,12 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                                 <span className="text-xs text-muted-foreground ml-1">({skill.specialty})</span>
                               )}
                             </div>
-                            {rating > 0 && <DotRating current={rating} />}
+                            <div className="flex items-center gap-1">
+                              {rating > 0 && <DotRating current={rating} />}
+                              {rating > 0 && (
+                                <QuickRollButton basePool={rating} hunger={character.hunger || 1} label={displayName} />
+                              )}
+                            </div>
                           </div>
                         );
                       })}
