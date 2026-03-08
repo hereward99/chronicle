@@ -50,48 +50,25 @@ export default function Settings() {
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [pendingImportData, setPendingImportData] = useState<BackupData | null>(null);
 
-  // Dev notes state
-  interface DevNote {
-    id: string;
-    text: string;
-    category: 'fix' | 'feature' | 'change' | 'idea';
-    done: boolean;
-    createdAt: string;
-  }
-
-  const DEV_NOTES_KEY = 'chronicle-keeper-dev-notes';
-
-  const [devNotes, setDevNotes] = useState<DevNote[]>(() => {
-    try {
-      const stored = localStorage.getItem(DEV_NOTES_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch { return []; }
-  });
+  // Dev notes (Supabase-backed)
+  const { devNotes, addNote, toggleNote, removeNote } = useDevNotes();
   const [newNoteText, setNewNoteText] = useState('');
-  const [newNoteCategory, setNewNoteCategory] = useState<DevNote['category']>('idea');
-
-  useEffect(() => {
-    localStorage.setItem(DEV_NOTES_KEY, JSON.stringify(devNotes));
-  }, [devNotes]);
+  type DevNoteCategory = 'fix' | 'feature' | 'change' | 'idea';
+  const [newNoteCategory, setNewNoteCategory] = useState<DevNoteCategory>('idea');
 
   const addDevNote = () => {
     if (!newNoteText.trim()) return;
-    setDevNotes(prev => [{
-      id: crypto.randomUUID(),
-      text: newNoteText.trim(),
-      category: newNoteCategory,
-      done: false,
-      createdAt: new Date().toISOString(),
-    }, ...prev]);
+    addNote.mutate({ text: newNoteText.trim(), category: newNoteCategory });
     setNewNoteText('');
   };
 
   const toggleDevNote = (id: string) => {
-    setDevNotes(prev => prev.map(n => n.id === id ? { ...n, done: !n.done } : n));
+    const note = devNotes.find(n => n.id === id);
+    if (note) toggleNote.mutate({ id, done: !note.done });
   };
 
   const removeDevNote = (id: string) => {
-    setDevNotes(prev => prev.filter(n => n.id !== id));
+    removeNote.mutate(id);
   };
 
   const categoryColors: Record<DevNote['category'], string> = {
