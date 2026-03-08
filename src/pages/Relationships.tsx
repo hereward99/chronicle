@@ -87,7 +87,16 @@ export default function Relationships() {
       fetchMemberCounts();
     }
   }, [coteries]);
-  
+
+  // Primary coterie member IDs for graph centering
+  const primaryCharacterIds = useMemo(() => {
+    const primaryCoterie = coteries.find(c => c.is_primary);
+    if (!primaryCoterie) return [];
+    return allCoterieMembers
+      .filter(cm => cm.coterie_id === primaryCoterie.id)
+      .map(cm => cm.character_id);
+  }, [coteries, allCoterieMembers]);
+
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
