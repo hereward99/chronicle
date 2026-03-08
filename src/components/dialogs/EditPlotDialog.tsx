@@ -132,7 +132,7 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-subtle border-border">
+      <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto bg-gradient-subtle border-border">
         <DialogHeader>
           <DialogTitle className="text-foreground">Edit Story</DialogTitle>
           <DialogDescription>
