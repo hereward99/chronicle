@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MentionInput } from "@/components/mentions/MentionInput";
+import { InGameDateInput } from "@/components/InGameDateInput";
 import { usePlots, Plot } from "@/hooks/usePlots";
 import { useCharacters } from "@/hooks/useCharacters";
 import { usePlotCharacters } from "@/hooks/usePlotCharacters";
@@ -39,7 +40,9 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
     description: plot.description || "",
     status: plot.status as "Active" | "Planned" | "Completed" | "Critical",
     priority: plot.priority as "Low" | "Medium" | "High" | "Critical",
-    attachments: (plot as any).attachments || []
+    attachments: (plot as any).attachments || [],
+    in_game_date_start: plot.in_game_date_start || "",
+    in_game_date_end: plot.in_game_date_end || "",
   });
   
   const { updatePlot, deletePlot } = usePlots();
@@ -113,6 +116,8 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
         status: validated.status,
         priority: validated.priority,
         attachments: formData.attachments,
+        in_game_date_start: formData.in_game_date_start || null,
+        in_game_date_end: formData.in_game_date_end || null,
       });
 
       onOpenChange(false);
@@ -210,6 +215,14 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
             />
             <p className="text-xs text-muted-foreground">Type @ to mention characters, sessions, etc.</p>
           </div>
+
+          <InGameDateInput
+            startValue={formData.in_game_date_start}
+            endValue={formData.in_game_date_end}
+            onStartChange={(v) => setFormData(prev => ({ ...prev, in_game_date_start: v }))}
+            onEndChange={(v) => setFormData(prev => ({ ...prev, in_game_date_end: v }))}
+            className="space-y-2"
+          />
 
           <FileUpload
             bucket="story-files"

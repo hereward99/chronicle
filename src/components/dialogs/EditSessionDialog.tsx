@@ -7,6 +7,7 @@ import { MentionInput } from "@/components/mentions/MentionInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { InGameDateInput } from "@/components/InGameDateInput";
 import { useSessions, Session } from "@/hooks/useSessions";
 import { usePlots } from "@/hooks/usePlots";
 import { useCharacters } from "@/hooks/useCharacters";
@@ -36,6 +37,8 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
     date_played: session.date_played,
     experience_awarded: session.experience_awarded || 0,
     plot_id: session.plot_id,
+    in_game_date_start: (session as any).in_game_date_start || "",
+    in_game_date_end: (session as any).in_game_date_end || "",
   });
   const [selectedCharacterIds, setSelectedCharacterIds] = useState<string[]>([]);
   
@@ -57,6 +60,8 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
       date_played: session.date_played,
       experience_awarded: session.experience_awarded || 0,
       plot_id: session.plot_id,
+      in_game_date_start: (session as any).in_game_date_start || "",
+      in_game_date_end: (session as any).in_game_date_end || "",
     });
   }, [session]);
 
@@ -92,6 +97,8 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
         date_played: validated.date_played,
         experience_awarded: validated.experience_awarded,
         plot_id: validated.plot_id,
+        in_game_date_start: formData.in_game_date_start || null,
+        in_game_date_end: formData.in_game_date_end || null,
       });
 
       // Save character associations
@@ -180,6 +187,14 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
               />
             </div>
           </div>
+
+          <InGameDateInput
+            startValue={formData.in_game_date_start}
+            endValue={formData.in_game_date_end}
+            onStartChange={(v) => setFormData(prev => ({ ...prev, in_game_date_start: v }))}
+            onEndChange={(v) => setFormData(prev => ({ ...prev, in_game_date_end: v }))}
+            className="space-y-2"
+          />
 
           {/* Character Picker */}
           <div className="space-y-2">

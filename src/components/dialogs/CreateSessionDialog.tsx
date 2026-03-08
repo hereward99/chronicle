@@ -7,6 +7,7 @@ import { MentionInput } from "@/components/mentions/MentionInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { InGameDateInput } from "@/components/InGameDateInput";
 import { useSessions } from "@/hooks/useSessions";
 import { useChronicles } from "@/hooks/useChronicles";
 import { usePlots } from "@/hooks/usePlots";
@@ -38,6 +39,8 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
     date_played: new Date().toISOString().split('T')[0],
     experience_awarded: 1,
     plot_id: null as string | null,
+    in_game_date_start: "",
+    in_game_date_end: "",
   });
   const [selectedCharacterIds, setSelectedCharacterIds] = useState<string[]>([]);
   
@@ -92,6 +95,8 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
         experience_awarded: validated.experience_awarded,
         chronicle_id: chronicleId,
         plot_id: validated.plot_id,
+        in_game_date_start: formData.in_game_date_start || null,
+        in_game_date_end: formData.in_game_date_end || null,
       });
 
       if (selectedCharacterIds.length > 0 && newSession?.id) {
@@ -105,6 +110,8 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
         date_played: new Date().toISOString().split('T')[0],
         experience_awarded: 1,
         plot_id: null,
+        in_game_date_start: "",
+        in_game_date_end: "",
       });
       setSelectedCharacterIds([]);
       
@@ -201,6 +208,13 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
             </div>
           </div>
 
+          <InGameDateInput
+            startValue={formData.in_game_date_start}
+            endValue={formData.in_game_date_end}
+            onStartChange={(v) => setFormData(prev => ({ ...prev, in_game_date_start: v }))}
+            onEndChange={(v) => setFormData(prev => ({ ...prev, in_game_date_end: v }))}
+            className="space-y-2"
+          />
           {/* Character Picker */}
           <div className="space-y-2">
             <Label>Characters in Session</Label>

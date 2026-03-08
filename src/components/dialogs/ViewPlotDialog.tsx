@@ -4,7 +4,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plot } from "@/hooks/usePlots";
 import { useCharacters } from "@/hooks/useCharacters";
 import { usePlotCharacters } from "@/hooks/usePlotCharacters";
-import { BookOpen, Clock, Users, Flag, FileText, Image as ImageIcon, Download } from "lucide-react";
+import { BookOpen, Clock, Users, Flag, FileText, Image as ImageIcon, Download, Calendar } from "lucide-react";
+import { formatInGameDate } from "@/components/InGameDateInput";
 import { Button } from "@/components/ui/button";
 import { exportPlotToPDF } from "@/lib/pdfExport";
 import { MentionText } from "@/components/mentions/MentionText";
@@ -95,6 +96,16 @@ export function ViewPlotDialog({ plot, open, onOpenChange }: ViewPlotDialogProps
                 <Badge variant={getPriorityColor(plot.priority)}>{plot.priority} Priority</Badge>
               </div>
             </div>
+
+            {/* In-Game Date */}
+            {formatInGameDate(plot.in_game_date_start, plot.in_game_date_end) && (
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  Set in: {formatInGameDate(plot.in_game_date_start, plot.in_game_date_end)}
+                </span>
+              </div>
+            )}
 
             {/* Summary */}
             {plot.summary && (

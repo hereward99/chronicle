@@ -14,6 +14,8 @@ export interface Plot {
   created_at: string;
   updated_at: string;
   attachments?: any[];
+  in_game_date_start?: string | null;
+  in_game_date_end?: string | null;
 }
 
 export function usePlots() {

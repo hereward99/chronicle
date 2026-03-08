@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { EmptyState } from "@/components/onboarding/EmptyState";
+import { formatInGameDate } from "@/components/InGameDateInput";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -118,6 +119,11 @@ const Sessions = () => {
             <CardDescription className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               {formatDate(session.date_played)}
+              {formatInGameDate(session.in_game_date_start, session.in_game_date_end) && (
+                <span className="text-muted-foreground ml-2">
+                  · Set in: {formatInGameDate(session.in_game_date_start, session.in_game_date_end)}
+                </span>
+              )}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">

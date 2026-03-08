@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MentionInput } from "@/components/mentions/MentionInput";
+import { InGameDateInput } from "@/components/InGameDateInput";
 import { usePlots } from "@/hooks/usePlots";
 import { useChronicles } from "@/hooks/useChronicles";
 import { BookOpen } from "lucide-react";
@@ -36,6 +37,8 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
     status: "Active" as "Active" | "Planned" | "Completed" | "Critical",
     priority: "Medium" as "Low" | "Medium" | "High" | "Critical",
     attachments: [] as any[],
+    in_game_date_start: "",
+    in_game_date_end: "",
   });
   
   const { createPlot } = usePlots();
@@ -77,6 +80,8 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
         priority: validated.priority,
         chronicle_id: chronicleId,
         attachments: formData.attachments,
+        in_game_date_start: formData.in_game_date_start || null,
+        in_game_date_end: formData.in_game_date_end || null,
       });
 
       setFormData({
@@ -86,6 +91,8 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
         status: "Active",
         priority: "Medium",
         attachments: [],
+        in_game_date_start: "",
+        in_game_date_end: "",
       });
       
       setOpen(false);
@@ -165,6 +172,14 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
               </Select>
             </div>
           </div>
+
+          <InGameDateInput
+            startValue={formData.in_game_date_start}
+            endValue={formData.in_game_date_end}
+            onStartChange={(v) => setFormData(prev => ({ ...prev, in_game_date_start: v }))}
+            onEndChange={(v) => setFormData(prev => ({ ...prev, in_game_date_end: v }))}
+            className="space-y-2"
+          />
 
           <div className="space-y-2">
             <Label htmlFor="plot-summary">Summary</Label>
