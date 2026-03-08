@@ -37,6 +37,8 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
     date_played: session.date_played,
     experience_awarded: session.experience_awarded || 0,
     plot_id: session.plot_id,
+    in_game_date_start: (session as any).in_game_date_start || "",
+    in_game_date_end: (session as any).in_game_date_end || "",
   });
   const [selectedCharacterIds, setSelectedCharacterIds] = useState<string[]>([]);
   
