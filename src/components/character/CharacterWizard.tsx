@@ -430,6 +430,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
     setStep(0);
     setCharacterData({
       creationMethod: "full",
+      avatarUrl: null,
       characterType: "vampire",
       pcOrNpc: "PC",
       name: "",
