@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Pencil, Trash2, BookMarked } from "lucide-react";
 
-export function ChronicleManager() {
+export function ChronicleManager({ title = "Chronicle" }: { title?: string }) {
   const { chronicles, currentChronicle, setCurrentChronicle, createChronicle, updateChronicle, deleteChronicle } = useChronicles();
   const [showCreate, setShowCreate] = useState(false);
   const [editingChronicle, setEditingChronicle] = useState<Chronicle | null>(null);
