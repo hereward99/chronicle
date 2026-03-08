@@ -119,6 +119,12 @@ const Stories = () => {
             <BookOpen className="h-4 w-4 mr-2" />
             Priority: {story.priority}
           </div>
+          {formatInGameDate(story.in_game_date_start, story.in_game_date_end) && (
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4 mr-2" />
+              Set in: {formatInGameDate(story.in_game_date_start, story.in_game_date_end)}
+            </div>
+          )}
 
           {/* Image Thumbnails */}
           {getImageAttachments(story.attachments || []).length > 0 && (

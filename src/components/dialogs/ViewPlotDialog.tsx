@@ -97,6 +97,16 @@ export function ViewPlotDialog({ plot, open, onOpenChange }: ViewPlotDialogProps
               </div>
             </div>
 
+            {/* In-Game Date */}
+            {formatInGameDate(plot.in_game_date_start, plot.in_game_date_end) && (
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  Set in: {formatInGameDate(plot.in_game_date_start, plot.in_game_date_end)}
+                </span>
+              </div>
+            )}
+
             {/* Summary */}
             {plot.summary && (
               <div className="space-y-2">

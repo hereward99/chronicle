@@ -119,6 +119,11 @@ const Sessions = () => {
             <CardDescription className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               {formatDate(session.date_played)}
+              {formatInGameDate(session.in_game_date_start, session.in_game_date_end) && (
+                <span className="text-muted-foreground ml-2">
+                  · Set in: {formatInGameDate(session.in_game_date_start, session.in_game_date_end)}
+                </span>
+              )}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
