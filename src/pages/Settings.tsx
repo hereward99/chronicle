@@ -668,7 +668,7 @@ export default function Settings() {
                       </div>
                     ))}
                   </div>
-                </ScrollArea>
+                </div>
               )}
 
               {devNotes.length === 0 && (
