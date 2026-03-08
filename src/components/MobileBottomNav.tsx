@@ -14,7 +14,7 @@ export function MobileBottomNav() {
   const location = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-border bg-card/95 backdrop-blur-sm">
+    <nav aria-label="Mobile navigation" className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-border bg-card/95 backdrop-blur-sm">
       <div className="flex items-center justify-around h-16 px-2 pb-[env(safe-area-inset-bottom)]">
         {bottomNavItems.map((item) => {
           const isActive = location.pathname === item.href;

@@ -54,10 +54,13 @@ export function Navigation() {
       </div>
 
       {/* Sidebar */}
-      <nav className={cn(
-        "fixed left-0 top-0 z-40 h-full w-64 bg-gradient-shadow border-r border-border transition-transform duration-300 ease-in-out",
-        isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-      )}>
+      <nav
+        aria-label="Main navigation"
+        className={cn(
+          "fixed left-0 top-0 z-40 h-full w-64 bg-gradient-shadow border-r border-border transition-transform duration-300 ease-in-out",
+          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        )}
+      >
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="p-6 border-b border-border">
