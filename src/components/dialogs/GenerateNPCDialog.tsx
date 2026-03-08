@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useGeneratorSettings } from "@/hooks/useGeneratorSettings";
 import { generateWithOllama } from "@/lib/ollama";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 type CreationMethod = "full" | "simple" | "general" | "standard";
 type CreatureType = "vampire" | "human" | "ghoul";
