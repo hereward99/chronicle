@@ -15,13 +15,14 @@ import ReactFlow, {
   useReactFlow,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import dagre from 'dagre';
 import { Relationship } from '@/hooks/useRelationships';
 import { Character } from '@/hooks/useCharacters';
 import { Faction, CharacterFaction } from '@/hooks/useFactions';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Link2, Info, Maximize2 } from 'lucide-react';
+import { Link2, Info, Maximize2, ZoomIn, ZoomOut, LayoutGrid, GitBranch, Circle, Shuffle } from 'lucide-react';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -38,6 +39,8 @@ interface RelationshipGraphProps {
   onEdgeClick?: (relationship: Relationship) => void;
   onCreateRelationship?: (sourceId: string, targetId: string) => void;
 }
+
+type LayoutType = 'force' | 'hierarchical' | 'circular';
 
 const relationshipColors: Record<string, string> = {
   'Ally': '#10b981',
@@ -70,6 +73,60 @@ const getNodeColor = (clan: string): string => {
   return clanColors[clan] || '#64748b';
 };
 
+function getLayoutedNodes(
+  nodes: Node[],
+  edges: Edge[],
+  layout: LayoutType
+): Node[] {
+  if (nodes.length === 0) return nodes;
+
+  if (layout === 'circular') {
+    const centerX = 600;
+    const centerY = 400;
+    const radius = Math.max(200, nodes.length * 40);
+    return nodes.map((node, index) => {
+      const angle = (index / nodes.length) * 2 * Math.PI - Math.PI / 2;
+      return {
+        ...node,
+        position: {
+          x: centerX + radius * Math.cos(angle),
+          y: centerY + radius * Math.sin(angle),
+        },
+      };
+    });
+  }
+
+  if (layout === 'hierarchical') {
+    const g = new dagre.graphlib.Graph();
+    g.setDefaultEdgeLabel(() => ({}));
+    g.setGraph({ rankdir: 'TB', nodesep: 80, ranksep: 120 });
+
+    nodes.forEach((node) => {
+      g.setNode(node.id, { width: 180, height: 80 });
+    });
+
+    edges.forEach((edge) => {
+      g.setEdge(edge.source, edge.target);
+    });
+
+    dagre.layout(g);
+
+    return nodes.map((node) => {
+      const nodeWithPosition = g.node(node.id);
+      return {
+        ...node,
+        position: {
+          x: nodeWithPosition.x - 90,
+          y: nodeWithPosition.y - 40,
+        },
+      };
+    });
+  }
+
+  // 'force' layout — use faction-based grouping (original logic)
+  return nodes;
+}
+
 export function RelationshipGraph({ 
   relationships, 
   characters,
@@ -80,7 +137,9 @@ export function RelationshipGraph({
   onCreateRelationship 
 }: RelationshipGraphProps) {
   const [connectionMode, setConnectionMode] = useState(false);
-  const { fitView } = useReactFlow();
+  const [layout, setLayout] = useState<LayoutType>('force');
+  const { fitView, zoomIn, zoomOut } = useReactFlow();
+
   // Group characters by faction
   const charactersByFaction = useMemo(() => {
     const grouped: Record<string, Character[]> = { 'none': [] };
@@ -101,8 +160,55 @@ export function RelationshipGraph({
     
     return grouped;
   }, [characters, characterFactions]);
-  const initialNodes: Node[] = useMemo(() => {
-    // Get all unique character IDs from relationships
+
+  const buildNodeData = useCallback((char: Character, faction?: Faction, charFaction?: CharacterFaction) => {
+    return {
+      label: (
+        <div className="flex flex-col items-center select-none pointer-events-none">
+          <div className="font-semibold text-sm">{char.name}</div>
+          <div className="flex items-center gap-1 mt-1">
+            <Badge variant="secondary" className="text-xs">
+              {char.clan}
+            </Badge>
+            {faction && (
+              <Badge 
+                variant="outline" 
+                className="text-xs"
+                style={{ 
+                  borderColor: faction.color,
+                  color: faction.color 
+                }}
+              >
+                {faction.name}
+              </Badge>
+            )}
+          </div>
+          {charFaction?.role && (
+            <Badge variant="outline" className="text-xs mt-1">
+              {charFaction.role}
+            </Badge>
+          )}
+        </div>
+      ),
+      character: char,
+      faction: faction
+    };
+  }, []);
+
+  const buildNodeStyle = useCallback((char: Character, faction?: Faction) => ({
+    background: faction ? `${faction.color}15` : getNodeColor(char.clan),
+    color: faction ? faction.color : '#fff',
+    border: faction ? `3px solid ${faction.color}` : '2px solid #fff',
+    borderRadius: '8px',
+    padding: '12px',
+    minWidth: '140px',
+    fontSize: '14px',
+    boxShadow: faction 
+      ? `0 4px 12px -2px ${faction.color}40`
+      : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+  }), []);
+
+  const rawNodes: Node[] = useMemo(() => {
     const characterIds = new Set<string>();
     relationships.forEach(rel => {
       characterIds.add(rel.character_id);
@@ -117,7 +223,6 @@ export function RelationshipGraph({
     const totalGroups = factionGroups.length;
     let globalIndex = 0;
 
-    // Process each faction group
     factionGroups.forEach(([factionId, factionChars]) => {
       const relevantChars = factionChars.filter(char => characterIds.has(char.id));
       if (relevantChars.length === 0) return;
@@ -125,16 +230,13 @@ export function RelationshipGraph({
       const faction = factions.find(f => f.id === factionId);
       const groupSize = relevantChars.length;
       
-      // Calculate group position based on global index with better spacing
       const groupAngle = (globalIndex / Math.max(totalGroups, 1)) * 2 * Math.PI;
       const groupRadius = totalGroups === 1 ? 0 : 500;
       const groupCenterX = 600 + groupRadius * Math.cos(groupAngle);
       const groupCenterY = 400 + groupRadius * Math.sin(groupAngle);
 
-      // Position characters within their faction group with better spacing
       relevantChars.forEach((char, index) => {
         const localAngle = (index / Math.max(groupSize, 1)) * 2 * Math.PI;
-        // Increase spacing based on group size
         const localRadius = groupSize === 1 ? 0 : Math.min(150, 60 + groupSize * 15);
         const x = groupCenterX + localRadius * Math.cos(localAngle);
         const y = groupCenterY + localRadius * Math.sin(localAngle);
@@ -145,49 +247,8 @@ export function RelationshipGraph({
           id: char.id,
           type: 'default',
           position: { x, y },
-          data: { 
-            label: (
-              <div className="flex flex-col items-center select-none pointer-events-none">
-                <div className="font-semibold text-sm">{char.name}</div>
-                <div className="flex items-center gap-1 mt-1">
-                  <Badge variant="secondary" className="text-xs">
-                    {char.clan}
-                  </Badge>
-                  {faction && (
-                    <Badge 
-                      variant="outline" 
-                      className="text-xs"
-                      style={{ 
-                        borderColor: faction.color,
-                        color: faction.color 
-                      }}
-                    >
-                      {faction.name}
-                    </Badge>
-                  )}
-                </div>
-                {charFaction?.role && (
-                  <Badge variant="outline" className="text-xs mt-1">
-                    {charFaction.role}
-                  </Badge>
-                )}
-              </div>
-            ),
-            character: char,
-            faction: faction
-          },
-          style: {
-            background: faction ? `${faction.color}15` : getNodeColor(char.clan),
-            color: faction ? faction.color : '#fff',
-            border: faction ? `3px solid ${faction.color}` : '2px solid #fff',
-            borderRadius: '8px',
-            padding: '12px',
-            minWidth: '140px',
-            fontSize: '14px',
-            boxShadow: faction 
-              ? `0 4px 12px -2px ${faction.color}40`
-              : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-          },
+          data: buildNodeData(char, faction, charFaction),
+          style: buildNodeStyle(char, faction),
         });
       });
 
@@ -195,7 +256,7 @@ export function RelationshipGraph({
     });
 
     return nodes;
-  }, [relationships, characters, factions, characterFactions, charactersByFaction]);
+  }, [relationships, characters, factions, characterFactions, charactersByFaction, buildNodeData, buildNodeStyle]);
 
   const initialEdges: Edge[] = useMemo(() => {
     return relationships.map(rel => ({
@@ -226,14 +287,25 @@ export function RelationshipGraph({
     }));
   }, [relationships]);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const layoutedNodes = useMemo(() => {
+    return getLayoutedNodes(rawNodes, initialEdges, layout);
+  }, [rawNodes, initialEdges, layout]);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-  // Update nodes and edges when data changes
   useEffect(() => {
-    setNodes(initialNodes);
+    setNodes(layoutedNodes);
     setEdges(initialEdges);
-  }, [initialNodes, initialEdges, setNodes, setEdges]);
+  }, [layoutedNodes, initialEdges, setNodes, setEdges]);
+
+  // Fit view after layout change
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      fitView({ padding: 0.2, duration: 400 });
+    }, 50);
+    return () => clearTimeout(timeout);
+  }, [layout, fitView]);
 
   const onNodeClickHandler = useCallback((event: React.MouseEvent, node: Node) => {
     if (onNodeClick) {
@@ -271,6 +343,12 @@ export function RelationshipGraph({
       color,
     }));
   };
+
+  const layoutOptions: { value: LayoutType; label: string; icon: React.ReactNode }[] = [
+    { value: 'force', label: 'Grouped', icon: <Shuffle className="w-4 h-4" /> },
+    { value: 'hierarchical', label: 'Tree', icon: <GitBranch className="w-4 h-4" /> },
+    { value: 'circular', label: 'Circle', icon: <Circle className="w-4 h-4" /> },
+  ];
 
   return (
     <div className="w-full h-[600px] border rounded-lg bg-background relative">
@@ -313,7 +391,6 @@ export function RelationshipGraph({
             panOnDrag={connectionMode}
           >
             <Background gap={16} />
-            <Controls showInteractive={false} />
             <MiniMap 
               nodeColor={(node) => {
                 const char = node.data.character as Character;
@@ -323,8 +400,9 @@ export function RelationshipGraph({
               className="bg-background border rounded"
             />
             
+            {/* Left panel: Connect + Zoom + Fit */}
             <Panel position="top-left" className="bg-card border rounded-lg p-2 shadow-lg">
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1.5">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -343,28 +421,68 @@ export function RelationshipGraph({
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                
+
+                <div className="border-t border-border my-1" />
+
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={handleFitView}
-                        className="gap-2"
-                      >
-                        <Maximize2 className="w-4 h-4" />
-                        Fit
+                      <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => zoomIn({ duration: 200 })}>
+                        <ZoomIn className="w-4 h-4" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Fit all nodes in view</p>
-                    </TooltipContent>
+                    <TooltipContent><p>Zoom in</p></TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
+
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => zoomOut({ duration: 200 })}>
+                        <ZoomOut className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>Zoom out</p></TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="icon" variant="outline" className="h-8 w-8" onClick={handleFitView}>
+                        <Maximize2 className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>Fit all nodes in view</p></TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <div className="border-t border-border my-1" />
+
+                {/* Layout switcher */}
+                <div className="text-xs font-medium text-muted-foreground px-1 mb-0.5">Layout</div>
+                {layoutOptions.map((opt) => (
+                  <TooltipProvider key={opt.value}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant={layout === opt.value ? "default" : "outline"}
+                          className="gap-2 justify-start"
+                          onClick={() => setLayout(opt.value)}
+                        >
+                          {opt.icon}
+                          {opt.label}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent><p>{opt.label} layout</p></TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ))}
               </div>
             </Panel>
             
+            {/* Right panel: Legend */}
             <Panel position="top-right" className="bg-card border rounded-lg p-3 shadow-lg">
               <div className="text-sm font-semibold mb-2 flex items-center gap-2">
                 <Info className="w-4 h-4" />
@@ -385,7 +503,6 @@ export function RelationshipGraph({
                 <div>• Drag nodes to rearrange</div>
                 <div>• Click to view details</div>
                 <div>• Double-click to connect</div>
-                <div>• Hover for info</div>
                 <div>• Right-click for menu</div>
               </div>
             </Panel>
