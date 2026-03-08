@@ -633,7 +633,7 @@ export default function Settings() {
               </div>
 
               {devNotes.length > 0 && (
-                <ScrollArea className="max-h-[400px]">
+                <div className="max-h-[400px] overflow-y-auto rounded-md">
                   <div className="space-y-2 pr-2">
                     {devNotes.map(note => (
                       <div
