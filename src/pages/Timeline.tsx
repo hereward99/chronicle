@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { format, parseISO, isValid } from "date-fns";
 import { useSessions } from "@/hooks/useSessions";
 import { usePlots } from "@/hooks/usePlots";
-import { useCharacters } from "@/hooks/useCharacters";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Scroll, BookOpen, Calendar, Filter, ChevronDown, ChevronUp } from "lucide-react";
 import { SessionCardSkeleton } from "@/components/skeletons/CardSkeleton";
 import { cn } from "@/lib/utils";
+import { formatInGameDate } from "@/components/InGameDateInput";
 
 interface TimelineEvent {
   id: string;
@@ -21,12 +21,52 @@ interface TimelineEvent {
   priority?: string;
   plotTitle?: string;
   xp?: number | null;
+  inGameDate?: string | null;
+  inGameSortKey?: string | null; // for sorting by in-game date
 }
+
+/**
+ * Try to parse a flexible in-game date string into a sortable key.
+ * Supports: "1939", "January 1939", "15 March 1939", "March 15, 1939", "1939-01-15", etc.
+ */
+function parseInGameDateToSortKey(dateStr?: string | null): string | null {
+  if (!dateStr?.trim()) return null;
+  const s = dateStr.trim();
+
+  // Try ISO / standard date parse
+  const direct = new Date(s);
+  if (isValid(direct) && s.length > 4) {
+    return format(direct, "yyyy-MM-dd");
+  }
+
+  // Year only (e.g. "1939")
+  const yearOnly = s.match(/^(\d{4})$/);
+  if (yearOnly) return `${yearOnly[1]}-01-01`;
+
+  // Month Year (e.g. "January 1939", "Jan 1939")
+  const monthYear = s.match(/^([A-Za-z]+)\s+(\d{4})$/);
+  if (monthYear) {
+    const d = new Date(`${monthYear[1]} 1, ${monthYear[2]}`);
+    if (isValid(d)) return format(d, "yyyy-MM-dd");
+  }
+
+  // Day Month Year (e.g. "15 March 1939")
+  const dayMonthYear = s.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/);
+  if (dayMonthYear) {
+    const d = new Date(`${dayMonthYear[2]} ${dayMonthYear[1]}, ${dayMonthYear[3]}`);
+    if (isValid(d)) return format(d, "yyyy-MM-dd");
+  }
+
+  return null;
+}
+
+type SortMode = "real" | "in-game";
 
 export default function Timeline() {
   const { sessions, loading: sessionsLoading } = useSessions();
   const { plots, loading: plotsLoading } = usePlots();
   const [filter, setFilter] = useState<"all" | "session" | "plot">("all");
+  const [sortMode, setSortMode] = useState<SortMode>("real");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const loading = sessionsLoading || plotsLoading;
@@ -43,6 +83,7 @@ export default function Timeline() {
     sessions.forEach((s) => {
       const d = parseISO(s.date_played);
       if (!isValid(d)) return;
+      const inGameDisplay = formatInGameDate(s.in_game_date_start, s.in_game_date_end);
       items.push({
         id: s.id,
         type: "session",
@@ -51,12 +92,15 @@ export default function Timeline() {
         description: s.summary,
         plotTitle: s.plot_id ? plotMap.get(s.plot_id) : undefined,
         xp: s.experience_awarded,
+        inGameDate: inGameDisplay,
+        inGameSortKey: parseInGameDateToSortKey(s.in_game_date_start),
       });
     });
 
     plots.forEach((p) => {
       const d = parseISO(p.created_at);
       if (!isValid(d)) return;
+      const inGameDisplay = formatInGameDate(p.in_game_date_start, p.in_game_date_end);
       items.push({
         id: p.id,
         type: "plot",
@@ -65,25 +109,42 @@ export default function Timeline() {
         description: p.description,
         status: p.status,
         priority: p.priority,
+        inGameDate: inGameDisplay,
+        inGameSortKey: parseInGameDateToSortKey(p.in_game_date_start),
       });
     });
 
+    if (sortMode === "in-game") {
+      // Items with in-game dates first (sorted), then items without (by real date)
+      const withDate = items.filter((e) => e.inGameSortKey);
+      const withoutDate = items.filter((e) => !e.inGameSortKey);
+      withDate.sort((a, b) => a.inGameSortKey!.localeCompare(b.inGameSortKey!));
+      withoutDate.sort((a, b) => b.date.getTime() - a.date.getTime());
+      return [...withDate, ...withoutDate];
+    }
+
     items.sort((a, b) => b.date.getTime() - a.date.getTime());
     return items;
-  }, [sessions, plots, plotMap]);
+  }, [sessions, plots, plotMap, sortMode]);
 
   const filtered = filter === "all" ? events : events.filter((e) => e.type === filter);
 
-  // Group by month-year
+  // Group by month-year (real date or in-game date label)
   const grouped = useMemo(() => {
     const groups = new Map<string, TimelineEvent[]>();
     filtered.forEach((e) => {
-      const key = format(e.date, "MMMM yyyy");
+      let key: string;
+      if (sortMode === "in-game" && e.inGameSortKey) {
+        const d = parseISO(e.inGameSortKey);
+        key = isValid(d) ? format(d, "MMMM yyyy") : "Unknown Date";
+      } else {
+        key = format(e.date, "MMMM yyyy");
+      }
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key)!.push(e);
     });
     return groups;
-  }, [filtered]);
+  }, [filtered, sortMode]);
 
   if (loading) {
     return (
@@ -109,6 +170,15 @@ export default function Timeline() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Select value={sortMode} onValueChange={(v) => setSortMode(v as SortMode)}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="real">Real-world date</SelectItem>
+              <SelectItem value="in-game">In-game date</SelectItem>
+            </SelectContent>
+          </Select>
           <Filter className="h-4 w-4 text-muted-foreground" />
           <Select value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
             <SelectTrigger className="w-[140px]">
@@ -209,8 +279,11 @@ export default function Timeline() {
                               )}
                             </div>
 
-                            <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
                               <span>{format(event.date, "MMM d, yyyy")}</span>
+                              {event.inGameDate && (
+                                <span className="text-primary/80">⏳ {event.inGameDate}</span>
+                              )}
                               {event.plotTitle && (
                                 <span className="truncate">
                                   Story: {event.plotTitle}
