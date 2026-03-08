@@ -50,6 +50,14 @@ const Sessions = () => {
     return acc;
   }, {} as Record<string, Session[]>);
 
+  // Also include stories that have checklists but no sessions
+  checklists.forEach(checklist => {
+    const groupKey = checklist.plot_id || "ungrouped";
+    if (!groupedSessions[groupKey]) {
+      groupedSessions[groupKey] = [];
+    }
+  });
+
   // Get story name by id
   const getStoryName = (plotId: string | null) => {
     if (!plotId) return "Ungrouped Sessions";
