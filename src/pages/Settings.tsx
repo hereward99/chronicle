@@ -462,31 +462,59 @@ export default function Settings() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
                   <h4 className="font-medium text-sm mb-1">How to use mentions</h4>
                   <p className="text-sm text-muted-foreground">
-                    Type <code className="bg-muted px-1.5 py-0.5 rounded text-foreground">@</code> in any supported text field 
-                    to open the autocomplete menu. Select an entity to insert a clickable link.
+                    Type <kbd className="bg-muted px-1.5 py-0.5 rounded text-foreground font-mono text-xs">@</kbd> in any supported text field 
+                    to open the autocomplete menu. Select an entity to insert a clickable link that navigates directly to that item.
                   </p>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-sm mb-2">Quick examples</h4>
+                  <div className="bg-muted/50 rounded-lg p-3 space-y-2 text-sm">
+                    <p className="text-muted-foreground">
+                      <span className="text-foreground font-medium">Session summary:</span> "The coterie met with <span className="text-primary font-medium">@Marcus Blackwood</span> at <span className="text-primary font-medium">@The Elysium</span> to discuss the threat from <span className="text-primary font-medium">@The Sabbat Incursion</span>."
+                    </p>
+                    <p className="text-muted-foreground">
+                      <span className="text-foreground font-medium">Character notes:</span> "Owes a major boon to <span className="text-primary font-medium">@Prince Valeria</span>. See <span className="text-primary font-medium">@Session 3</span> for details."
+                    </p>
+                  </div>
                 </div>
                 
                 <div>
                   <h4 className="font-medium text-sm mb-1">Supported fields</h4>
-                  <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-                    <li>Note content</li>
-                    <li>Session summaries</li>
-                    <li>Story descriptions</li>
-                  </ul>
+                  <div className="grid grid-cols-2 gap-1">
+                    {[
+                      "Session summaries", "Story descriptions & summaries", "Note content", 
+                      "Character history & notes", "Relationship descriptions", "Location descriptions",
+                      "Faction descriptions", "Coterie descriptions", "Boon notes"
+                    ].map(field => (
+                      <p key={field} className="text-sm text-muted-foreground flex items-center gap-1.5">
+                        <span className="w-1 h-1 rounded-full bg-primary shrink-0" />
+                        {field}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-sm mb-1">Mentionable entity types</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {["Characters", "Stories", "Sessions", "Notes", "Factions", "Coteries", "Locations"].map(type => (
+                      <span key={type} className="text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground">{type}</span>
+                    ))}
+                  </div>
                 </div>
                 
                 <div>
-                  <h4 className="font-medium text-sm mb-1">Mention syntax</h4>
+                  <h4 className="font-medium text-sm mb-1">Mention syntax (advanced)</h4>
                   <p className="text-sm text-muted-foreground mb-2">
                     Mentions are stored as: <code className="bg-muted px-1.5 py-0.5 rounded text-foreground">@[Name](type:id)</code>
                   </p>
                   <div className="text-xs text-muted-foreground space-y-1">
-                    <p><strong>Types:</strong> character, plot, session, note, faction, coterie</p>
+                    <p><strong>Types:</strong> character, plot, session, note, faction, coterie, location</p>
                     <p><strong>Example:</strong> <code className="bg-muted px-1 rounded">@[Marcus Blackwood](character:abc-123)</code></p>
                   </div>
                 </div>

@@ -380,12 +380,17 @@ const Sessions = () => {
               <h3 className="text-lg font-medium text-foreground mb-2">
                 {searchTerm ? 'No sessions found' : 'No sessions logged yet'}
               </h3>
-              <p className="text-muted-foreground text-center mb-4">
+              <p className="text-muted-foreground text-center mb-2">
                 {searchTerm 
                   ? 'Try adjusting your search terms'
                   : 'Start tracking your chronicle by logging your first gaming session or prep checklist'
                 }
               </p>
+              {!searchTerm && (
+                <p className="text-xs text-muted-foreground text-center mb-4">
+                  💡 Tip: Use <kbd className="px-1 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">@</kbd> in session summaries to cross-reference characters and stories.
+                </p>
+              )}
               {!searchTerm && (
                 <div className="flex gap-2">
                   <CreateChecklistDialog>

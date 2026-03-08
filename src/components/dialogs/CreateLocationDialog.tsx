@@ -63,10 +63,11 @@
                id="description"
                value={formData.description}
                onChange={(value) => setFormData(prev => ({ ...prev, description: value }))}
-               placeholder="Describe this location... (Type @ to mention)"
+               placeholder="Describe this location..."
                className="min-h-[100px]"
                maxLength={2000}
              />
+             <p className="text-xs text-muted-foreground">Type <kbd className="px-1 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">@</kbd> to link characters, stories, and more.</p>
            </div>
  
            <div className="space-y-2">
@@ -75,10 +76,11 @@
                id="notes"
                value={formData.notes}
                onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
-               placeholder="Additional notes... (Type @ to mention)"
+               placeholder="Additional notes..."
                className="min-h-[100px]"
                maxLength={3000}
              />
+             <p className="text-xs text-muted-foreground">Type <kbd className="px-1 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">@</kbd> to cross-reference other entities.</p>
            </div>
  
            <DialogFooter>
