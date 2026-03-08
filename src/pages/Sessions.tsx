@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { EmptyState } from "@/components/onboarding/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -374,24 +375,19 @@ const Sessions = () => {
             })()}
           </>
         ) : (
-          <Card className="bg-card border-border">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">
-                {searchTerm ? 'No sessions found' : 'No sessions logged yet'}
-              </h3>
-              <p className="text-muted-foreground text-center mb-2">
-                {searchTerm 
-                  ? 'Try adjusting your search terms'
-                  : 'Start tracking your chronicle by logging your first gaming session or prep checklist'
-                }
-              </p>
-              {!searchTerm && (
-                <p className="text-xs text-muted-foreground text-center mb-4">
-                  💡 Tip: Use <kbd className="px-1 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">@</kbd> in session summaries to cross-reference characters and stories.
-                </p>
-              )}
-              {!searchTerm && (
+          searchTerm ? (
+            <EmptyState
+              icon={<Calendar className="h-7 w-7" />}
+              title="No sessions found"
+              description="Try adjusting your search terms."
+            />
+          ) : (
+            <EmptyState
+              icon={<Calendar className="h-7 w-7" />}
+              title="No sessions logged yet"
+              description="Sessions track each game night — what happened, who was there, and how much XP was awarded. You can also create prep checklists."
+              tip="Create a Story first, then log sessions under it. Or start with a prep checklist to plan your next game."
+              action={
                 <div className="flex gap-2">
                   <CreateChecklistDialog>
                     <Button variant="outline">
@@ -400,15 +396,15 @@ const Sessions = () => {
                     </Button>
                   </CreateChecklistDialog>
                   <CreateSessionDialog>
-                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                    <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
                       <Plus className="h-4 w-4 mr-2" />
-                      Log Your First Session
+                      Log First Session
                     </Button>
                   </CreateSessionDialog>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              }
+            />
+          )
         )}
       </div>
 

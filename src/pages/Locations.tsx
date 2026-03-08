@@ -1,4 +1,5 @@
  import { useState } from 'react';
+ import { EmptyState } from '@/components/onboarding/EmptyState';
  import { Button } from '@/components/ui/button';
  import { Card } from '@/components/ui/card';
  import { Input } from '@/components/ui/input';
@@ -79,24 +80,27 @@
                </Card>
              ))}
            </div>
-         ) : filteredLocations.length === 0 ? (
-           <Card className="p-8 text-center">
-             <MapPin className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-             <h3 className="text-lg font-medium mb-2">
-               {searchQuery ? 'No locations found' : 'No locations yet'}
-             </h3>
-             <p className="text-muted-foreground mb-4">
-               {searchQuery
-                 ? 'Try adjusting your search'
-                 : 'Create your first location to start building your world'}
-             </p>
-             {!searchQuery && (
-               <Button onClick={() => setCreateOpen(true)}>
-                 <Plus className="h-4 w-4 mr-2" />
-                 Add Location
-               </Button>
-             )}
-           </Card>
+          ) : filteredLocations.length === 0 ? (
+            searchQuery ? (
+              <EmptyState
+                icon={<MapPin className="h-7 w-7" />}
+                title="No locations found"
+                description="Try adjusting your search."
+              />
+            ) : (
+              <EmptyState
+                icon={<MapPin className="h-7 w-7" />}
+                title="No locations yet"
+                description="Locations ground your chronicle in the real (or imagined) world — Elysiums, havens, hunting grounds, and contested domains."
+                tip="Use @ in location notes to link characters who frequent or control each place."
+                action={
+                  <Button onClick={() => setCreateOpen(true)} className="bg-gradient-blood hover:opacity-90 shadow-crimson">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add First Location
+                  </Button>
+                }
+              />
+            )
          ) : (
            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
              {filteredLocations.map(location => (
