@@ -11,6 +11,8 @@ import { CreateCoterieDialog } from "@/components/dialogs/CreateCoterieDialog";
 import { ManageCoterieDialog } from "@/components/dialogs/ManageCoterieDialog";
 import { Users, MapPin, Plus, Edit } from "lucide-react";
 import type { Coterie } from "@/hooks/useCoteries";
+import { useSearchHighlight } from "@/hooks/useSearchHighlight";
+import { TextHighlight } from "@/components/ui/text-highlight";
 
 export default function Coteries() {
   const { coteries, loading, getCoterieMembers } = useCoteries();
