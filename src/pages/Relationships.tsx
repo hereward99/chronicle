@@ -397,6 +397,33 @@ export default function Relationships() {
                   </div>
                 </div>
 
+                {/* Coterie Filter */}
+                {coteries.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Coterie</Label>
+                    <div className="space-y-2">
+                      {coteries.map(coterie => (
+                        <div key={coterie.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`coterie-${coterie.id}`}
+                            checked={selectedCoteries.includes(coterie.id)}
+                            onCheckedChange={(checked) => {
+                              setSelectedCoteries(
+                                checked 
+                                  ? [...selectedCoteries, coterie.id]
+                                  : selectedCoteries.filter(c => c !== coterie.id)
+                              );
+                            }}
+                          />
+                          <label htmlFor={`coterie-${coterie.id}`} className="text-sm cursor-pointer">
+                            {coterie.name}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Character Type Filter */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Character Type</Label>
