@@ -85,7 +85,7 @@ export function GenerateNPCDialog({ open, onOpenChange, onComplete }: GenerateNP
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
-    if (!requireOnline("Generate NPC")) return;
+    if (!generatorSettings.useLocalLLM && !requireOnline("Generate NPC")) return;
 
     setStep("generating");
     setIsGenerating(true);
