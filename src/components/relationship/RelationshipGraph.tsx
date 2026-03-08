@@ -82,42 +82,17 @@ function getLayoutedNodes(
 ): Node[] {
   if (nodes.length === 0) return nodes;
 
-  const centerX = 600;
-  const centerY = 400;
-
-  // Helper: reposition so primary characters are at center
-  const centerPrimaryNodes = (positioned: Node[]): Node[] => {
-    if (primaryCharacterIds.length === 0) return positioned;
-    
-    const primaryNodes = positioned.filter(n => primaryCharacterIds.includes(n.id));
-    if (primaryNodes.length === 0) return positioned;
-
-    // Calculate centroid of primary nodes
-    const avgX = primaryNodes.reduce((sum, n) => sum + n.position.x, 0) / primaryNodes.length;
-    const avgY = primaryNodes.reduce((sum, n) => sum + n.position.y, 0) / primaryNodes.length;
-    
-    // Shift all nodes so the primary centroid is at the center
-    const offsetX = centerX - avgX;
-    const offsetY = centerY - avgY;
-    
-    return positioned.map(node => ({
-      ...node,
-      position: {
-        x: node.position.x + offsetX,
-        y: node.position.y + offsetY,
-      },
-    }));
-  };
+  const centerX = 0;
+  const centerY = 0;
 
   if (layout === 'circular') {
-    // Place primary characters in the inner ring, others on the outer ring
     const primaryNodes = nodes.filter(n => primaryCharacterIds.includes(n.id));
     const otherNodes = nodes.filter(n => !primaryCharacterIds.includes(n.id));
     
     const innerRadius = primaryNodes.length > 1 ? Math.max(100, primaryNodes.length * 30) : 0;
     const outerRadius = Math.max(250, (primaryNodes.length + otherNodes.length) * 35);
 
-    const positioned = [
+    return [
       ...primaryNodes.map((node, index) => ({
         ...node,
         position: {
@@ -133,7 +108,6 @@ function getLayoutedNodes(
         },
       })),
     ];
-    return positioned;
   }
 
   if (layout === 'hierarchical') {
@@ -141,11 +115,19 @@ function getLayoutedNodes(
     g.setDefaultEdgeLabel(() => ({}));
     g.setGraph({ rankdir: 'TB', nodesep: 80, ranksep: 120 });
 
-    // Place primary characters at the top rank
     nodes.forEach((node) => {
-      const isPrimary = primaryCharacterIds.includes(node.id);
-      g.setNode(node.id, { width: 180, height: 80, ...(isPrimary ? { rank: 0 } : {}) });
+      g.setNode(node.id, { width: 180, height: 80 });
     });
+
+    // Add invisible edges from a virtual root to primary nodes to force them to top rank
+    if (primaryCharacterIds.length > 0) {
+      g.setNode('__root__', { width: 0, height: 0 });
+      primaryCharacterIds.forEach(id => {
+        if (nodes.some(n => n.id === id)) {
+          g.setEdge('__root__', id);
+        }
+      });
+    }
 
     edges.forEach((edge) => {
       g.setEdge(edge.source, edge.target);
@@ -153,7 +135,8 @@ function getLayoutedNodes(
 
     dagre.layout(g);
 
-    const positioned = nodes.map((node) => {
+    // Remove virtual root and position nodes
+    return nodes.map((node) => {
       const nodeWithPosition = g.node(node.id);
       return {
         ...node,
@@ -163,12 +146,45 @@ function getLayoutedNodes(
         },
       };
     });
-
-    return centerPrimaryNodes(positioned);
   }
 
-  // 'force' layout — use faction-based grouping (original logic), then center primary
-  return nodes; // centering handled separately since these already get positioned
+  // 'force' layout — reposition with primary coterie at center
+  if (primaryCharacterIds.length > 0) {
+    const isPrimary = (id: string) => primaryCharacterIds.includes(id);
+    const primaryNodes = nodes.filter(n => isPrimary(n.id));
+    const otherNodes = nodes.filter(n => !isPrimary(n.id));
+
+    // Place primary nodes in a tight cluster at center
+    const primaryPositioned = primaryNodes.map((node, index) => {
+      const angle = (index / Math.max(primaryNodes.length, 1)) * 2 * Math.PI;
+      const radius = primaryNodes.length === 1 ? 0 : Math.min(120, 50 + primaryNodes.length * 15);
+      return {
+        ...node,
+        position: {
+          x: centerX + radius * Math.cos(angle),
+          y: centerY + radius * Math.sin(angle),
+        },
+      };
+    });
+
+    // Place other nodes in an outer ring, spaced further out
+    const outerRadius = Math.max(400, (primaryNodes.length + otherNodes.length) * 30);
+    const otherPositioned = otherNodes.map((node, index) => {
+      const angle = (index / Math.max(otherNodes.length, 1)) * 2 * Math.PI;
+      return {
+        ...node,
+        position: {
+          x: centerX + outerRadius * Math.cos(angle),
+          y: centerY + outerRadius * Math.sin(angle),
+        },
+      };
+    });
+
+    return [...primaryPositioned, ...otherPositioned];
+  }
+
+  // No primary coterie — return original faction-grouped positions
+  return nodes;
 }
 
 export function RelationshipGraph({ 
