@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { InGameDateInput } from "@/components/InGameDateInput";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSessions } from "@/hooks/useSessions";
 import { useChronicles } from "@/hooks/useChronicles";
 import { usePlots } from "@/hooks/usePlots";
