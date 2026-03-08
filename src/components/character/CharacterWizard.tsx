@@ -171,6 +171,9 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
     // Creation Method: "full" | "simple" | "general" | "standard"
     creationMethod: "full" as "full" | "simple" | "general" | "standard",
     
+    // Portrait
+    avatarUrl: null as string | null,
+    
     // Type & Basic Info
     characterType: "vampire" as "vampire" | "ghoul" | "human",
     pcOrNpc: "PC" as "PC" | "NPC",
