@@ -1,15 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useChronicles } from '@/hooks/useChronicles';
 import { useGeneratorSettings } from '@/hooks/useGeneratorSettings';
-import { Download, Upload, Loader2, AlertTriangle, Bot, AtSign } from 'lucide-react';
+import { Download, Upload, Loader2, AlertTriangle, Bot, AtSign, ClipboardList, Plus, X, Check, Pencil } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,6 +48,57 @@ export default function Settings() {
   const [importing, setImporting] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [pendingImportData, setPendingImportData] = useState<BackupData | null>(null);
+
+  // Dev notes state
+  interface DevNote {
+    id: string;
+    text: string;
+    category: 'fix' | 'feature' | 'change' | 'idea';
+    done: boolean;
+    createdAt: string;
+  }
+
+  const DEV_NOTES_KEY = 'chronicle-keeper-dev-notes';
+
+  const [devNotes, setDevNotes] = useState<DevNote[]>(() => {
+    try {
+      const stored = localStorage.getItem(DEV_NOTES_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch { return []; }
+  });
+  const [newNoteText, setNewNoteText] = useState('');
+  const [newNoteCategory, setNewNoteCategory] = useState<DevNote['category']>('idea');
+
+  useEffect(() => {
+    localStorage.setItem(DEV_NOTES_KEY, JSON.stringify(devNotes));
+  }, [devNotes]);
+
+  const addDevNote = () => {
+    if (!newNoteText.trim()) return;
+    setDevNotes(prev => [{
+      id: crypto.randomUUID(),
+      text: newNoteText.trim(),
+      category: newNoteCategory,
+      done: false,
+      createdAt: new Date().toISOString(),
+    }, ...prev]);
+    setNewNoteText('');
+  };
+
+  const toggleDevNote = (id: string) => {
+    setDevNotes(prev => prev.map(n => n.id === id ? { ...n, done: !n.done } : n));
+  };
+
+  const removeDevNote = (id: string) => {
+    setDevNotes(prev => prev.filter(n => n.id !== id));
+  };
+
+  const categoryColors: Record<DevNote['category'], string> = {
+    fix: 'bg-destructive/15 text-destructive border-destructive/30',
+    feature: 'bg-primary/15 text-primary border-primary/30',
+    change: 'bg-accent text-accent-foreground border-border',
+    idea: 'bg-secondary text-secondary-foreground border-border',
+  };
 
   const handleExport = async () => {
     if (!currentChronicle) {
@@ -532,6 +586,99 @@ export default function Settings() {
               </div>
             </CardContent>
           </Card>
+
+
+          {/* Dev Notes */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ClipboardList className="h-5 w-5" />
+                Dev Notes
+              </CardTitle>
+              <CardDescription>
+                Track developments, changes, fixes, and ideas for this app.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Textarea
+                  placeholder="Describe a fix, feature, change, or idea..."
+                  value={newNoteText}
+                  onChange={(e) => setNewNoteText(e.target.value)}
+                  className="min-h-[60px] flex-1"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                      e.preventDefault();
+                      addDevNote();
+                    }
+                  }}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1.5 flex-1 flex-wrap">
+                  {(['idea', 'feature', 'fix', 'change'] as const).map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => setNewNoteCategory(cat)}
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium border capitalize transition-all ${categoryColors[cat]} ${newNoteCategory === cat ? 'ring-2 ring-ring ring-offset-1 ring-offset-background' : 'opacity-60 hover:opacity-100'}`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+                <Button size="sm" onClick={addDevNote} disabled={!newNoteText.trim()}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add
+                </Button>
+              </div>
+
+              {devNotes.length > 0 && (
+                <ScrollArea className="max-h-[400px]">
+                  <div className="space-y-2 pr-2">
+                    {devNotes.map(note => (
+                      <div
+                        key={note.id}
+                        className={`flex items-start gap-2 p-3 rounded-md border bg-card transition-opacity ${note.done ? 'opacity-50' : ''}`}
+                      >
+                        <button
+                          onClick={() => toggleDevNote(note.id)}
+                          className={`mt-0.5 shrink-0 h-4 w-4 rounded border flex items-center justify-center transition-colors ${note.done ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/40 hover:border-primary'}`}
+                        >
+                          {note.done && <Check className="h-3 w-3" />}
+                        </button>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm whitespace-pre-wrap break-words ${note.done ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                            {note.text}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border capitalize ${categoryColors[note.category]}`}>
+                              {note.category}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              {new Date(note.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => removeDevNote(note.id)}
+                          className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
+
+              {devNotes.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No notes yet. Add your first development note above.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
