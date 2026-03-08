@@ -14,6 +14,8 @@ import { useChecklists } from "@/hooks/useChecklists";
 import { exportSessionToPDF } from "@/lib/pdfExport";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { MentionText } from "@/components/mentions/MentionText";
+import { useSearchHighlight } from "@/hooks/useSearchHighlight";
+import { TextHighlight } from "@/components/ui/text-highlight";
 import { CreateChecklistDialog } from "@/components/checklists/CreateChecklistDialog";
 import { ChecklistCard } from "@/components/checklists/ChecklistCard";
 import {
@@ -35,6 +37,7 @@ const Sessions = () => {
   const [deleteTarget, setDeleteTarget] = useState<Session | null>(null);
   const { sessions, loading, deleteSession } = useSessions();
   const { plots } = usePlots();
+  const { searchQuery: highlightQuery } = useSearchHighlight();
   const { checklists, loading: checklistsLoading, toggleItem, addItem, updateItem, updateChecklist, deleteItem, deleteChecklist } = useChecklists();
 
   const filteredSessions = sessions.filter(session =>
@@ -109,12 +112,12 @@ const Sessions = () => {
   };
 
   const renderSessionCard = (session: Session) => (
-    <Card key={session.id} className="bg-card border-border shadow-gothic hover:shadow-crimson transition-shadow">
+    <Card key={session.id} data-entity-id={session.id} className="bg-card border-border shadow-gothic hover:shadow-crimson transition-shadow">
       <CardHeader className="pb-4">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
           <div className="space-y-1">
             <CardTitle className="text-xl text-foreground">
-              {session.title}
+              <TextHighlight text={session.title} highlight={highlightQuery} />
             </CardTitle>
             <CardDescription className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />

@@ -13,6 +13,8 @@ import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialo
 import { ViewCharacterDialog } from "@/components/dialogs/ViewCharacterDialog";
 import { EditCharacterDialog } from "@/components/dialogs/EditCharacterDialog";
 import { CharacterWizard } from "@/components/character/CharacterWizard";
+import { useSearchHighlight } from "@/hooks/useSearchHighlight";
+import { TextHighlight } from "@/components/ui/text-highlight";
 
 export default function Characters() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -21,6 +23,7 @@ export default function Characters() {
   const [editCharacter, setEditCharacter] = useState<Character | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const { characters, loading, updateCharacter, deleteCharacter } = useCharacters();
+  const { searchQuery: highlightQuery, isHighlighted } = useSearchHighlight();
 
   const filteredCharacters = characters.filter(character => {
     const matchesSearch = character.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -136,7 +139,7 @@ export default function Characters() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCharacters.map((character) => (
-              <Card key={character.id} className="bg-gradient-subtle border-border shadow-gothic hover:shadow-deep transition-all duration-300">
+              <Card key={character.id} data-entity-id={character.id} className="bg-gradient-subtle border-border shadow-gothic hover:shadow-deep transition-all duration-300">
                 <CardHeader className="pb-3">
                   <div className="flex items-center space-x-3">
                     <Avatar className="h-12 w-12 border-2 border-border">
@@ -146,7 +149,9 @@ export default function Characters() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <CardTitle className="text-lg text-foreground">{character.name}</CardTitle>
+                      <CardTitle className="text-lg text-foreground">
+                        <TextHighlight text={character.name} highlight={highlightQuery} />
+                      </CardTitle>
                       <div className="flex items-center space-x-2 mt-1">
                         {getClanIcon(character.clan)}
                         <span className="text-sm text-muted-foreground">{character.clan}</span>

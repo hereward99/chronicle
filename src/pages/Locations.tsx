@@ -25,10 +25,13 @@
  import { EditLocationDialog } from '@/components/dialogs/EditLocationDialog';
  import { ViewLocationDialog } from '@/components/dialogs/ViewLocationDialog';
  import { MentionText } from '@/components/mentions/MentionText';
+ import { useSearchHighlight } from '@/hooks/useSearchHighlight';
+ import { TextHighlight } from '@/components/ui/text-highlight';
  
  export default function Locations() {
-   const { locations, isLoading, deleteLocation } = useLocations();
-   const [searchQuery, setSearchQuery] = useState('');
+  const { locations, isLoading, deleteLocation } = useLocations();
+  const [searchQuery, setSearchQuery] = useState('');
+  const { searchQuery: highlightQuery } = useSearchHighlight();
    const [createOpen, setCreateOpen] = useState(false);
    const [editLocation, setEditLocation] = useState<Location | null>(null);
    const [viewLocation, setViewLocation] = useState<Location | null>(null);
@@ -104,15 +107,18 @@
          ) : (
            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
              {filteredLocations.map(location => (
-               <Card
-                 key={location.id}
-                 className="p-4 hover:border-primary/50 transition-colors cursor-pointer group"
-                 onClick={() => setViewLocation(location)}
-               >
-                 <div className="flex items-start justify-between gap-2">
-                   <div className="flex items-center gap-2 min-w-0">
-                     <MapPin className="h-4 w-4 text-primary shrink-0" />
-                     <h3 className="font-medium truncate">{location.name}</h3>
+              <Card
+                  key={location.id}
+                  data-entity-id={location.id}
+                  className="p-4 hover:border-primary/50 transition-colors cursor-pointer group"
+                  onClick={() => setViewLocation(location)}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <MapPin className="h-4 w-4 text-primary shrink-0" />
+                      <h3 className="font-medium truncate">
+                        <TextHighlight text={location.name} highlight={highlightQuery} />
+                      </h3>
                    </div>
                    <DropdownMenu>
                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>

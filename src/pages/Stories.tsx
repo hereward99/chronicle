@@ -16,12 +16,14 @@ import { usePlotCharacters } from "@/hooks/usePlotCharacters";
 import { useSessions } from "@/hooks/useSessions";
 import { MentionText } from "@/components/mentions/MentionText";
 import { TextHighlight } from "@/components/ui/text-highlight";
+import { useSearchHighlight } from "@/hooks/useSearchHighlight";
 
 const Stories = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewingPlot, setViewingPlot] = useState<Plot | null>(null);
   const [editingPlot, setEditingPlot] = useState<Plot | null>(null);
   const { plots, loading, refetch } = usePlots();
+  const { searchQuery: highlightQuery } = useSearchHighlight();
   const { getCharactersForPlot } = usePlotCharacters();
   const { sessions } = useSessions();
 
@@ -81,22 +83,24 @@ const Stories = () => {
     ) || [];
   };
 
+  const activeHighlight = highlightQuery || searchTerm;
+
   const renderStoryCard = (story: Plot) => (
-    <Card key={story.id} className="bg-card border-border shadow-gothic hover:shadow-crimson transition-shadow">
+    <Card key={story.id} data-entity-id={story.id} className="bg-card border-border shadow-gothic hover:shadow-crimson transition-shadow">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <CardTitle className="text-lg text-foreground line-clamp-2">
-            <TextHighlight text={story.title} highlight={searchTerm} />
+            <TextHighlight text={story.title} highlight={activeHighlight} />
           </CardTitle>
           <Badge variant={getStatusColor(story.status)} className="shrink-0">
             {story.status}
           </Badge>
         </div>
-        {searchTerm ? (
+        {activeHighlight ? (
           <TextHighlight 
             text={story.summary || story.description || "No summary provided"} 
             className="text-sm text-muted-foreground line-clamp-3 block"
-            highlight={searchTerm}
+            highlight={activeHighlight}
           />
         ) : (
           <MentionText 
