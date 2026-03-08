@@ -791,6 +791,8 @@ export default function Settings() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
+
+      <GuidedTour open={showTour} onClose={() => setShowTour(false)} />
     </>
   );
 }
