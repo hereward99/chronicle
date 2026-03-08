@@ -35,6 +35,7 @@ interface CreateCharacterDialogProps {
 export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     name: "",
     clan: "",
@@ -49,8 +50,17 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
   const { currentChronicle, createDefaultChronicle } = useChronicles();
   const { toast } = useToast();
 
+  const clearFieldError = (field: string) => {
+    setErrors(prev => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
     
     try {
       const validated = characterSchema.parse({
@@ -60,14 +70,12 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
       
       setLoading(true);
 
-      // Ensure we have a chronicle
       let chronicleId = currentChronicle?.id;
       if (!chronicleId) {
         const defaultChronicle = await createDefaultChronicle();
         chronicleId = defaultChronicle.id;
       }
 
-      // For NPCs using quick create, always use dice pools (simple format)
       const isNpcWithDicePools = validated.type === "NPC";
       const dicePoolConfig: DicePoolConfig | null = isNpcWithDicePools
         ? { type: "simple", difficulty: formData.difficulty } as SimpleDicePool
@@ -90,7 +98,6 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
         skills: isNpcWithDicePools ? {} : undefined,
       } as any);
 
-      // Reset form
       setFormData({
         name: "",
         clan: "",
@@ -104,19 +111,23 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
       setOpen(false);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast({
-          title: "Validation error",
-          description: error.issues[0].message,
-          variant: "destructive",
+        const fieldErrors: Record<string, string> = {};
+        error.issues.forEach(issue => {
+          const field = issue.path[0]?.toString();
+          if (field) fieldErrors[field] = issue.message;
         });
+        setErrors(fieldErrors);
       }
     } finally {
       setLoading(false);
     }
   };
 
+  const FieldError = ({ field }: { field: string }) => 
+    errors[field] ? <p className="text-xs text-destructive mt-1">{errors[field]}</p> : null;
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setErrors({}); }}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
@@ -136,18 +147,19 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              onChange={(e) => { setFormData(prev => ({ ...prev, name: e.target.value })); clearFieldError('name'); }}
               placeholder="Character name"
-              className="bg-input border-border"
+              className={`bg-input border-border ${errors.name ? 'border-destructive' : ''}`}
               required
             />
+            <FieldError field="name" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="clan">Clan *</Label>
-              <Select value={formData.clan} onValueChange={(value) => setFormData(prev => ({ ...prev, clan: value }))}>
-                <SelectTrigger className="bg-input border-border">
+              <Select value={formData.clan} onValueChange={(value) => { setFormData(prev => ({ ...prev, clan: value })); clearFieldError('clan'); }}>
+                <SelectTrigger className={`bg-input border-border ${errors.clan ? 'border-destructive' : ''}`}>
                   <SelectValue placeholder="Select clan" />
                 </SelectTrigger>
                 <SelectContent>
@@ -156,6 +168,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
                   ))}
                 </SelectContent>
               </Select>
+              <FieldError field="clan" />
             </div>
 
             <div className="space-y-2">

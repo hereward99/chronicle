@@ -247,6 +247,14 @@ export function useChecklists() {
   };
 
   const toggleItem = async (itemId: string, isCompleted: boolean) => {
+    // Optimistic update
+    setChecklists(prev => prev.map(checklist => ({
+      ...checklist,
+      items: checklist.items.map(item =>
+        item.id === itemId ? { ...item, is_completed: isCompleted } : item
+      ),
+    })));
+
     try {
       const { error } = await supabase
         .from('checklist_items')
@@ -254,14 +262,14 @@ export function useChecklists() {
         .eq('id', itemId);
 
       if (error) throw error;
-
+    } catch (error: any) {
+      // Rollback on failure
       setChecklists(prev => prev.map(checklist => ({
         ...checklist,
         items: checklist.items.map(item =>
-          item.id === itemId ? { ...item, is_completed: isCompleted } : item
+          item.id === itemId ? { ...item, is_completed: !isCompleted } : item
         ),
       })));
-    } catch (error: any) {
       toast({
         title: "Error updating item",
         description: error.message,

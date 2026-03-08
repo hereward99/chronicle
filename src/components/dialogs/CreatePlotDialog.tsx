@@ -28,6 +28,7 @@ interface CreatePlotDialogProps {
 export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     title: "",
     summary: "",
@@ -41,8 +42,17 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
   const { currentChronicle, createDefaultChronicle } = useChronicles();
   const { toast } = useToast();
 
+  const clearFieldError = (field: string) => {
+    setErrors(prev => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
     
     try {
       const validated = plotSchema.parse({
@@ -53,7 +63,6 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
       
       setLoading(true);
 
-      // Ensure we have a chronicle
       let chronicleId = currentChronicle?.id;
       if (!chronicleId) {
         const defaultChronicle = await createDefaultChronicle();
@@ -70,7 +79,6 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
         attachments: formData.attachments,
       });
 
-      // Reset form
       setFormData({
         title: "",
         summary: "",
@@ -84,19 +92,23 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
       onCreated?.();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast({
-          title: "Validation error",
-          description: error.issues[0].message,
-          variant: "destructive",
+        const fieldErrors: Record<string, string> = {};
+        error.issues.forEach(issue => {
+          const field = issue.path[0]?.toString();
+          if (field) fieldErrors[field] = issue.message;
         });
+        setErrors(fieldErrors);
       }
     } finally {
       setLoading(false);
     }
   };
 
+  const FieldError = ({ field }: { field: string }) => 
+    errors[field] ? <p className="text-xs text-destructive mt-1">{errors[field]}</p> : null;
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setErrors({}); }}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
@@ -114,11 +126,12 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
             <Input
               id="plot-title"
               value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              onChange={(e) => { setFormData(prev => ({ ...prev, title: e.target.value })); clearFieldError('title'); }}
               placeholder="Story title"
-              className="bg-input border-border"
+              className={`bg-input border-border ${errors.title ? 'border-destructive' : ''}`}
               required
             />
+            <FieldError field="title" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">

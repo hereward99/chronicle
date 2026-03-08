@@ -31,6 +31,7 @@ interface CreateSessionDialogProps {
 export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     title: "",
     summary: "",
@@ -55,12 +56,19 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
   );
 
   const chronicleCharacters = characters.filter(c => c.chronicle_id === currentChronicle?.id);
-
-  // Filter plots for current chronicle
   const chroniclePlots = plots.filter(p => p.chronicle_id === currentChronicle?.id);
+
+  const clearFieldError = (field: string) => {
+    setErrors(prev => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
     
     try {
       const validated = sessionSchema.parse({
@@ -71,7 +79,6 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
       
       setLoading(true);
 
-      // Ensure we have a chronicle
       let chronicleId = currentChronicle?.id;
       if (!chronicleId) {
         const defaultChronicle = await createDefaultChronicle();
@@ -87,12 +94,10 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
         plot_id: validated.plot_id,
       });
 
-      // Save character associations
       if (selectedCharacterIds.length > 0 && newSession?.id) {
         await setSessionCharacters(newSession.id, selectedCharacterIds);
       }
 
-      // Clear draft and reset form
       clearDraft();
       setFormData({
         title: "",
@@ -106,19 +111,23 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
       setOpen(false);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast({
-          title: "Validation error",
-          description: error.issues[0].message,
-          variant: "destructive",
+        const fieldErrors: Record<string, string> = {};
+        error.issues.forEach(issue => {
+          const field = issue.path[0]?.toString();
+          if (field) fieldErrors[field] = issue.message;
         });
+        setErrors(fieldErrors);
       }
     } finally {
       setLoading(false);
     }
   };
 
+  const FieldError = ({ field }: { field: string }) => 
+    errors[field] ? <p className="text-xs text-destructive mt-1">{errors[field]}</p> : null;
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setErrors({}); }}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
@@ -136,11 +145,12 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
             <Input
               id="session-title"
               value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              onChange={(e) => { setFormData(prev => ({ ...prev, title: e.target.value })); clearFieldError('title'); }}
               placeholder="Session title"
-              className="bg-input border-border"
+              className={`bg-input border-border ${errors.title ? 'border-destructive' : ''}`}
               required
             />
+            <FieldError field="title" />
           </div>
 
           <div className="space-y-2">
@@ -170,10 +180,11 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
                 id="date-played"
                 type="date"
                 value={formData.date_played}
-                onChange={(e) => setFormData(prev => ({ ...prev, date_played: e.target.value }))}
-                className="bg-input border-border"
+                onChange={(e) => { setFormData(prev => ({ ...prev, date_played: e.target.value })); clearFieldError('date_played'); }}
+                className={`bg-input border-border ${errors.date_played ? 'border-destructive' : ''}`}
                 required
               />
+              <FieldError field="date_played" />
             </div>
 
             <div className="space-y-2">
