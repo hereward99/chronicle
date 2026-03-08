@@ -17,6 +17,7 @@ import { TextHighlight } from "@/components/ui/text-highlight";
 export default function Coteries() {
   const { coteries, loading, getCoterieMembers } = useCoteries();
   const { characters } = useCharacters();
+  const { searchQuery: highlightQuery } = useSearchHighlight();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedCoterie, setSelectedCoterie] = useState<Coterie | null>(null);
   const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
