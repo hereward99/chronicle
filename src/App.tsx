@@ -59,13 +59,6 @@ const App = () => (
                 </Layout>
               </ProtectedRoute>
             } />
-            <Route path="/coteries" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Coteries />
-                </Layout>
-              </ProtectedRoute>
-            } />
             <Route path="/relationships" element={
               <ProtectedRoute>
                 <Layout>
