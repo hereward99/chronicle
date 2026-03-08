@@ -37,6 +37,8 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
     status: "Active" as "Active" | "Planned" | "Completed" | "Critical",
     priority: "Medium" as "Low" | "Medium" | "High" | "Critical",
     attachments: [] as any[],
+    in_game_date_start: "",
+    in_game_date_end: "",
   });
   
   const { createPlot } = usePlots();
