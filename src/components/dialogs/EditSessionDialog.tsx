@@ -7,6 +7,7 @@ import { MentionInput } from "@/components/mentions/MentionInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { InGameDateInput } from "@/components/InGameDateInput";
 import { useSessions, Session } from "@/hooks/useSessions";
 import { usePlots } from "@/hooks/usePlots";
 import { useCharacters } from "@/hooks/useCharacters";
