@@ -23,6 +23,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { SessionChecklist, useChecklists } from "@/hooks/useChecklists";
+import { EditChecklistDialog } from "@/components/checklists/EditChecklistDialog";
 import { exportChecklistToPDF } from "@/lib/pdfExport";
 import { 
   MoreVertical, 
