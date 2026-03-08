@@ -25,6 +25,8 @@
  import { EditLocationDialog } from '@/components/dialogs/EditLocationDialog';
  import { ViewLocationDialog } from '@/components/dialogs/ViewLocationDialog';
  import { MentionText } from '@/components/mentions/MentionText';
+ import { useSearchHighlight } from '@/hooks/useSearchHighlight';
+ import { TextHighlight } from '@/components/ui/text-highlight';
  
  export default function Locations() {
    const { locations, isLoading, deleteLocation } = useLocations();
