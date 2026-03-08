@@ -24,11 +24,18 @@ export default function Chronicle() {
   const { activities, loading: activitiesLoading } = useRecentActivity();
   return (
     <div className="space-y-8">
+      {/* Chronicle Manager */}
+      <ChronicleManager />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-foreground mb-2">Chronicle Dashboard</h1>
-          <p className="text-lg text-muted-foreground">Manage your Vampire: The Masquerade chronicle</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">
+            {currentChronicle?.name || "Chronicle Dashboard"}
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            {currentChronicle?.description || "Manage your Vampire: The Masquerade chronicle"}
+          </p>
         </div>
         <CreateNoteDialog>
           <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
