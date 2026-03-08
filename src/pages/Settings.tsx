@@ -49,6 +49,57 @@ export default function Settings() {
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [pendingImportData, setPendingImportData] = useState<BackupData | null>(null);
 
+  // Dev notes state
+  interface DevNote {
+    id: string;
+    text: string;
+    category: 'fix' | 'feature' | 'change' | 'idea';
+    done: boolean;
+    createdAt: string;
+  }
+
+  const DEV_NOTES_KEY = 'chronicle-keeper-dev-notes';
+
+  const [devNotes, setDevNotes] = useState<DevNote[]>(() => {
+    try {
+      const stored = localStorage.getItem(DEV_NOTES_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch { return []; }
+  });
+  const [newNoteText, setNewNoteText] = useState('');
+  const [newNoteCategory, setNewNoteCategory] = useState<DevNote['category']>('idea');
+
+  useEffect(() => {
+    localStorage.setItem(DEV_NOTES_KEY, JSON.stringify(devNotes));
+  }, [devNotes]);
+
+  const addDevNote = () => {
+    if (!newNoteText.trim()) return;
+    setDevNotes(prev => [{
+      id: crypto.randomUUID(),
+      text: newNoteText.trim(),
+      category: newNoteCategory,
+      done: false,
+      createdAt: new Date().toISOString(),
+    }, ...prev]);
+    setNewNoteText('');
+  };
+
+  const toggleDevNote = (id: string) => {
+    setDevNotes(prev => prev.map(n => n.id === id ? { ...n, done: !n.done } : n));
+  };
+
+  const removeDevNote = (id: string) => {
+    setDevNotes(prev => prev.filter(n => n.id !== id));
+  };
+
+  const categoryColors: Record<DevNote['category'], string> = {
+    fix: 'bg-destructive/15 text-destructive border-destructive/30',
+    feature: 'bg-primary/15 text-primary border-primary/30',
+    change: 'bg-accent text-accent-foreground border-border',
+    idea: 'bg-secondary text-secondary-foreground border-border',
+  };
+
   const handleExport = async () => {
     if (!currentChronicle) {
       toast({
