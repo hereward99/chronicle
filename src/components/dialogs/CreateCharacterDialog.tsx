@@ -10,6 +10,7 @@ import { Plus } from "lucide-react";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
+import { PortraitGenerator } from "@/components/character/PortraitGenerator";
 
 const characterSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
