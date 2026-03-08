@@ -176,6 +176,7 @@ export function RelationshipGraph({
   characters,
   factions = [],
   characterFactions = [],
+  primaryCharacterIds = [],
   onNodeClick,
   onEdgeClick,
   onCreateRelationship 
