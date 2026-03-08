@@ -594,7 +594,10 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                       >
                         <span className="text-sm">{attr.name}</span>
                       </RuleTooltip>
-                      <DotRating current={attr.value} />
+                      <div className="flex items-center gap-1">
+                        <DotRating current={attr.value} />
+                        <QuickRollButton basePool={attr.value} hunger={character.hunger || 1} label={attr.name} />
+                      </div>
                     </div>
                   ))}
                 </div>
