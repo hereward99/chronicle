@@ -59,6 +59,8 @@ export default function Relationships() {
     addCharacterToFaction,
     removeCharacterFromFaction 
   } = useFactions(currentChronicle?.id);
+  const { coteries, loading: coteriesLoading, getCoterieMembers } = useCoteries();
+  const { searchQuery: highlightQuery } = useSearchHighlight();
   
   const [selectedCharacter, setSelectedCharacter] = useState<string>('all');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -70,6 +72,21 @@ export default function Relationships() {
   const [editFactionDialogOpen, setEditFactionDialogOpen] = useState(false);
   const [selectedFaction, setSelectedFaction] = useState<Faction | null>(null);
   const [manageMembersDialogOpen, setManageMembersDialogOpen] = useState(false);
+  const [showCreateCoterieDialog, setShowCreateCoterieDialog] = useState(false);
+  const [selectedCoterie, setSelectedCoterie] = useState<Coterie | null>(null);
+  const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const fetchMemberCounts = async () => {
+      for (const coterie of coteries) {
+        const members = await getCoterieMembers(coterie.id);
+        setMemberCounts(prev => ({ ...prev, [coterie.id]: members.length }));
+      }
+    };
+    if (coteries.length > 0) {
+      fetchMemberCounts();
+    }
+  }, [coteries]);
   
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
