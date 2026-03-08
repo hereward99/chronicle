@@ -76,10 +76,11 @@
                id="notes"
                value={formData.notes}
                onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
-               placeholder="Additional notes... (Type @ to mention)"
+               placeholder="Additional notes..."
                className="min-h-[100px]"
                maxLength={3000}
              />
+             <p className="text-xs text-muted-foreground">Type <kbd className="px-1 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">@</kbd> to cross-reference other entities.</p>
            </div>
  
            <DialogFooter>
