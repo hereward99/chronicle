@@ -307,6 +307,9 @@ export default function Chronicle() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Chronicle Management */}
+      <ChronicleManager title="Chronicle Management" />
     </div>
   );
 }
