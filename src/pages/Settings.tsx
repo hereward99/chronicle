@@ -71,7 +71,7 @@ export default function Settings() {
     removeNote.mutate(id);
   };
 
-  const categoryColors: Record<DevNote['category'], string> = {
+  const categoryColors: Record<DevNoteCategory, string> = {
     fix: 'bg-destructive/15 text-destructive border-destructive/30',
     feature: 'bg-primary/15 text-primary border-primary/30',
     change: 'bg-accent text-accent-foreground border-border',
