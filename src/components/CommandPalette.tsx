@@ -89,7 +89,7 @@ export function CommandPalette() {
   }, {});
 
   return (
-    <CommandDialog open={open} onOpenChange={setOpen}>
+    <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
       <CommandInput
         placeholder="Search characters, stories, sessions, locations..."
         value={query}
