@@ -116,7 +116,7 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
                 {checklist.title}
               </CardTitle>
               {checklist.notes && (
-                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">
                   <MentionText text={checklist.notes} />
                 </p>
               )}
