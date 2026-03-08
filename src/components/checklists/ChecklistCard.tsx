@@ -128,6 +128,10 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setEditDialogOpen(true)}>
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Edit Checklist
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleMarkAllComplete}>
                   <CheckSquare className="h-4 w-4 mr-2" />
                   Mark All Complete
