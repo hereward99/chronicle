@@ -13,7 +13,7 @@ import { useCoteries } from '@/hooks/useCoteries';
 import { useChronicles } from '@/hooks/useChronicles';
 import { useSearchHighlight } from '@/hooks/useSearchHighlight';
 import { TextHighlight } from '@/components/ui/text-highlight';
-import { Plus, Users, Heart, Swords, Handshake, UserCircle, Edit, Network, Flag, UserPlus, Search, Filter, X, UsersRound, MapPin, Trash2 } from 'lucide-react';
+import { Plus, Users, Heart, Swords, Handshake, UserCircle, Edit, Network, Flag, UserPlus, Search, Filter, X, UsersRound, MapPin, Trash2, Star } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
