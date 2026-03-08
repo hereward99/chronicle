@@ -818,9 +818,23 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
             {/* AI Portrait Generator */}
             <div className="flex justify-center py-2">
               <PortraitGenerator
-                characterName={characterData.name}
-                clan={characterData.clan}
-                concept={characterData.concept}
+                details={{
+                  name: characterData.name,
+                  clan: characterData.clan,
+                  concept: characterData.concept,
+                  characterType: characterData.characterType,
+                  predatorType: characterData.predatorType,
+                  generation: characterData.generation,
+                  strength: characterData.strength,
+                  dexterity: characterData.dexterity,
+                  stamina: characterData.stamina,
+                  charisma: characterData.charisma,
+                  manipulation: characterData.manipulation,
+                  composure: characterData.composure,
+                  intelligence: characterData.intelligence,
+                  wits: characterData.wits,
+                  resolve: characterData.resolve,
+                }}
                 avatarUrl={characterData.avatarUrl}
                 onPortraitGenerated={(url) => setCharacterData(prev => ({ ...prev, avatarUrl: url }))}
                 onPortraitRemoved={() => setCharacterData(prev => ({ ...prev, avatarUrl: null }))}
