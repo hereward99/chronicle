@@ -16,9 +16,10 @@ import {
   UsersRound,
   Network,
   Settings,
-  FileDown
+  FileDown,
+  Clock,
+  MapPin
 } from "lucide-react";
- import { MapPin } from "lucide-react";
 
 const navigationItems = [
   { name: "Chronicle", href: "/", icon: Home },
@@ -27,7 +28,8 @@ const navigationItems = [
   { name: "Relationships", href: "/relationships", icon: Network },
   { name: "Stories", href: "/stories", icon: BookOpen },
   { name: "Sessions", href: "/sessions", icon: Scroll },
-   { name: "Locations", href: "/locations", icon: MapPin },
+  { name: "Timeline", href: "/timeline", icon: Clock },
+  { name: "Locations", href: "/locations", icon: MapPin },
   { name: "Generator", href: "/generator", icon: Sparkles },
   { name: "Import", href: "/import", icon: FileDown },
   { name: "Settings", href: "/settings", icon: Settings },

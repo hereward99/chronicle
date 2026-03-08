@@ -18,6 +18,7 @@ import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Locations from "./pages/Locations";
+import Timeline from "./pages/Timeline";
 import { toast } from "@/hooks/use-toast";
 
 const queryClient = new QueryClient({
@@ -83,6 +84,13 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <Sessions />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/timeline" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Timeline />
                 </Layout>
               </ProtectedRoute>
             } />
