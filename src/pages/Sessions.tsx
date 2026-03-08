@@ -112,12 +112,12 @@ const Sessions = () => {
   };
 
   const renderSessionCard = (session: Session) => (
-    <Card key={session.id} className="bg-card border-border shadow-gothic hover:shadow-crimson transition-shadow">
+    <Card key={session.id} data-entity-id={session.id} className="bg-card border-border shadow-gothic hover:shadow-crimson transition-shadow">
       <CardHeader className="pb-4">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
           <div className="space-y-1">
             <CardTitle className="text-xl text-foreground">
-              {session.title}
+              <TextHighlight text={session.title} highlight={highlightQuery} />
             </CardTitle>
             <CardDescription className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />

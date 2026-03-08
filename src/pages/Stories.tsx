@@ -96,11 +96,11 @@ const Stories = () => {
             {story.status}
           </Badge>
         </div>
-        {searchTerm ? (
+        {activeHighlight ? (
           <TextHighlight 
             text={story.summary || story.description || "No summary provided"} 
             className="text-sm text-muted-foreground line-clamp-3 block"
-            highlight={searchTerm}
+            highlight={activeHighlight}
           />
         ) : (
           <MentionText 

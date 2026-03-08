@@ -143,3 +143,15 @@ All colors MUST be HSL.
     @apply translate-y-0 opacity-100;
   }
 }
+
+/* Search highlight pulse animation */
+@keyframes search-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0); border-color: hsl(var(--border)); }
+  25%, 75% { box-shadow: 0 0 12px 4px hsl(var(--primary) / 0.3); border-color: hsl(var(--primary)); }
+  50% { box-shadow: 0 0 20px 6px hsl(var(--primary) / 0.4); border-color: hsl(var(--primary)); }
+}
+
+.search-highlight-pulse {
+  animation: search-pulse 1.5s ease-in-out 2;
+  border-color: hsl(var(--primary)) !important;
+}

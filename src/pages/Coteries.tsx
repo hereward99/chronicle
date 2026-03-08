@@ -86,13 +86,13 @@ export default function Coteries() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {coteries.map((coterie) => (
-              <Card key={coterie.id} className="hover:shadow-lg transition-shadow">
+              <Card key={coterie.id} data-entity-id={coterie.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <CardTitle className="flex items-center gap-2">
                         <Users className="h-5 w-5" />
-                        {coterie.name}
+                        <TextHighlight text={coterie.name} highlight={highlightQuery} />
                       </CardTitle>
                       {coterie.description && (
                         <CardDescription className="mt-2">
