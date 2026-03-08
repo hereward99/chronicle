@@ -7,25 +7,35 @@ import { useChronicleStats } from "@/hooks/useChronicleStats";
 import { usePlots } from "@/hooks/usePlots";
 import { useNotes } from "@/hooks/useNotes";
 import { useRecentActivity } from "@/hooks/useRecentActivity";
+import { useChronicles } from "@/hooks/useChronicles";
 import { formatDistanceToNow } from "date-fns";
 import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialog";
 import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
 import { CreateSessionDialog } from "@/components/dialogs/CreateSessionDialog";
 import { CreateNoteDialog } from "@/components/dialogs/CreateNoteDialog";
 import { MentionText } from "@/components/mentions/MentionText";
+import { ChronicleManager } from "@/components/chronicle/ChronicleManager";
 
 export default function Chronicle() {
+  const { currentChronicle } = useChronicles();
   const { stats, loading: statsLoading } = useChronicleStats();
   const { plots, loading: plotsLoading } = usePlots();
   const { notes, loading: notesLoading } = useNotes();
   const { activities, loading: activitiesLoading } = useRecentActivity();
   return (
     <div className="space-y-8">
+      {/* Chronicle Manager */}
+      <ChronicleManager />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-foreground mb-2">Chronicle Dashboard</h1>
-          <p className="text-lg text-muted-foreground">Manage your Vampire: The Masquerade chronicle</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">
+            {currentChronicle?.name || "Chronicle Dashboard"}
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            {currentChronicle?.description || "Manage your Vampire: The Masquerade chronicle"}
+          </p>
         </div>
         <CreateNoteDialog>
           <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
