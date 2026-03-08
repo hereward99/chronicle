@@ -557,6 +557,7 @@ export default function Relationships() {
                 characters={characters}
                 factions={factions}
                 characterFactions={characterFactions}
+                primaryCharacterIds={primaryCharacterIds}
                 onNodeClick={handleNodeClick}
                 onEdgeClick={handleEdit}
                 onCreateRelationship={handleCreateRelationshipFromGraph}
