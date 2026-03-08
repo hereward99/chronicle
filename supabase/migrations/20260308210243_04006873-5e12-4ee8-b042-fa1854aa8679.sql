@@ -1,0 +1,1 @@
+ALTER TABLE public.coteries ADD COLUMN is_primary boolean NOT NULL DEFAULT false;
