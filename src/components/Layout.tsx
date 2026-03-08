@@ -12,7 +12,6 @@ export function Layout({ children }: LayoutProps) {
   const hasCreatedChronicle = useRef(false);
 
   useEffect(() => {
-    // Create a default chronicle if the user has none (only once, after loading completes)
     if (!loading && !currentChronicle && chronicles.length === 0 && !hasCreatedChronicle.current) {
       hasCreatedChronicle.current = true;
       createDefaultChronicle();
@@ -21,8 +20,11 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-background">
+      <a href="#main-content" className="skip-to-content">
+        Skip to content
+      </a>
       <Navigation />
-      <main className="md:ml-64 min-h-screen pb-20 md:pb-0">
+      <main id="main-content" role="main" className="md:ml-64 min-h-screen pb-20 md:pb-0">
         <div className="p-6 md:p-8">
           {children}
         </div>
