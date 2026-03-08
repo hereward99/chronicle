@@ -76,6 +76,7 @@ export function GenerateNPCDialog({ open, onOpenChange, onComplete }: GenerateNP
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
   const { settings: generatorSettings } = useGeneratorSettings();
+  const { requireOnline } = useOnlineStatus();
 
   const handleMethodSelect = (method: CreationMethod) => {
     setCreationMethod(method);
