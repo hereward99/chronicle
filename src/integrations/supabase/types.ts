@@ -424,7 +424,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "coteries_chronicle_id_fkey"
+            columns: ["chronicle_id"]
+            isOneToOne: false
+            referencedRelation: "chronicles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       factions: {
         Row: {
@@ -457,7 +465,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "factions_chronicle_id_fkey"
+            columns: ["chronicle_id"]
+            isOneToOne: false
+            referencedRelation: "chronicles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       locations: {
         Row: {
