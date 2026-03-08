@@ -23,6 +23,7 @@ export default function Characters() {
   const [editCharacter, setEditCharacter] = useState<Character | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const { characters, loading, updateCharacter, deleteCharacter } = useCharacters();
+  const { searchQuery: highlightQuery, isHighlighted } = useSearchHighlight();
 
   const filteredCharacters = characters.filter(character => {
     const matchesSearch = character.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
