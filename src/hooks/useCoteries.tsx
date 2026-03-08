@@ -220,6 +220,7 @@ export function useCoteries(chronicleId?: string) {
     addMember,
     removeMember,
     getCoterieMembers,
+    setPrimaryCoterie,
     refetch: () => queryClient.invalidateQueries({ queryKey: ['coteries'] }),
   };
 }
