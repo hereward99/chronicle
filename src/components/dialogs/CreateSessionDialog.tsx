@@ -40,6 +40,8 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
     date_played: new Date().toISOString().split('T')[0],
     experience_awarded: 1,
     plot_id: null as string | null,
+    in_game_date_start: "",
+    in_game_date_end: "",
   });
   const [selectedCharacterIds, setSelectedCharacterIds] = useState<string[]>([]);
   
