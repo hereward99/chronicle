@@ -240,12 +240,14 @@ export default function Relationships() {
     selectedCharacter, 
     selectedRelTypes, 
     searchQuery, 
-    selectedFactions, 
+    selectedFactions,
+    selectedCoteries,
     selectedCharTypes, 
     selectedStatuses, 
     selectedClans,
     characters,
-    characterFactions
+    characterFactions,
+    allCoterieMembers
   ]);
 
   const clearFilters = () => {
