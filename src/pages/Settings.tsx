@@ -568,6 +568,25 @@ export default function Settings() {
           </Card>
 
 
+          {/* Guided Tour */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <RotateCcw className="h-5 w-5" />
+                Guided Tour
+              </CardTitle>
+              <CardDescription>
+                Re-watch the onboarding walkthrough that introduces the main features of Chronicle Keeper.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" onClick={() => setShowTour(true)}>
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Replay Guided Tour
+              </Button>
+            </CardContent>
+          </Card>
+
           {/* Dev Notes */}
           <Card>
             <CardHeader>
