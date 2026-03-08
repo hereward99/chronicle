@@ -254,8 +254,8 @@ const Stories = () => {
 
         <TabsContent value="active" className="space-y-4">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {[...Array(3)].map((_, i) => <StoryCardSkeleton key={i} />)}
             </div>
           ) : getFilteredStories('active').length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
