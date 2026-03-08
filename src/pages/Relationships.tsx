@@ -1,26 +1,34 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useRelationships, Relationship } from '@/hooks/useRelationships';
 import { useCharacters, Character } from '@/hooks/useCharacters';
 import { useFactions, Faction } from '@/hooks/useFactions';
+import { useCoteries } from '@/hooks/useCoteries';
 import { useChronicles } from '@/hooks/useChronicles';
-import { Plus, Users, Heart, Swords, Handshake, UserCircle, Edit, Network, Flag, UserPlus, Search, Filter, X } from 'lucide-react';
+import { useSearchHighlight } from '@/hooks/useSearchHighlight';
+import { TextHighlight } from '@/components/ui/text-highlight';
+import { Plus, Users, Heart, Swords, Handshake, UserCircle, Edit, Network, Flag, UserPlus, Search, Filter, X, UsersRound, MapPin, Trash2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { CreateRelationshipDialog } from '@/components/dialogs/CreateRelationshipDialog';
 import { EditRelationshipDialog } from '@/components/dialogs/EditRelationshipDialog';
+import { CreateCoterieDialog } from '@/components/dialogs/CreateCoterieDialog';
+import { ManageCoterieDialog } from '@/components/dialogs/ManageCoterieDialog';
 import { RelationshipGraph } from '@/components/relationship/RelationshipGraph';
 import { ReactFlowProvider } from 'reactflow';
 import { ViewCharacterDialog } from '@/components/dialogs/ViewCharacterDialog';
 import { CreateFactionDialog } from '@/components/dialogs/CreateFactionDialog';
 import { EditFactionDialog } from '@/components/dialogs/EditFactionDialog';
 import { ManageFactionMembersDialog } from '@/components/dialogs/ManageFactionMembersDialog';
+import { EmptyState } from '@/components/onboarding/EmptyState';
+import type { Coterie } from '@/hooks/useCoteries';
 
 const relationshipIcons: Record<string, any> = {
   'Ally': Handshake,
