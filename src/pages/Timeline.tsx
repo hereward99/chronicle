@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Scroll, BookOpen, Calendar, Filter, ChevronDown, ChevronUp } from "lucide-react";
-import { CardSkeleton } from "@/components/skeletons/CardSkeleton";
+import { SessionCardSkeleton } from "@/components/skeletons/CardSkeleton";
 import { cn } from "@/lib/utils";
 
 interface TimelineEvent {
