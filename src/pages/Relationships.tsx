@@ -190,6 +190,22 @@ export default function Relationships() {
           if (!hasMatchingFaction) return false;
         }
 
+        // Coterie filter
+        if (selectedCoteries.length > 0) {
+          const char1Coteries = allCoterieMembers
+            .filter(cm => cm.character_id === char1.id)
+            .map(cm => cm.coterie_id);
+          const char2Coteries = allCoterieMembers
+            .filter(cm => cm.character_id === char2.id)
+            .map(cm => cm.coterie_id);
+          
+          const hasMatchingCoterie = 
+            char1Coteries.some(c => selectedCoteries.includes(c)) ||
+            char2Coteries.some(c => selectedCoteries.includes(c));
+          
+          if (!hasMatchingCoterie) return false;
+        }
+
         // Character type filter
         if (selectedCharTypes.length > 0) {
           const matchesType = 
