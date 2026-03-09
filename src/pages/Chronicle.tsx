@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Users, BookOpen, Calendar, Scroll } from "lucide-react";
+import { Plus, Users, BookOpen, Calendar, Scroll, Pencil, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useChronicleStats } from "@/hooks/useChronicleStats";
 import { usePlots } from "@/hooks/usePlots";
-import { useNotes } from "@/hooks/useNotes";
+import { useNotes, Note } from "@/hooks/useNotes";
 import { useRecentActivity } from "@/hooks/useRecentActivity";
 import { useChronicles } from "@/hooks/useChronicles";
 import { formatDistanceToNow } from "date-fns";
@@ -13,18 +15,31 @@ import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialo
 import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
 import { CreateSessionDialog } from "@/components/dialogs/CreateSessionDialog";
 import { CreateNoteDialog } from "@/components/dialogs/CreateNoteDialog";
+import { EditNoteDialog } from "@/components/dialogs/EditNoteDialog";
 import { MentionText } from "@/components/mentions/MentionText";
 import { ChronicleManager } from "@/components/chronicle/ChronicleManager";
 
 export default function Chronicle() {
+  const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  
   const { currentChronicle } = useChronicles();
   const { stats, loading: statsLoading } = useChronicleStats();
   const { plots, loading: plotsLoading } = usePlots();
-  const { notes, loading: notesLoading } = useNotes();
+  const { notes, loading: notesLoading, deleteNote } = useNotes();
   const { activities, loading: activitiesLoading } = useRecentActivity();
+
+  const handleEditNote = (note: Note) => {
+    setEditingNote(note);
+    setEditDialogOpen(true);
+  };
+
+  const handleDeleteNote = async (id: string) => {
+    await deleteNote(id);
+  };
+
   return (
-    <div className="space-y-8">
-      {/* Header */}
+    <div className="space-y-8">{/* Header */}
 
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -252,19 +267,54 @@ export default function Chronicle() {
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <CardTitle className="text-base text-foreground">{note.title}</CardTitle>
-                      <Badge variant="outline" className="ml-2">
-                        {note.category || 'General'}
-                      </Badge>
+                      <div className="flex items-center gap-1 ml-2">
+                        <Badge variant="outline">
+                          {note.category || 'General'}
+                        </Badge>
+                      </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="space-y-2">
                     <MentionText 
                       text={note.content || 'No content'} 
                       className="text-sm text-muted-foreground line-clamp-3 block"
                     />
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {formatDistanceToNow(new Date(note.created_at))} ago
-                    </p>
+                    <div className="flex items-center justify-between pt-2">
+                      <p className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(note.created_at))} ago
+                      </p>
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleEditNote(note)}
+                          className="h-7 w-7 p-0"
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive hover:text-destructive">
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Note</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete "{note.title}"? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteNote(note.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -310,6 +360,9 @@ export default function Chronicle() {
 
       {/* Chronicle Management */}
       <ChronicleManager title="Chronicle Management" />
+
+      {/* Edit Note Dialog */}
+      <EditNoteDialog note={editingNote} open={editDialogOpen} onOpenChange={setEditDialogOpen} />
     </div>
   );
 }

@@ -64,10 +64,54 @@ export function useNotes() {
     return createNoteMutation.mutateAsync(note);
   };
 
+  const updateNoteMutation = useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string; title?: string; content?: string | null; category?: string | null }) => {
+      const { data, error } = await supabase
+        .from('notes')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      toast({ title: "Note updated" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error updating note", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteNoteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('notes').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      toast({ title: "Note deleted" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error deleting note", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const updateNote = async (id: string, updates: { title?: string; content?: string | null; category?: string | null }) => {
+    return updateNoteMutation.mutateAsync({ id, ...updates });
+  };
+
+  const deleteNote = async (id: string) => {
+    return deleteNoteMutation.mutateAsync(id);
+  };
+
   return {
     notes,
     loading,
     createNote,
+    updateNote,
+    deleteNote,
     refetch: () => queryClient.invalidateQueries({ queryKey: ['notes'] }),
   };
 }
