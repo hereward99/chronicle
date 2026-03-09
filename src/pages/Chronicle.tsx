@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Users, BookOpen, Calendar, Scroll } from "lucide-react";
+import { Plus, Users, BookOpen, Calendar, Scroll, Pencil, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useChronicleStats } from "@/hooks/useChronicleStats";
 import { usePlots } from "@/hooks/usePlots";
-import { useNotes } from "@/hooks/useNotes";
+import { useNotes, Note } from "@/hooks/useNotes";
 import { useRecentActivity } from "@/hooks/useRecentActivity";
 import { useChronicles } from "@/hooks/useChronicles";
 import { formatDistanceToNow } from "date-fns";
@@ -13,6 +15,7 @@ import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialo
 import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
 import { CreateSessionDialog } from "@/components/dialogs/CreateSessionDialog";
 import { CreateNoteDialog } from "@/components/dialogs/CreateNoteDialog";
+import { EditNoteDialog } from "@/components/dialogs/EditNoteDialog";
 import { MentionText } from "@/components/mentions/MentionText";
 import { ChronicleManager } from "@/components/chronicle/ChronicleManager";
 
