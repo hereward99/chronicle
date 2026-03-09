@@ -360,6 +360,9 @@ export default function Chronicle() {
 
       {/* Chronicle Management */}
       <ChronicleManager title="Chronicle Management" />
+
+      {/* Edit Note Dialog */}
+      <EditNoteDialog note={editingNote} open={editDialogOpen} onOpenChange={setEditDialogOpen} />
     </div>
   );
 }
