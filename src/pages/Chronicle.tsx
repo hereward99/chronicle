@@ -20,14 +20,26 @@ import { MentionText } from "@/components/mentions/MentionText";
 import { ChronicleManager } from "@/components/chronicle/ChronicleManager";
 
 export default function Chronicle() {
+  const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  
   const { currentChronicle } = useChronicles();
   const { stats, loading: statsLoading } = useChronicleStats();
   const { plots, loading: plotsLoading } = usePlots();
-  const { notes, loading: notesLoading } = useNotes();
+  const { notes, loading: notesLoading, deleteNote } = useNotes();
   const { activities, loading: activitiesLoading } = useRecentActivity();
+
+  const handleEditNote = (note: Note) => {
+    setEditingNote(note);
+    setEditDialogOpen(true);
+  };
+
+  const handleDeleteNote = async (id: string) => {
+    await deleteNote(id);
+  };
+
   return (
-    <div className="space-y-8">
-      {/* Header */}
+    <div className="space-y-8">{/* Header */}
 
       {/* Header */}
       <div className="flex items-center justify-between">
