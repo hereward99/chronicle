@@ -1,5 +1,6 @@
 import { DiceRoller } from "@/components/dice/DiceRoller";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dices, Info } from "lucide-react";
 
 export default function DiceRollerPage() {
