@@ -143,12 +143,30 @@ export function useSessions() {
     return deleteSessionMutation.mutateAsync(id);
   };
 
+  const reorderSessions = async (orderedIds: string[]) => {
+    try {
+      // Update sort_order for each session
+      const updates = orderedIds.map((id, index) =>
+        supabase.from('sessions').update({ sort_order: index }).eq('id', id)
+      );
+      await Promise.all(updates);
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+    } catch (error: any) {
+      toast({
+        title: "Error reordering sessions",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return {
     sessions,
     loading,
     createSession,
     updateSession,
     deleteSession,
+    reorderSessions,
     refetch: () => queryClient.invalidateQueries({ queryKey: ['sessions'] }),
   };
 }
