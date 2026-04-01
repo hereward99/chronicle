@@ -20,7 +20,7 @@ interface FileAttachment {
 interface FileUploadProps {
   bucket: string;
   entityId: string;
-  entityType: 'character' | 'story' | 'session';
+  entityType: 'character' | 'story' | 'session' | 'location';
   attachments: FileAttachment[];
   onAttachmentsChange: (attachments: FileAttachment[]) => void;
   accept?: string;

@@ -6,17 +6,18 @@
  } from '@/components/ui/dialog';
  import { Location } from '@/hooks/useLocations';
  import { MentionText } from '@/components/mentions/MentionText';
+ import { CharacterAttachmentsGallery } from '@/components/character/CharacterAttachmentsGallery';
  import { MapPin } from 'lucide-react';
- 
+
  interface ViewLocationDialogProps {
    location: Location | null;
    open: boolean;
    onOpenChange: (open: boolean) => void;
  }
- 
+
  export function ViewLocationDialog({ location, open, onOpenChange }: ViewLocationDialogProps) {
    if (!location) return null;
- 
+
    return (
      <Dialog open={open} onOpenChange={onOpenChange}>
        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
@@ -37,7 +38,7 @@
                />
              </div>
            )}
- 
+
            {location.notes && (
              <div className="space-y-2">
                <h3 className="text-sm font-medium text-foreground">Notes</h3>
@@ -47,8 +48,12 @@
                />
              </div>
            )}
- 
-           {!location.description && !location.notes && (
+
+           {location.attachments && location.attachments.length > 0 && (
+             <CharacterAttachmentsGallery attachments={location.attachments} />
+           )}
+
+           {!location.description && !location.notes && (!location.attachments || location.attachments.length === 0) && (
              <p className="text-sm text-muted-foreground italic">
                No additional details for this location.
              </p>
