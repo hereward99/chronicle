@@ -16,6 +16,7 @@ export interface Session {
   attachments?: any[];
   in_game_date_start?: string | null;
   in_game_date_end?: string | null;
+  sort_order?: number;
 }
 
 export function useSessions() {
@@ -28,6 +29,7 @@ export function useSessions() {
       const { data, error } = await supabase
         .from('sessions')
         .select('*')
+        .order('sort_order', { ascending: true })
         .order('date_played', { ascending: false });
 
       if (error) throw error;
@@ -141,12 +143,30 @@ export function useSessions() {
     return deleteSessionMutation.mutateAsync(id);
   };
 
+  const reorderSessions = async (orderedIds: string[]) => {
+    try {
+      // Update sort_order for each session
+      const updates = orderedIds.map((id, index) =>
+        supabase.from('sessions').update({ sort_order: index }).eq('id', id)
+      );
+      await Promise.all(updates);
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+    } catch (error: any) {
+      toast({
+        title: "Error reordering sessions",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return {
     sessions,
     loading,
     createSession,
     updateSession,
     deleteSession,
+    reorderSessions,
     refetch: () => queryClient.invalidateQueries({ queryKey: ['sessions'] }),
   };
 }
