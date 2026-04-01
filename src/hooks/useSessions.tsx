@@ -16,7 +16,7 @@ export interface Session {
   attachments?: any[];
   in_game_date_start?: string | null;
   in_game_date_end?: string | null;
-  sort_order: number;
+  sort_order?: number;
 }
 
 export function useSessions() {
@@ -29,6 +29,7 @@ export function useSessions() {
       const { data, error } = await supabase
         .from('sessions')
         .select('*')
+        .order('sort_order', { ascending: true })
         .order('date_played', { ascending: false });
 
       if (error) throw error;
