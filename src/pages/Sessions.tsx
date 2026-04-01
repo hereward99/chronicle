@@ -359,7 +359,7 @@ const Sessions = () => {
                             Sessions
                           </h4>
                         )}
-                        {groupSessions.map(renderSessionCard)}
+                        {groupSessions.map((session, idx) => renderSessionCard(session, groupSessions, idx))}
                       </div>
                     )}
                     
