@@ -16,6 +16,7 @@ export interface Session {
   attachments?: any[];
   in_game_date_start?: string | null;
   in_game_date_end?: string | null;
+  sort_order: number;
 }
 
 export function useSessions() {

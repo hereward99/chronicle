@@ -822,6 +822,7 @@ export type Database = {
           in_game_date_end: string | null
           in_game_date_start: string | null
           plot_id: string | null
+          sort_order: number
           summary: string | null
           title: string
           updated_at: string
@@ -837,6 +838,7 @@ export type Database = {
           in_game_date_end?: string | null
           in_game_date_start?: string | null
           plot_id?: string | null
+          sort_order?: number
           summary?: string | null
           title: string
           updated_at?: string
@@ -852,6 +854,7 @@ export type Database = {
           in_game_date_end?: string | null
           in_game_date_start?: string | null
           plot_id?: string | null
+          sort_order?: number
           summary?: string | null
           title?: string
           updated_at?: string
