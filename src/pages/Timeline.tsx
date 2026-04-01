@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { MentionText } from "@/components/mentions/MentionText";
 import { format, parseISO, isValid } from "date-fns";
 import { useSessions } from "@/hooks/useSessions";
 import { usePlots } from "@/hooks/usePlots";
