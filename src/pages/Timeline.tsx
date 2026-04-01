@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { MentionText } from "@/components/mentions/MentionText";
 import { format, parseISO, isValid } from "date-fns";
 import { useSessions } from "@/hooks/useSessions";
 import { usePlots } from "@/hooks/usePlots";
@@ -295,9 +296,9 @@ export default function Timeline() {
                             </div>
 
                             {isExpanded && event.description && (
-                              <p className="mt-3 text-sm text-muted-foreground whitespace-pre-line border-t border-border pt-3">
-                                {event.description}
-                              </p>
+                              <div className="mt-3 text-sm text-muted-foreground whitespace-pre-line border-t border-border pt-3">
+                                <MentionText text={event.description} />
+                              </div>
                             )}
                           </div>
 
