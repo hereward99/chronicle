@@ -10,35 +10,37 @@
  import { Input } from '@/components/ui/input';
  import { Label } from '@/components/ui/label';
  import { MentionInput } from '@/components/mentions/MentionInput';
+ import { FileUpload } from '@/components/ui/file-upload';
  import { useLocations } from '@/hooks/useLocations';
- 
+
  interface CreateLocationDialogProps {
    open: boolean;
    onOpenChange: (open: boolean) => void;
  }
- 
+
  export function CreateLocationDialog({ open, onOpenChange }: CreateLocationDialogProps) {
    const { createLocation, chronicleId, userId } = useLocations();
    const [formData, setFormData] = useState({
      name: '',
      description: '',
      notes: '',
+     attachments: [] as any[],
    });
- 
+
    const handleSubmit = async (e: React.FormEvent) => {
      e.preventDefault();
      if (!chronicleId || !userId) return;
- 
+
      await createLocation.mutateAsync({
        ...formData,
        chronicle_id: chronicleId,
        user_id: userId,
      });
- 
-     setFormData({ name: '', description: '', notes: '' });
+
+     setFormData({ name: '', description: '', notes: '', attachments: [] });
      onOpenChange(false);
    };
- 
+
    return (
      <Dialog open={open} onOpenChange={onOpenChange}>
        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
@@ -56,7 +58,7 @@
                required
              />
            </div>
- 
+
            <div className="space-y-2">
              <Label htmlFor="description">Description</Label>
              <MentionInput
@@ -69,7 +71,7 @@
              />
              <p className="text-xs text-muted-foreground">Type <kbd className="px-1 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">@</kbd> to link characters, stories, and more.</p>
            </div>
- 
+
            <div className="space-y-2">
              <Label htmlFor="notes">Notes</Label>
              <MentionInput
@@ -82,7 +84,18 @@
              />
              <p className="text-xs text-muted-foreground">Type <kbd className="px-1 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">@</kbd> to cross-reference other entities.</p>
            </div>
- 
+
+           <FileUpload
+             bucket="location-files"
+             entityId="new"
+             entityType="location"
+             attachments={formData.attachments}
+             onAttachmentsChange={(attachments) => setFormData(prev => ({ ...prev, attachments }))}
+             accept="image/*,.pdf,.doc,.docx,.txt,.md"
+             maxFiles={20}
+             maxSize={10}
+           />
+
            <DialogFooter>
              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                Cancel

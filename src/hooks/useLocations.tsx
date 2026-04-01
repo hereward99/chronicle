@@ -4,16 +4,17 @@
  import { useAuth } from './useAuth';
  import { toast } from 'sonner';
  
- export interface Location {
-   id: string;
-   chronicle_id: string;
-   user_id: string;
-   name: string;
-   description: string | null;
-   notes: string | null;
-   created_at: string;
-   updated_at: string;
- }
+export interface Location {
+  id: string;
+  chronicle_id: string;
+  user_id: string;
+  name: string;
+  description: string | null;
+  notes: string | null;
+  attachments: any[] | null;
+  created_at: string;
+  updated_at: string;
+}
  
  export function useLocations() {
    const queryClient = useQueryClient();

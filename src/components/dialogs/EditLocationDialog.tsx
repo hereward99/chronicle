@@ -10,44 +10,47 @@
  import { Input } from '@/components/ui/input';
  import { Label } from '@/components/ui/label';
  import { MentionInput } from '@/components/mentions/MentionInput';
+ import { FileUpload } from '@/components/ui/file-upload';
  import { useLocations, Location } from '@/hooks/useLocations';
- 
+
  interface EditLocationDialogProps {
    location: Location | null;
    open: boolean;
    onOpenChange: (open: boolean) => void;
  }
- 
+
  export function EditLocationDialog({ location, open, onOpenChange }: EditLocationDialogProps) {
    const { updateLocation } = useLocations();
    const [formData, setFormData] = useState({
      name: '',
      description: '',
      notes: '',
+     attachments: [] as any[],
    });
- 
+
    useEffect(() => {
      if (location) {
        setFormData({
          name: location.name,
          description: location.description || '',
          notes: location.notes || '',
+         attachments: location.attachments || [],
        });
      }
    }, [location]);
- 
+
    const handleSubmit = async (e: React.FormEvent) => {
      e.preventDefault();
      if (!location) return;
- 
+
      await updateLocation.mutateAsync({
        id: location.id,
        ...formData,
      });
- 
+
      onOpenChange(false);
    };
- 
+
    return (
      <Dialog open={open} onOpenChange={onOpenChange}>
        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
@@ -65,7 +68,7 @@
                required
              />
            </div>
- 
+
            <div className="space-y-2">
              <Label htmlFor="description">Description</Label>
              <MentionInput
@@ -77,7 +80,7 @@
                maxLength={2000}
              />
            </div>
- 
+
            <div className="space-y-2">
              <Label htmlFor="notes">Notes</Label>
              <MentionInput
@@ -89,7 +92,18 @@
                maxLength={3000}
              />
            </div>
- 
+
+           <FileUpload
+             bucket="location-files"
+             entityId={location?.id || 'new'}
+             entityType="location"
+             attachments={formData.attachments}
+             onAttachmentsChange={(attachments) => setFormData(prev => ({ ...prev, attachments }))}
+             accept="image/*,.pdf,.doc,.docx,.txt,.md"
+             maxFiles={20}
+             maxSize={10}
+           />
+
            <DialogFooter>
              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                Cancel
