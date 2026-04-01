@@ -111,7 +111,15 @@ const Sessions = () => {
     ) || [];
   };
 
-  const renderSessionCard = (session: Session) => (
+  const moveSession = (groupSessions: Session[], index: number, direction: -1 | 1) => {
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= groupSessions.length) return;
+    const reordered = [...groupSessions];
+    [reordered[index], reordered[newIndex]] = [reordered[newIndex], reordered[index]];
+    reorderSessions(reordered.map(s => s.id));
+  };
+
+  const renderSessionCard = (session: Session, groupSessions: Session[], indexInGroup: number) => (
     <Card key={session.id} data-entity-id={session.id} className="bg-card border-border shadow-gothic hover:shadow-crimson transition-shadow">
       <CardHeader className="pb-4">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
@@ -129,7 +137,31 @@ const Sessions = () => {
               )}
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            {groupSessions.length > 1 && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  disabled={indexInGroup === 0}
+                  onClick={() => moveSession(groupSessions, indexInGroup, -1)}
+                  title="Move up"
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  disabled={indexInGroup === groupSessions.length - 1}
+                  onClick={() => moveSession(groupSessions, indexInGroup, 1)}
+                  title="Move down"
+                >
+                  <ArrowDown className="h-4 w-4" />
+                </Button>
+              </>
+            )}
             {session.experience_awarded && (
               <Badge variant="secondary" className="w-fit">
                 {session.experience_awarded} XP awarded
