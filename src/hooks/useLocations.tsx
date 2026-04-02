@@ -11,6 +11,7 @@ export interface Location {
   name: string;
   description: string | null;
   notes: string | null;
+  coordinates: string | null;
   attachments: any[] | null;
   created_at: string;
   updated_at: string;

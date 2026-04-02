@@ -149,12 +149,24 @@
                      </DropdownMenuContent>
                    </DropdownMenu>
                  </div>
-                 {location.description && (
-                   <MentionText
-                     text={location.description}
-                     className="text-sm text-muted-foreground mt-2 line-clamp-2"
-                   />
-                 )}
+                  {location.coordinates && (
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location.coordinates)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MapPin className="h-3 w-3" />
+                      {location.coordinates}
+                    </a>
+                  )}
+                  {location.description && (
+                    <MentionText
+                      text={location.description}
+                      className="text-sm text-muted-foreground mt-2 line-clamp-2"
+                    />
+                  )}
                </Card>
              ))}
            </div>

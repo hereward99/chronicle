@@ -7,7 +7,7 @@
  import { Location } from '@/hooks/useLocations';
  import { MentionText } from '@/components/mentions/MentionText';
  import { CharacterAttachmentsGallery } from '@/components/character/CharacterAttachmentsGallery';
- import { MapPin } from 'lucide-react';
+ import { MapPin, ExternalLink } from 'lucide-react';
 
  interface ViewLocationDialogProps {
    location: Location | null;
@@ -39,15 +39,31 @@
              </div>
            )}
 
-           {location.notes && (
-             <div className="space-y-2">
-               <h3 className="text-sm font-medium text-foreground">Notes</h3>
-               <MentionText 
-                 text={location.notes} 
-                 className="text-sm text-muted-foreground whitespace-pre-wrap" 
-               />
-             </div>
-           )}
+            {location.coordinates && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-foreground">Coordinates</h3>
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location.coordinates)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                >
+                  <MapPin className="h-3.5 w-3.5" />
+                  {location.coordinates}
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+            )}
+
+            {location.notes && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-foreground">Notes</h3>
+                <MentionText 
+                  text={location.notes} 
+                  className="text-sm text-muted-foreground whitespace-pre-wrap" 
+                />
+              </div>
+            )}
 
            {location.attachments && location.attachments.length > 0 && (
              <CharacterAttachmentsGallery attachments={location.attachments} />
