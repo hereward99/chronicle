@@ -151,7 +151,7 @@
                  </div>
                   {location.coordinates && (
                     <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location.coordinates)}`}
+                      href={`https://www.google.com/maps/d/u/0/viewer?mid=1Y2Zyar_gNkgjPoLZ7Q9Vmo5x-obp4WA&ll=${encodeURIComponent(location.coordinates)}&z=15`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-1"
