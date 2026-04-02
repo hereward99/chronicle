@@ -24,9 +24,10 @@
  import { CreateLocationDialog } from '@/components/dialogs/CreateLocationDialog';
  import { EditLocationDialog } from '@/components/dialogs/EditLocationDialog';
  import { ViewLocationDialog } from '@/components/dialogs/ViewLocationDialog';
- import { MentionText } from '@/components/mentions/MentionText';
- import { useSearchHighlight } from '@/hooks/useSearchHighlight';
- import { TextHighlight } from '@/components/ui/text-highlight';
+import { MentionText } from '@/components/mentions/MentionText';
+import { useSearchHighlight } from '@/hooks/useSearchHighlight';
+import { TextHighlight } from '@/components/ui/text-highlight';
+import { getZoomForCoordinates } from '@/lib/coordinateZoom';
  
  export default function Locations() {
   const { locations, isLoading, deleteLocation } = useLocations();
