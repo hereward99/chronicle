@@ -20,12 +20,13 @@
 
  export function CreateLocationDialog({ open, onOpenChange }: CreateLocationDialogProps) {
    const { createLocation, chronicleId, userId } = useLocations();
-   const [formData, setFormData] = useState({
-     name: '',
-     description: '',
-     notes: '',
-     attachments: [] as any[],
-   });
+    const [formData, setFormData] = useState({
+      name: '',
+      description: '',
+      notes: '',
+      coordinates: '',
+      attachments: [] as any[],
+    });
 
    const handleSubmit = async (e: React.FormEvent) => {
      e.preventDefault();
@@ -37,7 +38,7 @@
        user_id: userId,
      });
 
-     setFormData({ name: '', description: '', notes: '', attachments: [] });
+     setFormData({ name: '', description: '', notes: '', coordinates: '', attachments: [] });
      onOpenChange(false);
    };
 
@@ -72,18 +73,29 @@
              <p className="text-xs text-muted-foreground">Type <kbd className="px-1 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">@</kbd> to link characters, stories, and more.</p>
            </div>
 
-           <div className="space-y-2">
-             <Label htmlFor="notes">Notes</Label>
-             <MentionInput
-               id="notes"
-               value={formData.notes}
-               onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
-               placeholder="Additional notes..."
-               className="min-h-[100px]"
-               maxLength={3000}
-             />
-             <p className="text-xs text-muted-foreground">Type <kbd className="px-1 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">@</kbd> to cross-reference other entities.</p>
-           </div>
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes</Label>
+              <MentionInput
+                id="notes"
+                value={formData.notes}
+                onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
+                placeholder="Additional notes..."
+                className="min-h-[100px]"
+                maxLength={3000}
+              />
+              <p className="text-xs text-muted-foreground">Type <kbd className="px-1 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">@</kbd> to cross-reference other entities.</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="coordinates">Google Maps Coordinates</Label>
+              <Input
+                id="coordinates"
+                value={formData.coordinates}
+                onChange={(e) => setFormData(prev => ({ ...prev, coordinates: e.target.value }))}
+                placeholder="e.g. 51.5074, -0.1278"
+              />
+              <p className="text-xs text-muted-foreground">Paste latitude, longitude (e.g. <span className="font-mono">48.8566, 2.3522</span>) to link directly to Google Maps.</p>
+            </div>
 
            <FileUpload
              bucket="location-files"

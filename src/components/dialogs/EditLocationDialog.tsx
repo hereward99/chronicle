@@ -21,21 +21,23 @@
 
  export function EditLocationDialog({ location, open, onOpenChange }: EditLocationDialogProps) {
    const { updateLocation } = useLocations();
-   const [formData, setFormData] = useState({
-     name: '',
-     description: '',
-     notes: '',
-     attachments: [] as any[],
-   });
+    const [formData, setFormData] = useState({
+      name: '',
+      description: '',
+      notes: '',
+      coordinates: '',
+      attachments: [] as any[],
+    });
 
    useEffect(() => {
      if (location) {
-       setFormData({
-         name: location.name,
-         description: location.description || '',
-         notes: location.notes || '',
-         attachments: location.attachments || [],
-       });
+        setFormData({
+          name: location.name,
+          description: location.description || '',
+          notes: location.notes || '',
+          coordinates: location.coordinates || '',
+          attachments: location.attachments || [],
+        });
      }
    }, [location]);
 
@@ -81,17 +83,28 @@
              />
            </div>
 
-           <div className="space-y-2">
-             <Label htmlFor="notes">Notes</Label>
-             <MentionInput
-               id="notes"
-               value={formData.notes}
-               onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
-               placeholder="Additional notes... (Type @ to mention)"
-               className="min-h-[100px]"
-               maxLength={3000}
-             />
-           </div>
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes</Label>
+              <MentionInput
+                id="notes"
+                value={formData.notes}
+                onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
+                placeholder="Additional notes... (Type @ to mention)"
+                className="min-h-[100px]"
+                maxLength={3000}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="coordinates">Google Maps Coordinates</Label>
+              <Input
+                id="coordinates"
+                value={formData.coordinates}
+                onChange={(e) => setFormData(prev => ({ ...prev, coordinates: e.target.value }))}
+                placeholder="e.g. 51.5074, -0.1278"
+              />
+              <p className="text-xs text-muted-foreground">Paste latitude, longitude to link directly to Google Maps.</p>
+            </div>
 
            <FileUpload
              bucket="location-files"
