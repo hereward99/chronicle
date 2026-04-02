@@ -509,6 +509,7 @@ export type Database = {
         Row: {
           attachments: Json | null
           chronicle_id: string
+          coordinates: string | null
           created_at: string
           description: string | null
           id: string
@@ -520,6 +521,7 @@ export type Database = {
         Insert: {
           attachments?: Json | null
           chronicle_id: string
+          coordinates?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -531,6 +533,7 @@ export type Database = {
         Update: {
           attachments?: Json | null
           chronicle_id?: string
+          coordinates?: string | null
           created_at?: string
           description?: string | null
           id?: string
