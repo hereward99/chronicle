@@ -24,9 +24,10 @@
  import { CreateLocationDialog } from '@/components/dialogs/CreateLocationDialog';
  import { EditLocationDialog } from '@/components/dialogs/EditLocationDialog';
  import { ViewLocationDialog } from '@/components/dialogs/ViewLocationDialog';
- import { MentionText } from '@/components/mentions/MentionText';
- import { useSearchHighlight } from '@/hooks/useSearchHighlight';
- import { TextHighlight } from '@/components/ui/text-highlight';
+import { MentionText } from '@/components/mentions/MentionText';
+import { useSearchHighlight } from '@/hooks/useSearchHighlight';
+import { TextHighlight } from '@/components/ui/text-highlight';
+import { getZoomForCoordinates } from '@/lib/coordinateZoom';
  
  export default function Locations() {
   const { locations, isLoading, deleteLocation } = useLocations();
@@ -151,9 +152,9 @@
                  </div>
                   {location.coordinates && (
                     <a
-                      href={`https://www.google.com/maps/d/u/0/viewer?mid=1Y2Zyar_gNkgjPoLZ7Q9Vmo5x-obp4WA&ll=${encodeURIComponent(location.coordinates)}&z=15`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                     href={`https://www.google.com/maps/d/u/0/viewer?mid=1Y2Zyar_gNkgjPoLZ7Q9Vmo5x-obp4WA&ll=${encodeURIComponent(location.coordinates)}&z=${getZoomForCoordinates(location.coordinates)}`}
+                       target="_blank"
+                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-1"
                       onClick={(e) => e.stopPropagation()}
                     >

@@ -1,13 +1,14 @@
- import {
-   Dialog,
-   DialogContent,
-   DialogHeader,
-   DialogTitle,
- } from '@/components/ui/dialog';
- import { Location } from '@/hooks/useLocations';
- import { MentionText } from '@/components/mentions/MentionText';
- import { CharacterAttachmentsGallery } from '@/components/character/CharacterAttachmentsGallery';
- import { MapPin, ExternalLink } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Location } from '@/hooks/useLocations';
+import { MentionText } from '@/components/mentions/MentionText';
+import { CharacterAttachmentsGallery } from '@/components/character/CharacterAttachmentsGallery';
+import { MapPin, ExternalLink } from 'lucide-react';
+import { getZoomForCoordinates } from '@/lib/coordinateZoom';
 
  interface ViewLocationDialogProps {
    location: Location | null;
@@ -43,7 +44,7 @@
               <div className="space-y-2">
                 <h3 className="text-sm font-medium text-foreground">Coordinates</h3>
                 <a
-                  href={`https://www.google.com/maps/d/u/0/viewer?mid=1Y2Zyar_gNkgjPoLZ7Q9Vmo5x-obp4WA&ll=${encodeURIComponent(location.coordinates)}&z=15`}
+                  href={`https://www.google.com/maps/d/u/0/viewer?mid=1Y2Zyar_gNkgjPoLZ7Q9Vmo5x-obp4WA&ll=${encodeURIComponent(location.coordinates)}&z=${getZoomForCoordinates(location.coordinates)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
