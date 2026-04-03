@@ -33,13 +33,15 @@
 
    useEffect(() => {
      if (location) {
-        setFormData({
-          name: location.name,
-          description: location.description || '',
-          notes: location.notes || '',
-          coordinates: location.coordinates || '',
-          attachments: location.attachments || [],
-        });
+         setFormData({
+           name: location.name,
+           description: location.description || '',
+           notes: location.notes || '',
+           coordinates: location.coordinates || '',
+           country: location.country || '',
+           city_region: location.city_region || '',
+           attachments: location.attachments || [],
+         });
      }
    }, [location]);
 
