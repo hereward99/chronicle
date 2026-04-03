@@ -20,13 +20,15 @@
 
  export function CreateLocationDialog({ open, onOpenChange }: CreateLocationDialogProps) {
    const { createLocation, chronicleId, userId } = useLocations();
-    const [formData, setFormData] = useState({
-      name: '',
-      description: '',
-      notes: '',
-      coordinates: '',
-      attachments: [] as any[],
-    });
+     const [formData, setFormData] = useState({
+       name: '',
+       description: '',
+       notes: '',
+       coordinates: '',
+       country: '',
+       city_region: '',
+       attachments: [] as any[],
+     });
 
    const handleSubmit = async (e: React.FormEvent) => {
      e.preventDefault();
