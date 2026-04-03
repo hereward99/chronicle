@@ -21,23 +21,27 @@
 
  export function EditLocationDialog({ location, open, onOpenChange }: EditLocationDialogProps) {
    const { updateLocation } = useLocations();
-    const [formData, setFormData] = useState({
-      name: '',
-      description: '',
-      notes: '',
-      coordinates: '',
-      attachments: [] as any[],
-    });
+     const [formData, setFormData] = useState({
+       name: '',
+       description: '',
+       notes: '',
+       coordinates: '',
+       country: '',
+       city_region: '',
+       attachments: [] as any[],
+     });
 
    useEffect(() => {
      if (location) {
-        setFormData({
-          name: location.name,
-          description: location.description || '',
-          notes: location.notes || '',
-          coordinates: location.coordinates || '',
-          attachments: location.attachments || [],
-        });
+         setFormData({
+           name: location.name,
+           description: location.description || '',
+           notes: location.notes || '',
+           coordinates: location.coordinates || '',
+           country: location.country || '',
+           city_region: location.city_region || '',
+           attachments: location.attachments || [],
+         });
      }
    }, [location]);
 
@@ -60,16 +64,37 @@
            <DialogTitle>Edit Location</DialogTitle>
          </DialogHeader>
          <form onSubmit={handleSubmit} className="space-y-4">
-           <div className="space-y-2">
-             <Label htmlFor="name">Name *</Label>
-             <Input
-               id="name"
-               value={formData.name}
-               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-               placeholder="Location name"
-               required
-             />
-           </div>
+            <div className="space-y-2">
+              <Label htmlFor="name">Name *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Location name"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="country">Country</Label>
+                <Input
+                  id="country"
+                  value={formData.country}
+                  onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
+                  placeholder="e.g. Canada"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="city_region">City / Region</Label>
+                <Input
+                  id="city_region"
+                  value={formData.city_region}
+                  onChange={(e) => setFormData(prev => ({ ...prev, city_region: e.target.value }))}
+                  placeholder="e.g. Vancouver"
+                />
+              </div>
+            </div>
 
            <div className="space-y-2">
              <Label htmlFor="description">Description</Label>
