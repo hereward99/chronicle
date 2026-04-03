@@ -29,16 +29,25 @@ import { getZoomForCoordinates } from '@/lib/coordinateZoom';
            </div>
          </DialogHeader>
          
-         <div className="space-y-4">
-           {location.description && (
-             <div className="space-y-2">
-               <h3 className="text-sm font-medium text-foreground">Description</h3>
-               <MentionText 
-                 text={location.description} 
-                 className="text-sm text-muted-foreground whitespace-pre-wrap" 
-               />
-             </div>
-           )}
+          <div className="space-y-4">
+            {(location.country || location.city_region) && (
+              <div className="space-y-1">
+                <h3 className="text-sm font-medium text-foreground">Region</h3>
+                <p className="text-sm text-muted-foreground">
+                  {[location.city_region, location.country].filter(Boolean).join(', ')}
+                </p>
+              </div>
+            )}
+
+            {location.description && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-foreground">Description</h3>
+                <MentionText 
+                  text={location.description} 
+                  className="text-sm text-muted-foreground whitespace-pre-wrap" 
+                />
+              </div>
+            )}
 
             {location.coordinates && (
               <div className="space-y-2">
