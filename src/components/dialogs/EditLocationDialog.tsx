@@ -21,13 +21,15 @@
 
  export function EditLocationDialog({ location, open, onOpenChange }: EditLocationDialogProps) {
    const { updateLocation } = useLocations();
-    const [formData, setFormData] = useState({
-      name: '',
-      description: '',
-      notes: '',
-      coordinates: '',
-      attachments: [] as any[],
-    });
+     const [formData, setFormData] = useState({
+       name: '',
+       description: '',
+       notes: '',
+       coordinates: '',
+       country: '',
+       city_region: '',
+       attachments: [] as any[],
+     });
 
    useEffect(() => {
      if (location) {
