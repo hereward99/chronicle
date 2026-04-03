@@ -40,7 +40,7 @@
        user_id: userId,
      });
 
-     setFormData({ name: '', description: '', notes: '', coordinates: '', attachments: [] });
+     setFormData({ name: '', description: '', notes: '', coordinates: '', country: '', city_region: '', attachments: [] });
      onOpenChange(false);
    };
 
