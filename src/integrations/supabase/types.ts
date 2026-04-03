@@ -509,7 +509,9 @@ export type Database = {
         Row: {
           attachments: Json | null
           chronicle_id: string
+          city_region: string | null
           coordinates: string | null
+          country: string | null
           created_at: string
           description: string | null
           id: string
@@ -521,7 +523,9 @@ export type Database = {
         Insert: {
           attachments?: Json | null
           chronicle_id: string
+          city_region?: string | null
           coordinates?: string | null
+          country?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -533,7 +537,9 @@ export type Database = {
         Update: {
           attachments?: Json | null
           chronicle_id?: string
+          city_region?: string | null
           coordinates?: string | null
+          country?: string | null
           created_at?: string
           description?: string | null
           id?: string
