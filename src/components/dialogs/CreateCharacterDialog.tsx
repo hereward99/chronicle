@@ -229,22 +229,51 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
             </div>
           </div>
 
+          {formData.type === "PC" && (formData.clan === "Human" || formData.clan === "Ghoul") && (
+            <Card className="p-4 bg-muted/30 space-y-3">
+              <div className="text-sm font-medium">Mortal Template</div>
+              <p className="text-xs text-muted-foreground">
+                Use a V5 mortal template for quick stats, or choose Custom for full attributes.
+              </p>
+              <Select 
+                value={formData.mortalTemplate} 
+                onValueChange={(value: MortalTemplateKey) => setFormData(prev => ({ ...prev, mortalTemplate: value }))}
+              >
+                <SelectTrigger className="bg-input border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.entries(MORTAL_TEMPLATES) as [MortalTemplateKey, typeof MORTAL_TEMPLATES[MortalTemplateKey]][]).map(([key, tmpl]) => (
+                    <SelectItem key={key} value={key}>{tmpl.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {formData.mortalTemplate !== "none" && (
+                <div className="text-xs text-muted-foreground">
+                  <strong>{MORTAL_TEMPLATES[formData.mortalTemplate].pool} dice</strong> pool · 
+                  Health <strong>{MORTAL_TEMPLATES[formData.mortalTemplate].health}</strong> · 
+                  Willpower <strong>{MORTAL_TEMPLATES[formData.mortalTemplate].willpower}</strong>
+                </div>
+              )}
+            </Card>
+          )}
+
           {formData.type === "PC" && (
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="generation">Generation</Label>
-                <Input
-                  id="generation"
-                  type="number"
-                  min="1"
-                  max="15"
-                  value={formData.generation}
-                  onChange={(e) => setFormData(prev => ({ ...prev, generation: parseInt(e.target.value) || 13 }))}
-                  className="bg-input border-border"
-                  disabled={formData.clan === "Human"}
-                  placeholder={formData.clan === "Human" ? "N/A" : ""}
-                />
-              </div>
+              {formData.clan !== "Human" && (
+                <div className="space-y-2">
+                  <Label htmlFor="generation">Generation</Label>
+                  <Input
+                    id="generation"
+                    type="number"
+                    min="1"
+                    max="15"
+                    value={formData.generation}
+                    onChange={(e) => setFormData(prev => ({ ...prev, generation: parseInt(e.target.value) || 13 }))}
+                    className="bg-input border-border"
+                  />
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="status">Status *</Label>
