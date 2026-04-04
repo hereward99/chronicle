@@ -12,6 +12,16 @@ import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import { PortraitGenerator } from "@/components/character/PortraitGenerator";
 
+const MORTAL_TEMPLATES = {
+  none: { pool: 0, health: 0, willpower: 0, label: "Custom (full attributes)" },
+  weak: { pool: 3, health: 2, willpower: 2, label: "Weak (children, elderly, infirm)" },
+  average: { pool: 5, health: 4, willpower: 3, label: "Average (ordinary mortal)" },
+  gifted: { pool: 7, health: 5, willpower: 4, label: "Gifted (trained professional)" },
+  deadly: { pool: 10, health: 6, willpower: 5, label: "Deadly (elite combatant)" },
+} as const;
+
+type MortalTemplateKey = keyof typeof MORTAL_TEMPLATES;
+
 const characterSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
   clan: z.string().min(1, "Clan is required"),
@@ -46,6 +56,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
     status: "Active",
     difficulty: 3,
     avatarUrl: null as string | null,
+    mortalTemplate: "none" as MortalTemplateKey,
   });
   
   const { createCharacter } = useCharacters();
@@ -78,26 +89,40 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
         chronicleId = defaultChronicle.id;
       }
 
+      const isMortal = (validated.clan === "Human" || validated.clan === "Ghoul") && formData.mortalTemplate !== "none";
       const isNpcWithDicePools = validated.type === "NPC";
-      const dicePoolConfig: DicePoolConfig | null = isNpcWithDicePools
-        ? { type: "simple", difficulty: formData.difficulty } as SimpleDicePool
-        : null;
+      const usesDicePools = isNpcWithDicePools || isMortal;
+
+      let dicePoolConfig: DicePoolConfig | null = null;
+      let healthMax: number | undefined;
+      let willpowerMax: number | undefined;
+
+      if (isMortal) {
+        const tmpl = MORTAL_TEMPLATES[formData.mortalTemplate];
+        dicePoolConfig = { type: "simple", difficulty: Math.ceil(tmpl.pool / 2) } as SimpleDicePool;
+        healthMax = tmpl.health;
+        willpowerMax = tmpl.willpower;
+      } else if (isNpcWithDicePools) {
+        dicePoolConfig = { type: "simple", difficulty: formData.difficulty } as SimpleDicePool;
+      }
 
       await createCharacter({
         name: validated.name,
         clan: validated.clan,
         concept: validated.concept || null,
         type: validated.type,
-        generation: validated.type === "NPC" ? null : validated.generation,
+        generation: validated.type === "NPC" || validated.clan === "Human" ? null : validated.generation,
         status: validated.status,
         sire: null,
         coterie: null,
         chronicle_id: chronicleId,
         avatar_url: formData.avatarUrl,
-        use_dice_pools: isNpcWithDicePools,
-        skip_attributes: isNpcWithDicePools,
+        use_dice_pools: usesDicePools,
+        skip_attributes: usesDicePools,
         dice_pools: dicePoolConfig,
-        skills: isNpcWithDicePools ? {} : undefined,
+        skills: usesDicePools ? {} : undefined,
+        health_max: healthMax,
+        willpower_max: willpowerMax,
       } as any);
 
       setFormData({
@@ -109,6 +134,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
         status: "Active",
         difficulty: 3,
         avatarUrl: null,
+        mortalTemplate: "none",
       });
       
       setOpen(false);
@@ -176,7 +202,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="clan">Clan *</Label>
-              <Select value={formData.clan} onValueChange={(value) => { setFormData(prev => ({ ...prev, clan: value })); clearFieldError('clan'); }}>
+              <Select value={formData.clan} onValueChange={(value) => { setFormData(prev => ({ ...prev, clan: value, mortalTemplate: (value === "Human" || value === "Ghoul") ? prev.mortalTemplate : "none" })); clearFieldError('clan'); }}>
                 <SelectTrigger className={`bg-input border-border ${errors.clan ? 'border-destructive' : ''}`}>
                   <SelectValue placeholder="Select clan" />
                 </SelectTrigger>
@@ -203,22 +229,51 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
             </div>
           </div>
 
+          {formData.type === "PC" && (formData.clan === "Human" || formData.clan === "Ghoul") && (
+            <Card className="p-4 bg-muted/30 space-y-3">
+              <div className="text-sm font-medium">Mortal Template</div>
+              <p className="text-xs text-muted-foreground">
+                Use a V5 mortal template for quick stats, or choose Custom for full attributes.
+              </p>
+              <Select 
+                value={formData.mortalTemplate} 
+                onValueChange={(value: MortalTemplateKey) => setFormData(prev => ({ ...prev, mortalTemplate: value }))}
+              >
+                <SelectTrigger className="bg-input border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.entries(MORTAL_TEMPLATES) as [MortalTemplateKey, typeof MORTAL_TEMPLATES[MortalTemplateKey]][]).map(([key, tmpl]) => (
+                    <SelectItem key={key} value={key}>{tmpl.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {formData.mortalTemplate !== "none" && (
+                <div className="text-xs text-muted-foreground">
+                  <strong>{MORTAL_TEMPLATES[formData.mortalTemplate].pool} dice</strong> pool · 
+                  Health <strong>{MORTAL_TEMPLATES[formData.mortalTemplate].health}</strong> · 
+                  Willpower <strong>{MORTAL_TEMPLATES[formData.mortalTemplate].willpower}</strong>
+                </div>
+              )}
+            </Card>
+          )}
+
           {formData.type === "PC" && (
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="generation">Generation</Label>
-                <Input
-                  id="generation"
-                  type="number"
-                  min="1"
-                  max="15"
-                  value={formData.generation}
-                  onChange={(e) => setFormData(prev => ({ ...prev, generation: parseInt(e.target.value) || 13 }))}
-                  className="bg-input border-border"
-                  disabled={formData.clan === "Human"}
-                  placeholder={formData.clan === "Human" ? "N/A" : ""}
-                />
-              </div>
+              {formData.clan !== "Human" && (
+                <div className="space-y-2">
+                  <Label htmlFor="generation">Generation</Label>
+                  <Input
+                    id="generation"
+                    type="number"
+                    min="1"
+                    max="15"
+                    value={formData.generation}
+                    onChange={(e) => setFormData(prev => ({ ...prev, generation: parseInt(e.target.value) || 13 }))}
+                    className="bg-input border-border"
+                  />
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="status">Status *</Label>
