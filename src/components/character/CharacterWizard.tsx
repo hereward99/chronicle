@@ -304,15 +304,19 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
         chronicleId = defaultChronicle.id;
       }
 
-      // Determine if using dice pools (methods 2, 3, 4)
-      const useDicePools = characterData.creationMethod !== "full";
-      const skipAttributes = characterData.skipAttributes && useDicePools;
+      // Determine if using dice pools (methods 2, 3, 4 or mortal template)
+      const useDicePools = characterData.creationMethod !== "full" || isMortalTemplate;
+      const skipAttributes = (characterData.skipAttributes && useDicePools) || isMortalTemplate;
 
       // Calculate health and willpower based on method
       let healthMax: number;
       let willpowerMax: number;
       
-      if (useDicePools && skipAttributes) {
+      if (isMortalTemplate) {
+        const tmpl = MORTAL_TEMPLATES[characterData.mortalTemplate];
+        healthMax = tmpl.health;
+        willpowerMax = tmpl.willpower;
+      } else if (useDicePools && skipAttributes) {
         // Dice pool methods without attributes
         if (characterData.creationMethod === "simple") {
           // Simple: health/willpower = difficulty × 2
