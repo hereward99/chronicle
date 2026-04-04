@@ -585,7 +585,8 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
               </div>
             </div>
 
-            {/* Creation Method Selection */}
+            {/* Creation Method Selection - hidden when mortal template is active */}
+            {!isMortalTemplate && (
             <div className="space-y-2">
               <Label>Creation Method *</Label>
               <div className="grid grid-cols-2 gap-3">
