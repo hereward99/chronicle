@@ -229,7 +229,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
             </div>
           </div>
 
-          {formData.type === "PC" && (formData.clan === "Human" || formData.clan === "Ghoul") && (
+          {(formData.clan === "Human" || formData.clan === "Ghoul") && (
             <Card className="p-4 bg-muted/30 space-y-3">
               <div className="text-sm font-medium">Mortal Template</div>
               <p className="text-xs text-muted-foreground">

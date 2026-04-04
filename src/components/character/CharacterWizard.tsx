@@ -16,6 +16,16 @@ import { PortraitGenerator } from "@/components/character/PortraitGenerator";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+
+const MORTAL_TEMPLATES = {
+  none: { pool: 0, health: 0, willpower: 0, label: "Custom (full attributes)" },
+  weak: { pool: 3, health: 2, willpower: 2, label: "Weak (children, elderly, infirm)" },
+  average: { pool: 5, health: 4, willpower: 3, label: "Average (ordinary mortal)" },
+  gifted: { pool: 7, health: 5, willpower: 4, label: "Gifted (trained professional)" },
+  deadly: { pool: 10, health: 6, willpower: 5, label: "Deadly (elite combatant)" },
+} as const;
+
+type MortalTemplateKey = keyof typeof MORTAL_TEMPLATES;
 const FULL_STEPS = [
   "Character Type",
   "Basic Info",
@@ -185,6 +195,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
     status: "Active",
     sire: "",
     coterie: "",
+    mortalTemplate: "none" as MortalTemplateKey,
     
     // Dice Pool Options
     skipAttributes: false,
@@ -238,8 +249,15 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
     { enabled: open }
   );
 
+  // Check if using a mortal template
+  const isMortalTemplate = (characterData.characterType === "human" || characterData.characterType === "ghoul") && characterData.mortalTemplate !== "none";
+
   // Determine which steps to use based on creation method
   const getSteps = () => {
+    if (isMortalTemplate) {
+      // Mortal templates skip attributes, skills, and dice pool config
+      return ["Character Type", "Basic Info", "Powers", "Review"];
+    }
     if (characterData.creationMethod !== "full") {
       if (characterData.skipAttributes) {
         return DICE_POOL_NO_ATTR_STEPS;
@@ -286,15 +304,19 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
         chronicleId = defaultChronicle.id;
       }
 
-      // Determine if using dice pools (methods 2, 3, 4)
-      const useDicePools = characterData.creationMethod !== "full";
-      const skipAttributes = characterData.skipAttributes && useDicePools;
+      // Determine if using dice pools (methods 2, 3, 4 or mortal template)
+      const useDicePools = characterData.creationMethod !== "full" || isMortalTemplate;
+      const skipAttributes = (characterData.skipAttributes && useDicePools) || isMortalTemplate;
 
       // Calculate health and willpower based on method
       let healthMax: number;
       let willpowerMax: number;
       
-      if (useDicePools && skipAttributes) {
+      if (isMortalTemplate) {
+        const tmpl = MORTAL_TEMPLATES[characterData.mortalTemplate];
+        healthMax = tmpl.health;
+        willpowerMax = tmpl.willpower;
+      } else if (useDicePools && skipAttributes) {
         // Dice pool methods without attributes
         if (characterData.creationMethod === "simple") {
           // Simple: health/willpower = difficulty × 2
@@ -320,7 +342,10 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
 
       // Determine dice pool configuration
       let dicePoolConfig: DicePoolConfig | null = null;
-      if (useDicePools) {
+      if (isMortalTemplate) {
+        const tmpl = MORTAL_TEMPLATES[characterData.mortalTemplate];
+        dicePoolConfig = { type: "simple", difficulty: Math.ceil(tmpl.pool / 2) } as SimpleDicePool;
+      } else if (useDicePools) {
         switch (characterData.creationMethod) {
           case "simple":
             dicePoolConfig = { 
@@ -441,6 +466,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
       status: "Active",
       sire: "",
       coterie: "",
+      mortalTemplate: "none" as MortalTemplateKey,
       skipAttributes: false,
       simplePoolDifficulty: 3,
       generalPoolPrimary: 6,
@@ -502,6 +528,36 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
               </div>
             </div>
 
+            {/* Mortal Template Selector */}
+            {(characterData.characterType === "human" || characterData.characterType === "ghoul") && (
+              <Card className="p-4 bg-muted/30 space-y-3">
+                <div className="text-sm font-medium">Mortal Template (V5)</div>
+                <p className="text-xs text-muted-foreground">
+                  Use a predefined power level, or choose Custom for full attribute builds.
+                </p>
+                <Select 
+                  value={characterData.mortalTemplate} 
+                  onValueChange={(value: MortalTemplateKey) => setCharacterData(prev => ({ ...prev, mortalTemplate: value }))}
+                >
+                  <SelectTrigger className="bg-input border-border">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Object.entries(MORTAL_TEMPLATES) as [MortalTemplateKey, typeof MORTAL_TEMPLATES[MortalTemplateKey]][]).map(([key, tmpl]) => (
+                      <SelectItem key={key} value={key}>{tmpl.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {characterData.mortalTemplate !== "none" && (
+                  <div className="text-xs text-muted-foreground">
+                    <strong>{MORTAL_TEMPLATES[characterData.mortalTemplate].pool} dice</strong> pool · 
+                    Health <strong>{MORTAL_TEMPLATES[characterData.mortalTemplate].health}</strong> · 
+                    Willpower <strong>{MORTAL_TEMPLATES[characterData.mortalTemplate].willpower}</strong>
+                  </div>
+                )}
+              </Card>
+            )}
+
             <div className="space-y-2">
               <Label>Role *</Label>
               <div className="grid grid-cols-2 gap-3">
@@ -529,7 +585,8 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
               </div>
             </div>
 
-            {/* Creation Method Selection */}
+            {/* Creation Method Selection - hidden when mortal template is active */}
+            {!isMortalTemplate && (
             <div className="space-y-2">
               <Label>Creation Method *</Label>
               <div className="grid grid-cols-2 gap-3">
@@ -562,9 +619,10 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
                 <p className="text-xs text-muted-foreground">Player Characters use the Full V5 method.</p>
               )}
             </div>
+            )}
 
             {/* Skip Attributes Option (for dice pool methods) */}
-            {characterData.creationMethod !== "full" && (
+            {!isMortalTemplate && characterData.creationMethod !== "full" && (
               <div className="space-y-4 border-t pt-4">
                 <div className="flex items-center gap-3">
                   <input
