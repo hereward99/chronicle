@@ -202,7 +202,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="clan">Clan *</Label>
-              <Select value={formData.clan} onValueChange={(value) => { setFormData(prev => ({ ...prev, clan: value })); clearFieldError('clan'); }}>
+              <Select value={formData.clan} onValueChange={(value) => { setFormData(prev => ({ ...prev, clan: value, mortalTemplate: (value === "Human" || value === "Ghoul") ? prev.mortalTemplate : "none" })); clearFieldError('clan'); }}>
                 <SelectTrigger className={`bg-input border-border ${errors.clan ? 'border-destructive' : ''}`}>
                   <SelectValue placeholder="Select clan" />
                 </SelectTrigger>
