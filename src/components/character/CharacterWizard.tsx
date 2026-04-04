@@ -619,9 +619,10 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
                 <p className="text-xs text-muted-foreground">Player Characters use the Full V5 method.</p>
               )}
             </div>
+            )}
 
             {/* Skip Attributes Option (for dice pool methods) */}
-            {characterData.creationMethod !== "full" && (
+            {!isMortalTemplate && characterData.creationMethod !== "full" && (
               <div className="space-y-4 border-t pt-4">
                 <div className="flex items-center gap-3">
                   <input
