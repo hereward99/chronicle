@@ -89,26 +89,40 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
         chronicleId = defaultChronicle.id;
       }
 
+      const isMortal = (validated.clan === "Human" || validated.clan === "Ghoul") && formData.mortalTemplate !== "none";
       const isNpcWithDicePools = validated.type === "NPC";
-      const dicePoolConfig: DicePoolConfig | null = isNpcWithDicePools
-        ? { type: "simple", difficulty: formData.difficulty } as SimpleDicePool
-        : null;
+      const usesDicePools = isNpcWithDicePools || isMortal;
+
+      let dicePoolConfig: DicePoolConfig | null = null;
+      let healthMax: number | undefined;
+      let willpowerMax: number | undefined;
+
+      if (isMortal) {
+        const tmpl = MORTAL_TEMPLATES[formData.mortalTemplate];
+        dicePoolConfig = { type: "simple", difficulty: Math.ceil(tmpl.pool / 2) } as SimpleDicePool;
+        healthMax = tmpl.health;
+        willpowerMax = tmpl.willpower;
+      } else if (isNpcWithDicePools) {
+        dicePoolConfig = { type: "simple", difficulty: formData.difficulty } as SimpleDicePool;
+      }
 
       await createCharacter({
         name: validated.name,
         clan: validated.clan,
         concept: validated.concept || null,
         type: validated.type,
-        generation: validated.type === "NPC" ? null : validated.generation,
+        generation: validated.type === "NPC" || validated.clan === "Human" ? null : validated.generation,
         status: validated.status,
         sire: null,
         coterie: null,
         chronicle_id: chronicleId,
         avatar_url: formData.avatarUrl,
-        use_dice_pools: isNpcWithDicePools,
-        skip_attributes: isNpcWithDicePools,
+        use_dice_pools: usesDicePools,
+        skip_attributes: usesDicePools,
         dice_pools: dicePoolConfig,
-        skills: isNpcWithDicePools ? {} : undefined,
+        skills: usesDicePools ? {} : undefined,
+        health_max: healthMax,
+        willpower_max: willpowerMax,
       } as any);
 
       setFormData({
