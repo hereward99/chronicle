@@ -452,6 +452,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
       status: "Active",
       sire: "",
       coterie: "",
+      mortalTemplate: "none" as MortalTemplateKey,
       skipAttributes: false,
       simplePoolDifficulty: 3,
       generalPoolPrimary: 6,
