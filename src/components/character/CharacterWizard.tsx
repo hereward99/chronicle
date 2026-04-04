@@ -16,6 +16,16 @@ import { PortraitGenerator } from "@/components/character/PortraitGenerator";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+
+const MORTAL_TEMPLATES = {
+  none: { pool: 0, health: 0, willpower: 0, label: "Custom (full attributes)" },
+  weak: { pool: 3, health: 2, willpower: 2, label: "Weak (children, elderly, infirm)" },
+  average: { pool: 5, health: 4, willpower: 3, label: "Average (ordinary mortal)" },
+  gifted: { pool: 7, health: 5, willpower: 4, label: "Gifted (trained professional)" },
+  deadly: { pool: 10, health: 6, willpower: 5, label: "Deadly (elite combatant)" },
+} as const;
+
+type MortalTemplateKey = keyof typeof MORTAL_TEMPLATES;
 const FULL_STEPS = [
   "Character Type",
   "Basic Info",
