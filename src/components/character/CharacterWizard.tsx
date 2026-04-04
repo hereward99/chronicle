@@ -195,6 +195,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
     status: "Active",
     sire: "",
     coterie: "",
+    mortalTemplate: "none" as MortalTemplateKey,
     
     // Dice Pool Options
     skipAttributes: false,
