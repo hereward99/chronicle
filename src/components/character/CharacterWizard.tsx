@@ -528,6 +528,36 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
               </div>
             </div>
 
+            {/* Mortal Template Selector */}
+            {(characterData.characterType === "human" || characterData.characterType === "ghoul") && (
+              <Card className="p-4 bg-muted/30 space-y-3">
+                <div className="text-sm font-medium">Mortal Template (V5)</div>
+                <p className="text-xs text-muted-foreground">
+                  Use a predefined power level, or choose Custom for full attribute builds.
+                </p>
+                <Select 
+                  value={characterData.mortalTemplate} 
+                  onValueChange={(value: MortalTemplateKey) => setCharacterData(prev => ({ ...prev, mortalTemplate: value }))}
+                >
+                  <SelectTrigger className="bg-input border-border">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Object.entries(MORTAL_TEMPLATES) as [MortalTemplateKey, typeof MORTAL_TEMPLATES[MortalTemplateKey]][]).map(([key, tmpl]) => (
+                      <SelectItem key={key} value={key}>{tmpl.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {characterData.mortalTemplate !== "none" && (
+                  <div className="text-xs text-muted-foreground">
+                    <strong>{MORTAL_TEMPLATES[characterData.mortalTemplate].pool} dice</strong> pool · 
+                    Health <strong>{MORTAL_TEMPLATES[characterData.mortalTemplate].health}</strong> · 
+                    Willpower <strong>{MORTAL_TEMPLATES[characterData.mortalTemplate].willpower}</strong>
+                  </div>
+                )}
+              </Card>
+            )}
+
             <div className="space-y-2">
               <Label>Role *</Label>
               <div className="grid grid-cols-2 gap-3">
