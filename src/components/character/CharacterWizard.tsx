@@ -249,8 +249,15 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
     { enabled: open }
   );
 
+  // Check if using a mortal template
+  const isMortalTemplate = (characterData.characterType === "human" || characterData.characterType === "ghoul") && characterData.mortalTemplate !== "none";
+
   // Determine which steps to use based on creation method
   const getSteps = () => {
+    if (isMortalTemplate) {
+      // Mortal templates skip attributes, skills, and dice pool config
+      return ["Character Type", "Basic Info", "Powers", "Review"];
+    }
     if (characterData.creationMethod !== "full") {
       if (characterData.skipAttributes) {
         return DICE_POOL_NO_ATTR_STEPS;
