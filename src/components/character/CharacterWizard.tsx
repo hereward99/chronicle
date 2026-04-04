@@ -342,7 +342,10 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
 
       // Determine dice pool configuration
       let dicePoolConfig: DicePoolConfig | null = null;
-      if (useDicePools) {
+      if (isMortalTemplate) {
+        const tmpl = MORTAL_TEMPLATES[characterData.mortalTemplate];
+        dicePoolConfig = { type: "simple", difficulty: Math.ceil(tmpl.pool / 2) } as SimpleDicePool;
+      } else if (useDicePools) {
         switch (characterData.creationMethod) {
           case "simple":
             dicePoolConfig = { 
