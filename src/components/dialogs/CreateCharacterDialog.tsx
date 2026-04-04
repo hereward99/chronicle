@@ -134,6 +134,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
         status: "Active",
         difficulty: 3,
         avatarUrl: null,
+        mortalTemplate: "none",
       });
       
       setOpen(false);
