@@ -291,7 +291,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
             </div>
           )}
 
-          {formData.type === "NPC" && (
+          {formData.type === "NPC" && formData.clan !== "Human" && formData.clan !== "Ghoul" && (
             <Card className="p-4 bg-muted/30 space-y-4">
               <div className="text-sm font-medium">Dice Pool Settings</div>
               <p className="text-xs text-muted-foreground">
