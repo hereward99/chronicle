@@ -37,10 +37,15 @@ export default function Characters() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active": return "default";
-      case "Ally": return "secondary";
-      case "Enemy": return "destructive";
-      default: return "outline";
+      case "Active": return "bg-emerald-600 text-white hover:bg-emerald-700 border-transparent";
+      case "Ally": return "bg-blue-900 text-blue-100 hover:bg-blue-800 border-transparent";
+      case "Enemy": return "bg-red-600 text-white hover:bg-red-700 border-transparent";
+      case "Unknown": return "bg-purple-600 text-white hover:bg-purple-700 border-transparent";
+      case "Dead":
+      case "Missing":
+      case "Inactive":
+        return "bg-muted text-muted-foreground hover:bg-muted/80 border-transparent";
+      default: return "bg-muted text-muted-foreground border-transparent";
     }
   };
 
