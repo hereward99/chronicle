@@ -43,7 +43,7 @@ const clans = [
   "Tzimisce", "Ventrue", "Caitiff", "Thin-Blood"
 ];
 
-const statuses = ["Active", "Inactive", "Dead", "Missing", "Ally", "Enemy"];
+const statuses = ["Active", "Ally", "Enemy", "Neutral", "Unknown", "Inactive", "Missing", "Dead"];
 
 const predatorTypes = [
   "None", "Alleycat", "Bagger", "Blood Leech", "Cleaver", "Consensualist", 
