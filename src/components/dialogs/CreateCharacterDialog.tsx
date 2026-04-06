@@ -37,7 +37,7 @@ const clans = [
   "Tzimisce", "Ventrue", "Caitiff", "Thin-Blood"
 ];
 
-const statuses = ["Active", "Ally", "Enemy", "Neutral", "Dead"];
+const statuses = ["Active", "Ally", "Enemy", "Neutral", "Unknown", "Inactive", "Missing", "Dead"];
 
 interface CreateCharacterDialogProps {
   children: React.ReactNode;

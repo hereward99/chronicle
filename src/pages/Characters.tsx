@@ -181,7 +181,7 @@ export default function Characters() {
                   
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Status</span>
-                    <Badge variant={getStatusColor(character.status) as any}>
+                    <Badge className={getStatusColor(character.status)}>
                       {character.status}
                     </Badge>
                   </div>
