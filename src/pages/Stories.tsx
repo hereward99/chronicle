@@ -92,7 +92,7 @@ const Stories = () => {
           <CardTitle className="text-lg text-foreground line-clamp-2">
             <TextHighlight text={story.title} highlight={activeHighlight} />
           </CardTitle>
-          <Badge variant={getStatusColor(story.status)} className="shrink-0">
+          <Badge className={`shrink-0 ${getStatusColor(story.status)}`}>
             {story.status}
           </Badge>
         </div>
