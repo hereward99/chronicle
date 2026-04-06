@@ -35,18 +35,18 @@ const Stories = () => {
     return sessions.filter(session => session.plot_id === plotId).length;
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): string => {
     switch (status.toLowerCase()) {
       case 'active':
-        return 'default';
+        return 'bg-emerald-600 text-white hover:bg-emerald-700 border-transparent';
       case 'completed':
-        return 'secondary';
+        return 'bg-muted text-muted-foreground hover:bg-muted/80 border-transparent';
       case 'planned':
-        return 'outline';
+        return 'bg-blue-900 text-blue-100 hover:bg-blue-800 border-transparent';
       case 'critical':
-        return 'destructive';
+        return 'bg-red-600 text-white hover:bg-red-700 border-transparent';
       default:
-        return 'outline';
+        return 'bg-muted text-muted-foreground border-transparent';
     }
   };
 
