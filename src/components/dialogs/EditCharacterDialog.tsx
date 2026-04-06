@@ -1406,11 +1406,19 @@ export function EditCharacterDialog({
                         </Button>
                       </div>
                       <div className="grid grid-cols-3 gap-2">
-                        <Input
-                          placeholder="Discipline"
+                        <Select
                           value={power.discipline}
-                          onChange={(e) => updatePower(idx, 'discipline', e.target.value)}
-                        />
+                          onValueChange={(value) => updatePower(idx, 'discipline', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Discipline" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(formData.disciplines || []).map((disc) => (
+                              <SelectItem key={disc.name} value={disc.name}>{disc.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <Input
                           type="number"
                           placeholder="Level"
