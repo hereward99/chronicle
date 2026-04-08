@@ -1,74 +1,210 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { EmptyState } from "@/components/onboarding/EmptyState";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Search, Crown, User, Skull, Users, FileText, Image as ImageIcon, Wand2 } from "lucide-react";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Plus, Search, Users, Wand2, X, ChevronDown } from "lucide-react";
 import { useCharacters, Character } from "@/hooks/useCharacters";
+import { useFactions } from "@/hooks/useFactions";
+import { useCoteries } from "@/hooks/useCoteries";
+import { usePlots } from "@/hooks/usePlots";
+import { usePlotCharacters } from "@/hooks/usePlotCharacters";
 import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialog";
 import { ViewCharacterDialog } from "@/components/dialogs/ViewCharacterDialog";
 import { EditCharacterDialog } from "@/components/dialogs/EditCharacterDialog";
 import { CharacterWizard } from "@/components/character/CharacterWizard";
+import { CharacterCard } from "@/components/characters/CharacterCard";
 import { useSearchHighlight } from "@/hooks/useSearchHighlight";
-import { TextHighlight } from "@/components/ui/text-highlight";
+
+const STORAGE_KEY = "characters-toolbar-state";
+
+interface ToolbarState {
+  filterType: string;
+  filterClan: string;
+  filterStatus: string;
+  filterCoterie: string;
+  filterFaction: string;
+  filterStory: string;
+  filterSire: string;
+  groupBy: string;
+  sortBy: string;
+}
+
+const defaultState: ToolbarState = {
+  filterType: "__all__",
+  filterClan: "__all__",
+  filterStatus: "__all__",
+  filterCoterie: "__all__",
+  filterFaction: "__all__",
+  filterStory: "__all__",
+  filterSire: "__all__",
+  groupBy: "__none__",
+  sortBy: "name-asc",
+};
+
+function loadToolbarState(): ToolbarState {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) return { ...defaultState, ...JSON.parse(stored) };
+  } catch {}
+  return defaultState;
+}
+
+function saveToolbarState(state: ToolbarState) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {}
+}
 
 export default function Characters() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
   const [viewCharacter, setViewCharacter] = useState<Character | null>(null);
   const [editCharacter, setEditCharacter] = useState<Character | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [toolbar, setToolbar] = useState<ToolbarState>(loadToolbarState);
+
   const { characters, loading, updateCharacter, deleteCharacter } = useCharacters();
-  const { searchQuery: highlightQuery, isHighlighted } = useSearchHighlight();
+  const { factions, characterFactions } = useFactions();
+  const { coteries, allCoterieMembers } = useCoteries();
+  const { plots } = usePlots();
+  const { plotCharacters } = usePlotCharacters();
+  const { searchQuery: highlightQuery } = useSearchHighlight();
 
-  const filteredCharacters = characters.filter(character => {
-    const matchesSearch = character.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         character.clan.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTab = activeTab === "all" || 
-                      (activeTab === "pcs" && character.type === "PC") ||
-                      (activeTab === "npcs" && character.type === "NPC");
-    
-    return matchesSearch && matchesTab;
-  });
+  // Persist toolbar state
+  useEffect(() => { saveToolbarState(toolbar); }, [toolbar]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Active": return "bg-emerald-600 text-white hover:bg-emerald-700 border-transparent";
-      case "Ally": return "bg-blue-900 text-blue-100 hover:bg-blue-800 border-transparent";
-      case "Enemy": return "bg-red-600 text-white hover:bg-red-700 border-transparent";
-      case "Unknown": return "bg-purple-600 text-white hover:bg-purple-700 border-transparent";
-      case "Dead":
-      case "Missing":
-      case "Inactive":
-        return "bg-muted text-muted-foreground hover:bg-muted/80 border-transparent";
-      default: return "bg-muted text-muted-foreground border-transparent";
+  const setFilter = useCallback((key: keyof ToolbarState, value: string) => {
+    setToolbar(prev => ({ ...prev, [key]: value }));
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    setToolbar(defaultState);
+    setSearchTerm("");
+  }, []);
+
+  const hasActiveFilters = useMemo(() => {
+    return Object.keys(defaultState).some(
+      k => toolbar[k as keyof ToolbarState] !== defaultState[k as keyof ToolbarState]
+    ) || searchTerm !== "";
+  }, [toolbar, searchTerm]);
+
+  // Build lookup maps
+  const characterFactionMap = useMemo(() => {
+    const map = new Map<string, string[]>(); // characterId -> factionIds
+    characterFactions.forEach(cf => {
+      const arr = map.get(cf.character_id) || [];
+      arr.push(cf.faction_id);
+      map.set(cf.character_id, arr);
+    });
+    return map;
+  }, [characterFactions]);
+
+  const characterCoterieMap = useMemo(() => {
+    const map = new Map<string, string[]>(); // characterId -> coterieIds
+    allCoterieMembers.forEach(cm => {
+      const arr = map.get(cm.character_id) || [];
+      arr.push(cm.coterie_id);
+      map.set(cm.character_id, arr);
+    });
+    return map;
+  }, [allCoterieMembers]);
+
+  const characterPlotMap = useMemo(() => {
+    const map = new Map<string, string[]>(); // characterId -> plotIds
+    plotCharacters.forEach(pc => {
+      const arr = map.get(pc.character_id) || [];
+      arr.push(pc.plot_id);
+      map.set(pc.character_id, arr);
+    });
+    return map;
+  }, [plotCharacters]);
+
+  // Dynamic filter options
+  const filterOptions = useMemo(() => {
+    const clans = [...new Set(characters.map(c => c.clan))].sort();
+    const statuses = [...new Set(characters.map(c => c.status))].sort();
+    const sires = [...new Set(characters.map(c => c.sire).filter(Boolean))].sort() as string[];
+    return { clans, statuses, sires };
+  }, [characters]);
+
+  // Filter
+  const filteredCharacters = useMemo(() => {
+    return characters.filter(c => {
+      if (searchTerm) {
+        const q = searchTerm.toLowerCase();
+        if (!c.name.toLowerCase().includes(q) && !c.clan.toLowerCase().includes(q)) return false;
+      }
+      if (toolbar.filterType !== "__all__" && c.type !== toolbar.filterType) return false;
+      if (toolbar.filterClan !== "__all__" && c.clan !== toolbar.filterClan) return false;
+      if (toolbar.filterStatus !== "__all__" && c.status !== toolbar.filterStatus) return false;
+      if (toolbar.filterSire !== "__all__" && c.sire !== toolbar.filterSire) return false;
+      if (toolbar.filterCoterie !== "__all__") {
+        const memberOfCoteries = characterCoterieMap.get(c.id) || [];
+        if (!memberOfCoteries.includes(toolbar.filterCoterie)) return false;
+      }
+      if (toolbar.filterFaction !== "__all__") {
+        const memberOfFactions = characterFactionMap.get(c.id) || [];
+        if (!memberOfFactions.includes(toolbar.filterFaction)) return false;
+      }
+      if (toolbar.filterStory !== "__all__") {
+        const inPlots = characterPlotMap.get(c.id) || [];
+        if (!inPlots.includes(toolbar.filterStory)) return false;
+      }
+      return true;
+    });
+  }, [characters, searchTerm, toolbar, characterCoterieMap, characterFactionMap, characterPlotMap]);
+
+  // Sort
+  const sortedCharacters = useMemo(() => {
+    const sorted = [...filteredCharacters];
+    switch (toolbar.sortBy) {
+      case "name-asc": sorted.sort((a, b) => a.name.localeCompare(b.name)); break;
+      case "name-desc": sorted.sort((a, b) => b.name.localeCompare(a.name)); break;
+      case "clan": sorted.sort((a, b) => a.clan.localeCompare(b.clan) || a.name.localeCompare(b.name)); break;
+      case "status": sorted.sort((a, b) => a.status.localeCompare(b.status) || a.name.localeCompare(b.name)); break;
+      case "updated": sorted.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()); break;
+      case "generation": sorted.sort((a, b) => (a.generation ?? 99) - (b.generation ?? 99) || a.name.localeCompare(b.name)); break;
     }
-  };
+    return sorted;
+  }, [filteredCharacters, toolbar.sortBy]);
 
-  const getClanIcon = (clan: string) => {
-    switch (clan) {
-      case "Ventrue": return <Crown className="h-4 w-4" />;
-      case "Nosferatu": return <Skull className="h-4 w-4" />;
-      default: return <User className="h-4 w-4" />;
-    }
-  };
+  // Group
+  const groupedCharacters = useMemo(() => {
+    if (toolbar.groupBy === "__none__") return null;
 
-  const getImageAttachments = (attachments: any[]) => {
-    return attachments?.filter(att => att.type?.startsWith('image/')) || [];
-  };
+    const groups = new Map<string, Character[]>();
+    const getKey = (c: Character): string => {
+      switch (toolbar.groupBy) {
+        case "clan": return c.clan;
+        case "status": return c.status;
+        case "type": return c.type;
+        case "coterie": {
+          const coterieIds = characterCoterieMap.get(c.id) || [];
+          if (coterieIds.length === 0) return "No Coterie";
+          return coteries.find(ct => ct.id === coterieIds[0])?.name || "Unknown Coterie";
+        }
+        case "sire": return c.sire || "Unknown Sire";
+        case "generation": {
+          if (c.clan === "Human" || c.clan === "Ghoul") return "Mortal";
+          return c.generation ? `${c.generation}th Generation` : "Unknown Generation";
+        }
+        default: return "Other";
+      }
+    };
 
-  const getDocumentAttachments = (attachments: any[]) => {
-    return attachments?.filter(att => 
-      att.type?.includes('pdf') || 
-      att.type?.includes('document') || 
-      att.type?.includes('text') ||
-      att.name?.match(/\.(pdf|doc|docx|txt|rtf)$/i)
-    ) || [];
-  };
+    sortedCharacters.forEach(c => {
+      const key = getKey(c);
+      const arr = groups.get(key) || [];
+      arr.push(c);
+      groups.set(key, arr);
+    });
+
+    // Sort group keys
+    return new Map([...groups.entries()].sort(([a], [b]) => a.localeCompare(b)));
+  }, [sortedCharacters, toolbar.groupBy, characterCoterieMap, coteries]);
 
   return (
     <div className="space-y-6">
@@ -96,203 +232,257 @@ export default function Characters() {
         </div>
       </div>
 
-      {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search characters..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-input border-border"
-          />
-        </div>
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search characters..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10 bg-input border-border"
+        />
       </div>
 
-      {/* Character Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-secondary border-border">
-          <TabsTrigger value="all">All Characters</TabsTrigger>
-          <TabsTrigger value="pcs">Player Characters</TabsTrigger>
-          <TabsTrigger value="npcs">NPCs</TabsTrigger>
-        </TabsList>
+      {/* Filter / Group / Sort Toolbar */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Select value={toolbar.filterType} onValueChange={v => setFilter("filterType", v)}>
+          <SelectTrigger className="w-[120px] h-9 text-sm bg-input border-border">
+            <SelectValue placeholder="Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">All Types</SelectItem>
+            <SelectItem value="PC">PC</SelectItem>
+            <SelectItem value="NPC">NPC</SelectItem>
+          </SelectContent>
+        </Select>
 
-        <TabsContent value={activeTab} className="mt-6">
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <Card key={i} className="bg-gradient-subtle border-border">
-                  <CardHeader>
-                    <div className="flex items-center space-x-3">
-                      <Skeleton className="h-12 w-12 rounded-full" />
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-24" />
-                        <Skeleton className="h-3 w-16" />
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <Skeleton className="h-6 w-full" />
-                      <Skeleton className="h-6 w-full" />
-                      <Skeleton className="h-6 w-full" />
-                    </div>
-                  </CardContent>
-                </Card>
+        <Select value={toolbar.filterClan} onValueChange={v => setFilter("filterClan", v)}>
+          <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border">
+            <SelectValue placeholder="Clan" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">All Clans</SelectItem>
+            {filterOptions.clans.map(c => (
+              <SelectItem key={c} value={c}>{c}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={toolbar.filterStatus} onValueChange={v => setFilter("filterStatus", v)}>
+          <SelectTrigger className="w-[130px] h-9 text-sm bg-input border-border">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">All Statuses</SelectItem>
+            {filterOptions.statuses.map(s => (
+              <SelectItem key={s} value={s}>{s}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {coteries.length > 0 && (
+          <Select value={toolbar.filterCoterie} onValueChange={v => setFilter("filterCoterie", v)}>
+            <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border">
+              <SelectValue placeholder="Coterie" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">All Coteries</SelectItem>
+              {coteries.map(c => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
               ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredCharacters.map((character) => (
-              <Card key={character.id} data-entity-id={character.id} className="bg-gradient-subtle border-border shadow-gothic hover:shadow-deep transition-all duration-300">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-12 w-12 border-2 border-border">
-                      <AvatarImage src={character.avatar_url || ""} />
-                      <AvatarFallback className="bg-secondary text-secondary-foreground">
-                        {character.name.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <CardTitle className="text-lg text-foreground">
-                        <TextHighlight text={character.name} highlight={highlightQuery} />
-                      </CardTitle>
-                      <div className="flex items-center space-x-2 mt-1">
-                        {getClanIcon(character.clan)}
-                        <span className="text-sm text-muted-foreground">{character.clan}</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {character.clan !== "Human" && character.clan !== "Ghoul" && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Generation</span>
-                      <Badge variant="outline">{character.generation ? `${character.generation}th` : 'N/A'}</Badge>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Type</span>
-                    <Badge variant={character.type === "PC" ? "default" : "secondary"}>
-                      {character.type}
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Status</span>
-                    <Badge className={getStatusColor(character.status)}>
-                      {character.status}
-                    </Badge>
-                  </div>
-                  
-                  <div className="pt-2 border-t border-border">
-                    <p className="text-sm text-muted-foreground italic">
-                      "{character.concept}"
-                    </p>
-                  </div>
+            </SelectContent>
+          </Select>
+        )}
 
-                  {/* Image Thumbnails */}
-                  {getImageAttachments(character.attachments || []).length > 0 && (
-                    <div className="flex gap-2 pt-2">
-                      {getImageAttachments(character.attachments || []).slice(0, 3).map((img, idx) => (
-                        <div key={idx} className="relative w-16 h-16 rounded overflow-hidden border border-border bg-secondary">
-                          <img 
-                            src={img.url} 
-                            alt={img.name} 
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              console.error('Failed to load image:', img.url);
-                              e.currentTarget.style.display = 'none';
-                            }}
-                            onLoad={() => console.log('Image loaded:', img.url)}
-                          />
-                        </div>
-                      ))}
-                      {getImageAttachments(character.attachments || []).length > 3 && (
-                        <div className="w-16 h-16 rounded border border-border flex items-center justify-center bg-secondary">
-                          <span className="text-xs text-muted-foreground">
-                            +{getImageAttachments(character.attachments || []).length - 3}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  )}
+        {factions.length > 0 && (
+          <Select value={toolbar.filterFaction} onValueChange={v => setFilter("filterFaction", v)}>
+            <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border">
+              <SelectValue placeholder="Faction" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">All Factions</SelectItem>
+              {factions.map(f => (
+                <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
 
-                  {/* Document Buttons */}
-                  {getDocumentAttachments(character.attachments || []).length > 0 && (
-                    <div className="pt-2">
-                      {getDocumentAttachments(character.attachments || []).map((doc, idx) => (
-                        <Button
-                          key={idx}
-                          size="sm"
-                          variant="outline"
-                          className="w-full justify-start mb-1"
-                          onClick={() => window.open(doc.url, '_blank')}
-                        >
-                          <FileText className="h-3 w-3 mr-2" />
-                          <span className="truncate text-xs">{doc.name}</span>
-                        </Button>
-                      ))}
-                    </div>
-                  )}
-                  
-                  <div className="flex space-x-2 pt-2">
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="flex-1 border-border hover:bg-secondary"
-                      onClick={() => setViewCharacter(character)}
-                    >
-                      View
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="flex-1 border-border hover:bg-secondary"
-                      onClick={() => setEditCharacter(character)}
-                    >
-                      Edit
-                    </Button>
+        {plots.length > 0 && (
+          <Select value={toolbar.filterStory} onValueChange={v => setFilter("filterStory", v)}>
+            <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border">
+              <SelectValue placeholder="Story" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">All Stories</SelectItem>
+              {plots.map(p => (
+                <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
+        {filterOptions.sires.length > 0 && (
+          <Select value={toolbar.filterSire} onValueChange={v => setFilter("filterSire", v)}>
+            <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border">
+              <SelectValue placeholder="Sire" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">All Sires</SelectItem>
+              {filterOptions.sires.map(s => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
+        <div className="h-6 w-px bg-border mx-1 hidden sm:block" />
+
+        <Select value={toolbar.groupBy} onValueChange={v => setFilter("groupBy", v)}>
+          <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border">
+            <SelectValue placeholder="Group by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__none__">No Grouping</SelectItem>
+            <SelectItem value="clan">Group by Clan</SelectItem>
+            <SelectItem value="status">Group by Status</SelectItem>
+            <SelectItem value="type">Group by Type</SelectItem>
+            <SelectItem value="coterie">Group by Coterie</SelectItem>
+            <SelectItem value="sire">Group by Sire</SelectItem>
+            <SelectItem value="generation">Group by Generation</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={toolbar.sortBy} onValueChange={v => setFilter("sortBy", v)}>
+          <SelectTrigger className="w-[150px] h-9 text-sm bg-input border-border">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="name-asc">Name (A–Z)</SelectItem>
+            <SelectItem value="name-desc">Name (Z–A)</SelectItem>
+            <SelectItem value="clan">Clan</SelectItem>
+            <SelectItem value="status">Status</SelectItem>
+            <SelectItem value="updated">Recently Updated</SelectItem>
+            <SelectItem value="generation">Generation</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {hasActiveFilters && (
+          <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9 px-2 text-muted-foreground hover:text-foreground">
+            <X className="h-4 w-4 mr-1" />
+            Clear
+          </Button>
+        )}
+      </div>
+
+      {/* Results count */}
+      {!loading && (
+        <p className="text-sm text-muted-foreground">
+          Showing {sortedCharacters.length} of {characters.length} characters
+        </p>
+      )}
+
+      {/* Character Grid */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="bg-gradient-subtle border-border">
+              <CardHeader>
+                <div className="flex items-center space-x-3">
+                  <Skeleton className="h-12 w-12 rounded-full" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-3 w-16" />
                   </div>
-                </CardContent>
-              </Card>
-                ))}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <Skeleton className="h-6 w-full" />
+                  <Skeleton className="h-6 w-full" />
+                  <Skeleton className="h-6 w-full" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : groupedCharacters ? (
+        // Grouped view
+        <div className="space-y-4">
+          {[...groupedCharacters.entries()].map(([group, chars]) => (
+            <Collapsible key={group} defaultOpen>
+              <CollapsibleTrigger className="flex items-center gap-2 w-full text-left py-2 px-3 rounded-md bg-secondary/50 hover:bg-secondary transition-colors group">
+                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=closed]:-rotate-90" />
+                <span className="font-semibold text-foreground">{group}</span>
+                <span className="text-sm text-muted-foreground">({chars.length})</span>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-3">
+                  {chars.map(character => (
+                    <CharacterCard
+                      key={character.id}
+                      character={character}
+                      highlightQuery={highlightQuery}
+                      onView={setViewCharacter}
+                      onEdit={setEditCharacter}
+                    />
+                  ))}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          ))}
+        </div>
+      ) : (
+        // Flat view
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {sortedCharacters.map(character => (
+            <CharacterCard
+              key={character.id}
+              character={character}
+              highlightQuery={highlightQuery}
+              onView={setViewCharacter}
+              onEdit={setEditCharacter}
+            />
+          ))}
+        </div>
+      )}
+
+      {!loading && sortedCharacters.length === 0 && (
+        searchTerm || hasActiveFilters ? (
+          <EmptyState
+            icon={<Users className="h-7 w-7" />}
+            title="No characters found"
+            description="Try adjusting your search or filters."
+            action={
+              <Button variant="outline" onClick={clearFilters}>
+                <X className="w-4 h-4 mr-2" />
+                Clear Filters
+              </Button>
+            }
+          />
+        ) : (
+          <EmptyState
+            icon={<Users className="h-7 w-7" />}
+            title="No characters yet"
+            description="Characters are the heart of your chronicle — add your PCs and the NPCs they'll encounter."
+            tip="Start with 1-2 Player Characters, then add NPCs as your story unfolds. Use the Wizard for guided creation."
+            action={
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setWizardOpen(true)} className="border-primary/50">
+                  <Wand2 className="w-4 h-4 mr-2" />
+                  Character Wizard
+                </Button>
+                <CreateCharacterDialog>
+                  <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Quick Create
+                  </Button>
+                </CreateCharacterDialog>
               </div>
-            )}
-
-          {!loading && filteredCharacters.length === 0 && (
-            searchTerm ? (
-              <EmptyState
-                icon={<Users className="h-7 w-7" />}
-                title="No characters found"
-                description="Try adjusting your search terms."
-              />
-            ) : (
-              <EmptyState
-                icon={<Users className="h-7 w-7" />}
-                title="No characters yet"
-                description="Characters are the heart of your chronicle — add your PCs and the NPCs they'll encounter."
-                tip="Start with 1-2 Player Characters, then add NPCs as your story unfolds. Use the Wizard for guided creation."
-                action={
-                  <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => setWizardOpen(true)} className="border-primary/50">
-                      <Wand2 className="w-4 h-4 mr-2" />
-                      Character Wizard
-                    </Button>
-                    <CreateCharacterDialog>
-                      <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Quick Create
-                      </Button>
-                    </CreateCharacterDialog>
-                  </div>
-                }
-              />
-            )
-          )}
-        </TabsContent>
-      </Tabs>
+            }
+          />
+        )
+      )}
 
       <ViewCharacterDialog
         character={viewCharacter}
