@@ -137,8 +137,8 @@ export function Navigation() {
               Sign Out
             </Button>
             <div className="text-xs text-muted-foreground text-center">
-              <p>Vampire: The Masquerade</p>
-              <p className="text-primary">5th Edition Assistant</p>
+              <p className="font-label text-[10px] uppercase tracking-wider">Vampire: The Masquerade</p>
+              <p className="text-gold font-label text-[10px] uppercase tracking-wider">5th Edition Assistant</p>
               {user?.email && (
                 <p className="mt-1 truncate">{user.email}</p>
               )}
