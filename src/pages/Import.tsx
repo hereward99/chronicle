@@ -116,8 +116,6 @@ const TEMPLATES = {
     blood_potency: 1,
     humanity: 7,
     hunger: 1,
-    experience_total: 15,
-    experience_spent: 10,
     
     // NOT a dice pool character
     use_dice_pools: false,
@@ -220,8 +218,6 @@ const TEMPLATES = {
     hunger: 2,
     health_max: 6,      // Set manually if skip_attributes is true
     willpower_max: 6,   // Set manually if skip_attributes is true
-    experience_total: 0,
-    experience_spent: 0
   },
   
   // METHOD 4: Standard Pool (Fall of London/Let the Streets Run Red style)
@@ -292,8 +288,6 @@ const TEMPLATES = {
     humanity: 5,
     hunger: 2,
     // health_max and willpower_max calculated from attributes when skip_attributes is false
-    experience_total: 50,
-    experience_spent: 45
   },
   
   story: {
@@ -778,7 +772,6 @@ TRACKERS:
 - blood_potency: 0-10 (default 0) - OMIT for Human characters
 - humanity: 0-10 (default 7)
 - hunger: 0-5 (default 1) - OMIT for Human characters
-- experience_total, experience_spent: Numbers (default 0)
 
 [Describe your character - concept, clan, background, personality, goals]
 
