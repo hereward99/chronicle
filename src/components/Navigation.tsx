@@ -117,7 +117,7 @@ export function Navigation() {
                         "h-5 w-5 transition-colors",
                         isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-gold"
                       )} />
-                      <span className="font-medium">{item.name}</span>
+                      <span className="font-label text-sm tracking-wide">{item.name}</span>
                     </Link>
                   </li>
                 );
