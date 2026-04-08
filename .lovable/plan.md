@@ -1,53 +1,55 @@
 
 
-## Mortal Templates for Human Characters
+## Character Grouping, Filtering, and Sorting Toolbar
 
-### Context
+### What changes
 
-In VtM 5e, mortal (Human/Ghoul) characters can use predefined power-level templates instead of full attribute/skill builds:
+Replace the current PC/NPC tabs and bare search bar with a compact toolbar that provides **filter dropdowns**, a **group-by selector**, and a **sort-by selector** — all in one row beneath the search bar.
 
-| Template | Dice Pool | Health | Willpower | Notes |
-|----------|-----------|--------|-----------|-------|
-| **Weak** | 3 dice | 2 | 2 | Children, elderly, infirm |
-| **Average** | 5 dice | 4 | 3 | Ordinary mortals |
-| **Gifted** | 7 dice | 5 | 4 | Trained professionals |
-| **Deadly** | 10 dice | 6 | 5 | Elite soldiers, martial artists |
-
-### Proposed Approach
-
-When clan is "Human" or "Ghoul" in the Create Character dialog, show an optional **Mortal Template** selector (dropdown or radio group). Selecting a template will:
-
-1. Set `use_dice_pools: true` and `skip_attributes: true` (same pattern already used for quick NPCs)
-2. Store a `simple` dice pool config where the difficulty equals half the pool (matching the NPC pattern)
-3. Pre-fill `health_max` and `willpower_max` from the template values
-4. Store the template name in the `concept` field or a dedicated metadata field
-
-If "Custom" is selected (or no template), the character is created normally with full attributes.
-
-### Changes
-
-1. **`src/components/dialogs/CreateCharacterDialog.tsx`**
-   - Add a `mortalTemplate` field to form state (values: `none | weak | average | gifted | deadly`)
-   - Show the template selector when `clan` is "Human" or "Ghoul"
-   - When a template is selected, pass the corresponding dice pool config, health, and willpower values to `createCharacter`
-   - When "None/Custom" is selected, create as a normal full-attribute character
-
-2. **No database changes needed** -- the existing `dice_pools`, `use_dice_pools`, `skip_attributes`, `health_max`, and `willpower_max` columns already support this pattern.
-
-3. **Character sheet display** -- the existing dice pool display logic for `skip_attributes` characters will handle rendering these correctly, since it already handles the simple dice pool type.
-
-### Template Data (hardcoded constant)
+### Toolbar layout
 
 ```text
-MORTAL_TEMPLATES = {
-  weak:    { pool: 3, health: 2, willpower: 2, label: "Weak (children, elderly)" },
-  average: { pool: 5, health: 4, willpower: 3, label: "Average (ordinary mortal)" },
-  gifted:  { pool: 7, health: 5, willpower: 4, label: "Gifted (trained professional)" },
-  deadly:  { pool: 10, health: 6, willpower: 5, label: "Deadly (elite combatant)" },
-}
+[ Search ..._________________________ ]
+[ Type ▼ ] [ Clan ▼ ] [ Status ▼ ] [ Coterie ▼ ] [ Faction ▼ ] [ Story ▼ ]  |  Group by ▼  |  Sort by ▼  | [Clear filters]
 ```
 
-### Summary
+### Filter dropdowns
 
-This reuses the existing NPC dice pool infrastructure to support mortal templates. One file changes, no migrations, no new columns. The template selector only appears for Human/Ghoul clans.
+Each dropdown is populated dynamically from the current character data (plus linked data for Factions and Stories):
+
+| Filter | Source | Values |
+|--------|--------|--------|
+| Type | `character.type` | All, PC, NPC |
+| Clan | `character.clan` | Distinct clans from data |
+| Status | `character.status` | Active, Ally, Enemy, Unknown, Dead, Missing, Inactive |
+| Coterie | `character.coterie` + coterie_members | Distinct coterie names |
+| Sire | `character.sire` | Distinct sire names |
+| Faction | `character_factions` join | Distinct faction names |
+| Story | `plot_characters` join | Distinct story titles |
+
+Filters combine with AND logic. A "Clear filters" button resets all.
+
+### Group-by selector
+
+Options: None, Clan, Status, Type, Coterie, Sire, Generation.
+
+When active, characters render in collapsible sections with a header showing the group name and count. Cards within each group follow the current sort order.
+
+### Sort-by selector
+
+Options: Name (A-Z), Name (Z-A), Clan, Status, Recently Updated, Generation.
+
+### Technical approach
+
+**Single file change**: `src/pages/Characters.tsx`
+
+1. Add state variables: `filterClan`, `filterStatus`, `filterCoterie`, `filterFaction`, `filterStory`, `groupBy`, `sortBy`.
+2. Import linked data hooks (`useFactions`, `usePlotCharacters`, `useCoteries`) to populate the Faction and Story filter options and to match characters against them.
+3. Replace the `<Tabs>` component with the toolbar row of `<Select>` dropdowns.
+4. Extend the `filteredCharacters` logic to apply all active filters.
+5. Add a `groupedCharacters` computation that buckets the filtered list by the selected `groupBy` field, then sorts within each group by `sortBy`.
+6. Render grouped output as collapsible `<Collapsible>` sections when grouping is active, or a flat sorted grid when grouping is "None".
+7. Persist toolbar state to `localStorage` so selections survive page navigation.
+
+No database changes or new hooks required — all data is already available client-side.
 
