@@ -545,17 +545,6 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                 </div>
               )}
 
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <RuleTooltip title="Experience" description={rulesReference.trackers.experience}>
-                    <span className="text-sm font-medium">Experience</span>
-                  </RuleTooltip>
-                  <span className="text-xs text-muted-foreground">
-                    {(character.experience_total || 0) - (character.experience_spent || 0)} unspent
-                  </span>
-                </div>
-                <div className="text-2xl font-bold text-primary">{character.experience_total || 0}</div>
-              </div>
             </div>
           </Card>
 
