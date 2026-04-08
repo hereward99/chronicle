@@ -79,7 +79,14 @@ export default function Characters() {
   const { coteries, allCoterieMembers, loading: coteriesLoading, setPrimaryCoterie } = useCoteries();
   const { plots } = usePlots();
   const { plotCharacters } = usePlotCharacters();
-  const { searchQuery: highlightQuery } = useSearchHighlight();
+  const { highlightId, searchQuery: highlightQuery } = useSearchHighlight();
+
+  // Auto-switch to coteries tab when highlighting a coterie
+  useEffect(() => {
+    if (highlightId && coteries.some(c => c.id === highlightId)) {
+      setActiveTab("coteries");
+    }
+  }, [highlightId, coteries]);
 
   useEffect(() => { saveToolbarState(toolbar); }, [toolbar]);
 

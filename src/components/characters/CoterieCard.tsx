@@ -24,7 +24,7 @@ export function CoterieCard({ coterie, members, onEdit, onSetPrimary }: CoterieC
   const docs = attachments.filter(a => !a.type?.startsWith("image/"));
 
   return (
-    <Card className={`transition-shadow hover:shadow-lg ${coterie.is_primary ? "ring-2 ring-primary" : ""}`}>
+    <Card data-entity-id={coterie.id} className={`transition-shadow hover:shadow-lg ${coterie.is_primary ? "ring-2 ring-primary" : ""}`}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
