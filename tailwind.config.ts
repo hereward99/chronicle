@@ -53,6 +53,7 @@ export default {
         'gothic-gray': 'hsl(var(--gothic-gray))',
         'shadow-black': 'hsl(var(--shadow-black))',
         'parchment': 'hsl(var(--parchment))',
+        'gold': 'hsl(var(--gold))',
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -81,6 +82,7 @@ export default {
       },
       fontFamily: {
         'gothic': 'var(--font-gothic)',
+        'label': 'var(--font-label)',
         'body': 'var(--font-body)',
       },
       keyframes: {
