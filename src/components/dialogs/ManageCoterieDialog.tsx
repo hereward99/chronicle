@@ -135,8 +135,9 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
             <DialogTitle>Manage Coterie</DialogTitle>
             <DialogDescription>Update coterie details, members, and attachments.</DialogDescription>
           </DialogHeader>
-          <ScrollArea className="flex-1 pr-4">
-            <form onSubmit={handleSubmit} className="space-y-6 pb-4">
+          <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
+            <ScrollArea className="flex-1 pr-4">
+              <div className="space-y-6 pb-4">
               {/* Basic Info */}
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Details</h3>
@@ -254,18 +255,19 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
                 attachments={attachments}
                 onAttachmentsChange={setAttachments}
               />
-
-              <div className="flex justify-between pt-2">
-                <Button type="button" variant="destructive" onClick={() => setShowDeleteAlert(true)}>
-                  <Trash2 className="h-4 w-4 mr-2" /> Delete Coterie
-                </Button>
-                <div className="flex gap-2">
-                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-                  <Button type="submit">Save Changes</Button>
-                </div>
               </div>
-            </form>
-          </ScrollArea>
+            </ScrollArea>
+
+            <div className="flex justify-between pt-4 border-t mt-2">
+              <Button type="button" variant="destructive" onClick={() => setShowDeleteAlert(true)}>
+                <Trash2 className="h-4 w-4 mr-2" /> Delete Coterie
+              </Button>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+                <Button type="submit">Save Changes</Button>
+              </div>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
 
