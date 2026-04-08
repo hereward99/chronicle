@@ -795,15 +795,6 @@ export function EditCharacterDialog({
                       onChange={(val) => setFormData(prev => ({ ...prev, blood_potency: val }))}
                     />
                   </div>
-                  <div>
-                    <Label>Experience Total</Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      value={formData.experience_total}
-                      onChange={(e) => setFormData(prev => ({ ...prev, experience_total: parseInt(e.target.value) || 0 }))}
-                    />
-                  </div>
                 </div>
               </Card>
 
