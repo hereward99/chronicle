@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { MentionInput } from "@/components/mentions/MentionInput";
 import { DotRating } from "@/components/characters/DotRating";
@@ -130,14 +129,14 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
-          <DialogHeader>
+        <DialogContent className="max-h-[90vh] max-w-2xl !flex flex-col overflow-hidden gap-0 p-0 sm:max-w-2xl">
+          <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
             <DialogTitle>Manage Coterie</DialogTitle>
             <DialogDescription>Update coterie details, members, and attachments.</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
-            <ScrollArea className="flex-1 min-h-0 pr-4">
-              <div className="space-y-6 pb-4">
+          <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className="flex-1 min-h-0 overflow-y-auto px-6">
+              <div className="space-y-6 pb-6">
               {/* Basic Info */}
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Details</h3>
@@ -225,7 +224,7 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <Users className="h-4 w-4" /> Members
                 </h3>
-                <ScrollArea className="h-[200px] border rounded-md">
+                <div className="h-[200px] overflow-y-auto rounded-md border">
                   <div className="p-4 space-y-3">
                     {characters.length === 0 ? (
                       <p className="text-sm text-muted-foreground">No characters available</p>
@@ -244,7 +243,7 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
                       ))
                     )}
                   </div>
-                </ScrollArea>
+                </div>
               </div>
 
               {/* Attachments */}
@@ -256,9 +255,9 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
                 onAttachmentsChange={setAttachments}
               />
               </div>
-            </ScrollArea>
+            </div>
 
-            <div className="flex justify-between pt-4 border-t mt-2">
+            <div className="flex shrink-0 justify-between border-t px-6 py-4">
               <Button type="button" variant="destructive" onClick={() => setShowDeleteAlert(true)}>
                 <Trash2 className="h-4 w-4 mr-2" /> Delete Coterie
               </Button>
