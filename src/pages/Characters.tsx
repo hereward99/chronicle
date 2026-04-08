@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Plus, Search, Users, Wand2, X, ChevronDown } from "lucide-react";
 import { useCharacters, Character } from "@/hooks/useCharacters";
 import { useFactions } from "@/hooks/useFactions";
@@ -17,7 +18,11 @@ import { ViewCharacterDialog } from "@/components/dialogs/ViewCharacterDialog";
 import { EditCharacterDialog } from "@/components/dialogs/EditCharacterDialog";
 import { CharacterWizard } from "@/components/character/CharacterWizard";
 import { CharacterCard } from "@/components/characters/CharacterCard";
+import { CoterieCard } from "@/components/characters/CoterieCard";
+import { CreateCoterieDialog } from "@/components/dialogs/CreateCoterieDialog";
+import { ManageCoterieDialog } from "@/components/dialogs/ManageCoterieDialog";
 import { useSearchHighlight } from "@/hooks/useSearchHighlight";
+import type { Coterie } from "@/hooks/useCoteries";
 
 const STORAGE_KEY = "characters-toolbar-state";
 
@@ -65,15 +70,17 @@ export default function Characters() {
   const [editCharacter, setEditCharacter] = useState<Character | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [toolbar, setToolbar] = useState<ToolbarState>(loadToolbarState);
+  const [activeTab, setActiveTab] = useState("characters");
+  const [showCreateCoterie, setShowCreateCoterie] = useState(false);
+  const [selectedCoterie, setSelectedCoterie] = useState<Coterie | null>(null);
 
   const { characters, loading, updateCharacter, deleteCharacter } = useCharacters();
   const { factions, characterFactions } = useFactions();
-  const { coteries, allCoterieMembers } = useCoteries();
+  const { coteries, allCoterieMembers, loading: coteriesLoading, setPrimaryCoterie } = useCoteries();
   const { plots } = usePlots();
   const { plotCharacters } = usePlotCharacters();
   const { searchQuery: highlightQuery } = useSearchHighlight();
 
-  // Persist toolbar state
   useEffect(() => { saveToolbarState(toolbar); }, [toolbar]);
 
   const setFilter = useCallback((key: keyof ToolbarState, value: string) => {
@@ -93,7 +100,7 @@ export default function Characters() {
 
   // Build lookup maps
   const characterFactionMap = useMemo(() => {
-    const map = new Map<string, string[]>(); // characterId -> factionIds
+    const map = new Map<string, string[]>();
     characterFactions.forEach(cf => {
       const arr = map.get(cf.character_id) || [];
       arr.push(cf.faction_id);
@@ -103,7 +110,7 @@ export default function Characters() {
   }, [characterFactions]);
 
   const characterCoterieMap = useMemo(() => {
-    const map = new Map<string, string[]>(); // characterId -> coterieIds
+    const map = new Map<string, string[]>();
     allCoterieMembers.forEach(cm => {
       const arr = map.get(cm.character_id) || [];
       arr.push(cm.coterie_id);
@@ -113,7 +120,7 @@ export default function Characters() {
   }, [allCoterieMembers]);
 
   const characterPlotMap = useMemo(() => {
-    const map = new Map<string, string[]>(); // characterId -> plotIds
+    const map = new Map<string, string[]>();
     plotCharacters.forEach(pc => {
       const arr = map.get(pc.character_id) || [];
       arr.push(pc.plot_id);
@@ -121,6 +128,18 @@ export default function Characters() {
     });
     return map;
   }, [plotCharacters]);
+
+  // Coterie members lookup
+  const coterieMembersMap = useMemo(() => {
+    const map = new Map<string, Character[]>();
+    coteries.forEach(c => {
+      const memberCharIds = allCoterieMembers
+        .filter(cm => cm.coterie_id === c.id)
+        .map(cm => cm.character_id);
+      map.set(c.id, characters.filter(ch => memberCharIds.includes(ch.id)));
+    });
+    return map;
+  }, [coteries, allCoterieMembers, characters]);
 
   // Dynamic filter options
   const filterOptions = useMemo(() => {
@@ -202,7 +221,6 @@ export default function Characters() {
       groups.set(key, arr);
     });
 
-    // Sort group keys
     return new Map([...groups.entries()].sort(([a], [b]) => a.localeCompare(b)));
   }, [sortedCharacters, toolbar.groupBy, characterCoterieMap, coteries]);
 
@@ -211,297 +229,275 @@ export default function Characters() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Characters</h1>
-          <p className="text-muted-foreground">Manage your chronicle's characters</p>
+          <h1 className="text-3xl font-bold text-foreground">Characters & Coteries</h1>
+          <p className="text-muted-foreground">Manage your chronicle's characters and coteries</p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setWizardOpen(true)}
-            className="border-primary/50 hover:bg-primary/10"
-          >
-            <Wand2 className="w-4 h-4 mr-2" />
-            Wizard
-          </Button>
-          <CreateCharacterDialog>
-            <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
-              <Plus className="w-4 h-4 mr-2" />
-              Quick Create
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="characters">Characters</TabsTrigger>
+          <TabsTrigger value="coteries">Coteries</TabsTrigger>
+        </TabsList>
+
+        {/* ===== Characters Tab ===== */}
+        <TabsContent value="characters" className="space-y-6">
+          {/* Actions */}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setWizardOpen(true)} className="border-primary/50 hover:bg-primary/10">
+              <Wand2 className="w-4 h-4 mr-2" /> Wizard
             </Button>
-          </CreateCharacterDialog>
-        </div>
-      </div>
-
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search characters..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 bg-input border-border"
-        />
-      </div>
-
-      {/* Filter / Group / Sort Toolbar */}
-      <div className="flex flex-wrap items-center gap-2">
-        <Select value={toolbar.filterType} onValueChange={v => setFilter("filterType", v)}>
-          <SelectTrigger className="w-[120px] h-9 text-sm bg-input border-border">
-            <SelectValue placeholder="Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__all__">All Types</SelectItem>
-            <SelectItem value="PC">PC</SelectItem>
-            <SelectItem value="NPC">NPC</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select value={toolbar.filterClan} onValueChange={v => setFilter("filterClan", v)}>
-          <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border">
-            <SelectValue placeholder="Clan" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__all__">All Clans</SelectItem>
-            {filterOptions.clans.map(c => (
-              <SelectItem key={c} value={c}>{c}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={toolbar.filterStatus} onValueChange={v => setFilter("filterStatus", v)}>
-          <SelectTrigger className="w-[130px] h-9 text-sm bg-input border-border">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__all__">All Statuses</SelectItem>
-            {filterOptions.statuses.map(s => (
-              <SelectItem key={s} value={s}>{s}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {coteries.length > 0 && (
-          <Select value={toolbar.filterCoterie} onValueChange={v => setFilter("filterCoterie", v)}>
-            <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border">
-              <SelectValue placeholder="Coterie" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">All Coteries</SelectItem>
-              {coteries.map(c => (
-                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-
-        {factions.length > 0 && (
-          <Select value={toolbar.filterFaction} onValueChange={v => setFilter("filterFaction", v)}>
-            <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border">
-              <SelectValue placeholder="Faction" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">All Factions</SelectItem>
-              {factions.map(f => (
-                <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-
-        {plots.length > 0 && (
-          <Select value={toolbar.filterStory} onValueChange={v => setFilter("filterStory", v)}>
-            <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border">
-              <SelectValue placeholder="Story" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">All Stories</SelectItem>
-              {plots.map(p => (
-                <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-
-        {filterOptions.sires.length > 0 && (
-          <Select value={toolbar.filterSire} onValueChange={v => setFilter("filterSire", v)}>
-            <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border">
-              <SelectValue placeholder="Sire" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">All Sires</SelectItem>
-              {filterOptions.sires.map(s => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-
-        <div className="h-6 w-px bg-border mx-1 hidden sm:block" />
-
-        <Select value={toolbar.groupBy} onValueChange={v => setFilter("groupBy", v)}>
-          <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border">
-            <SelectValue placeholder="Group by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__none__">No Grouping</SelectItem>
-            <SelectItem value="clan">Group by Clan</SelectItem>
-            <SelectItem value="status">Group by Status</SelectItem>
-            <SelectItem value="type">Group by Type</SelectItem>
-            <SelectItem value="coterie">Group by Coterie</SelectItem>
-            <SelectItem value="sire">Group by Sire</SelectItem>
-            <SelectItem value="generation">Group by Generation</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select value={toolbar.sortBy} onValueChange={v => setFilter("sortBy", v)}>
-          <SelectTrigger className="w-[150px] h-9 text-sm bg-input border-border">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="name-asc">Name (A–Z)</SelectItem>
-            <SelectItem value="name-desc">Name (Z–A)</SelectItem>
-            <SelectItem value="clan">Clan</SelectItem>
-            <SelectItem value="status">Status</SelectItem>
-            <SelectItem value="updated">Recently Updated</SelectItem>
-            <SelectItem value="generation">Generation</SelectItem>
-          </SelectContent>
-        </Select>
-
-        {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9 px-2 text-muted-foreground hover:text-foreground">
-            <X className="h-4 w-4 mr-1" />
-            Clear
-          </Button>
-        )}
-      </div>
-
-      {/* Results count */}
-      {!loading && (
-        <p className="text-sm text-muted-foreground">
-          Showing {sortedCharacters.length} of {characters.length} characters
-        </p>
-      )}
-
-      {/* Character Grid */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i} className="bg-gradient-subtle border-border">
-              <CardHeader>
-                <div className="flex items-center space-x-3">
-                  <Skeleton className="h-12 w-12 rounded-full" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-3 w-16" />
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <Skeleton className="h-6 w-full" />
-                  <Skeleton className="h-6 w-full" />
-                  <Skeleton className="h-6 w-full" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : groupedCharacters ? (
-        // Grouped view
-        <div className="space-y-4">
-          {[...groupedCharacters.entries()].map(([group, chars]) => (
-            <Collapsible key={group} defaultOpen>
-              <CollapsibleTrigger className="flex items-center gap-2 w-full text-left py-2 px-3 rounded-md bg-secondary/50 hover:bg-secondary transition-colors group">
-                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=closed]:-rotate-90" />
-                <span className="font-semibold text-foreground">{group}</span>
-                <span className="text-sm text-muted-foreground">({chars.length})</span>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-3">
-                  {chars.map(character => (
-                    <CharacterCard
-                      key={character.id}
-                      character={character}
-                      highlightQuery={highlightQuery}
-                      onView={setViewCharacter}
-                      onEdit={setEditCharacter}
-                    />
-                  ))}
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          ))}
-        </div>
-      ) : (
-        // Flat view
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sortedCharacters.map(character => (
-            <CharacterCard
-              key={character.id}
-              character={character}
-              highlightQuery={highlightQuery}
-              onView={setViewCharacter}
-              onEdit={setEditCharacter}
-            />
-          ))}
-        </div>
-      )}
-
-      {!loading && sortedCharacters.length === 0 && (
-        searchTerm || hasActiveFilters ? (
-          <EmptyState
-            icon={<Users className="h-7 w-7" />}
-            title="No characters found"
-            description="Try adjusting your search or filters."
-            action={
-              <Button variant="outline" onClick={clearFilters}>
-                <X className="w-4 h-4 mr-2" />
-                Clear Filters
+            <CreateCharacterDialog>
+              <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
+                <Plus className="w-4 h-4 mr-2" /> Quick Create
               </Button>
-            }
-          />
-        ) : (
-          <EmptyState
-            icon={<Users className="h-7 w-7" />}
-            title="No characters yet"
-            description="Characters are the heart of your chronicle — add your PCs and the NPCs they'll encounter."
-            tip="Start with 1-2 Player Characters, then add NPCs as your story unfolds. Use the Wizard for guided creation."
-            action={
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setWizardOpen(true)} className="border-primary/50">
-                  <Wand2 className="w-4 h-4 mr-2" />
-                  Character Wizard
+            </CreateCharacterDialog>
+          </div>
+
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Search characters..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10 bg-input border-border" />
+          </div>
+
+          {/* Filter / Group / Sort Toolbar */}
+          <div className="flex flex-wrap items-center gap-2">
+            <Select value={toolbar.filterType} onValueChange={v => setFilter("filterType", v)}>
+              <SelectTrigger className="w-[120px] h-9 text-sm bg-input border-border"><SelectValue placeholder="Type" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">All Types</SelectItem>
+                <SelectItem value="PC">PC</SelectItem>
+                <SelectItem value="NPC">NPC</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={toolbar.filterClan} onValueChange={v => setFilter("filterClan", v)}>
+              <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border"><SelectValue placeholder="Clan" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">All Clans</SelectItem>
+                {filterOptions.clans.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+
+            <Select value={toolbar.filterStatus} onValueChange={v => setFilter("filterStatus", v)}>
+              <SelectTrigger className="w-[130px] h-9 text-sm bg-input border-border"><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">All Statuses</SelectItem>
+                {filterOptions.statuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+
+            {coteries.length > 0 && (
+              <Select value={toolbar.filterCoterie} onValueChange={v => setFilter("filterCoterie", v)}>
+                <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border"><SelectValue placeholder="Coterie" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All Coteries</SelectItem>
+                  {coteries.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
+
+            {factions.length > 0 && (
+              <Select value={toolbar.filterFaction} onValueChange={v => setFilter("filterFaction", v)}>
+                <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border"><SelectValue placeholder="Faction" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All Factions</SelectItem>
+                  {factions.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
+
+            {plots.length > 0 && (
+              <Select value={toolbar.filterStory} onValueChange={v => setFilter("filterStory", v)}>
+                <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border"><SelectValue placeholder="Story" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All Stories</SelectItem>
+                  {plots.map(p => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
+
+            {filterOptions.sires.length > 0 && (
+              <Select value={toolbar.filterSire} onValueChange={v => setFilter("filterSire", v)}>
+                <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border"><SelectValue placeholder="Sire" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All Sires</SelectItem>
+                  {filterOptions.sires.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
+
+            <div className="h-6 w-px bg-border mx-1 hidden sm:block" />
+
+            <Select value={toolbar.groupBy} onValueChange={v => setFilter("groupBy", v)}>
+              <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border"><SelectValue placeholder="Group by" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">No Grouping</SelectItem>
+                <SelectItem value="clan">Group by Clan</SelectItem>
+                <SelectItem value="status">Group by Status</SelectItem>
+                <SelectItem value="type">Group by Type</SelectItem>
+                <SelectItem value="coterie">Group by Coterie</SelectItem>
+                <SelectItem value="sire">Group by Sire</SelectItem>
+                <SelectItem value="generation">Group by Generation</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={toolbar.sortBy} onValueChange={v => setFilter("sortBy", v)}>
+              <SelectTrigger className="w-[150px] h-9 text-sm bg-input border-border"><SelectValue placeholder="Sort by" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="name-asc">Name (A–Z)</SelectItem>
+                <SelectItem value="name-desc">Name (Z–A)</SelectItem>
+                <SelectItem value="clan">Clan</SelectItem>
+                <SelectItem value="status">Status</SelectItem>
+                <SelectItem value="updated">Recently Updated</SelectItem>
+                <SelectItem value="generation">Generation</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9 px-2 text-muted-foreground hover:text-foreground">
+                <X className="h-4 w-4 mr-1" /> Clear
+              </Button>
+            )}
+          </div>
+
+          {/* Results count */}
+          {!loading && (
+            <p className="text-sm text-muted-foreground">
+              Showing {sortedCharacters.length} of {characters.length} characters
+            </p>
+          )}
+
+          {/* Character Grid */}
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <Card key={i} className="bg-gradient-subtle border-border">
+                  <CardHeader>
+                    <div className="flex items-center space-x-3">
+                      <Skeleton className="h-12 w-12 rounded-full" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <Skeleton className="h-6 w-full" />
+                      <Skeleton className="h-6 w-full" />
+                      <Skeleton className="h-6 w-full" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : groupedCharacters ? (
+            <div className="space-y-4">
+              {[...groupedCharacters.entries()].map(([group, chars]) => (
+                <Collapsible key={group} defaultOpen>
+                  <CollapsibleTrigger className="flex items-center gap-2 w-full text-left py-2 px-3 rounded-md bg-secondary/50 hover:bg-secondary transition-colors group">
+                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=closed]:-rotate-90" />
+                    <span className="font-semibold text-foreground">{group}</span>
+                    <span className="text-sm text-muted-foreground">({chars.length})</span>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-3">
+                      {chars.map(character => (
+                        <CharacterCard key={character.id} character={character} highlightQuery={highlightQuery} onView={setViewCharacter} onEdit={setEditCharacter} />
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sortedCharacters.map(character => (
+                <CharacterCard key={character.id} character={character} highlightQuery={highlightQuery} onView={setViewCharacter} onEdit={setEditCharacter} />
+              ))}
+            </div>
+          )}
+
+          {!loading && sortedCharacters.length === 0 && (
+            searchTerm || hasActiveFilters ? (
+              <EmptyState
+                icon={<Users className="h-7 w-7" />}
+                title="No characters found"
+                description="Try adjusting your search or filters."
+                action={<Button variant="outline" onClick={clearFilters}><X className="w-4 h-4 mr-2" /> Clear Filters</Button>}
+              />
+            ) : (
+              <EmptyState
+                icon={<Users className="h-7 w-7" />}
+                title="No characters yet"
+                description="Characters are the heart of your chronicle — add your PCs and the NPCs they'll encounter."
+                tip="Start with 1-2 Player Characters, then add NPCs as your story unfolds. Use the Wizard for guided creation."
+                action={
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => setWizardOpen(true)} className="border-primary/50">
+                      <Wand2 className="w-4 h-4 mr-2" /> Character Wizard
+                    </Button>
+                    <CreateCharacterDialog>
+                      <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
+                        <Plus className="w-4 h-4 mr-2" /> Quick Create
+                      </Button>
+                    </CreateCharacterDialog>
+                  </div>
+                }
+              />
+            )
+          )}
+        </TabsContent>
+
+        {/* ===== Coteries Tab ===== */}
+        <TabsContent value="coteries" className="space-y-6">
+          <div className="flex justify-end">
+            <Button onClick={() => setShowCreateCoterie(true)} className="bg-gradient-blood hover:opacity-90 shadow-crimson">
+              <Plus className="w-4 h-4 mr-2" /> New Coterie
+            </Button>
+          </div>
+
+          {coteriesLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[1, 2].map(i => (
+                <Card key={i}><CardHeader><Skeleton className="h-6 w-3/4 mb-2" /><Skeleton className="h-4 w-full" /></CardHeader><CardContent><Skeleton className="h-4 w-1/2" /></CardContent></Card>
+              ))}
+            </div>
+          ) : coteries.length === 0 ? (
+            <EmptyState
+              icon={<Users className="h-7 w-7" />}
+              title="No coteries yet"
+              description="Coteries are groups of vampires who band together for survival, politics, or shared goals."
+              tip="Create your characters first, then group them into coteries."
+              action={
+                <Button onClick={() => setShowCreateCoterie(true)} className="bg-gradient-blood hover:opacity-90 shadow-crimson">
+                  <Plus className="h-4 w-4 mr-2" /> Create First Coterie
                 </Button>
-                <CreateCharacterDialog>
-                  <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Quick Create
-                  </Button>
-                </CreateCharacterDialog>
-              </div>
-            }
-          />
-        )
-      )}
+              }
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {coteries.map(coterie => (
+                <CoterieCard
+                  key={coterie.id}
+                  coterie={coterie}
+                  members={coterieMembersMap.get(coterie.id) || []}
+                  onEdit={setSelectedCoterie}
+                  onSetPrimary={setPrimaryCoterie}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
 
-      <ViewCharacterDialog
-        character={viewCharacter}
-        open={!!viewCharacter}
-        onOpenChange={(open) => !open && setViewCharacter(null)}
-      />
-
-      <EditCharacterDialog
-        character={editCharacter}
-        open={!!editCharacter}
-        onOpenChange={(open) => !open && setEditCharacter(null)}
-        onUpdate={updateCharacter}
-        onDelete={deleteCharacter}
-      />
-
-      <CharacterWizard
-        open={wizardOpen}
-        onOpenChange={setWizardOpen}
-      />
+      {/* Dialogs */}
+      <ViewCharacterDialog character={viewCharacter} open={!!viewCharacter} onOpenChange={open => !open && setViewCharacter(null)} />
+      <EditCharacterDialog character={editCharacter} open={!!editCharacter} onOpenChange={open => !open && setEditCharacter(null)} onUpdate={updateCharacter} onDelete={deleteCharacter} />
+      <CharacterWizard open={wizardOpen} onOpenChange={setWizardOpen} />
+      <CreateCoterieDialog open={showCreateCoterie} onOpenChange={setShowCreateCoterie} />
+      <ManageCoterieDialog open={!!selectedCoterie} onOpenChange={open => !open && setSelectedCoterie(null)} coterie={selectedCoterie} />
     </div>
   );
 }

@@ -395,35 +395,77 @@ export type Database = {
       }
       coteries: {
         Row: {
+          attachments: Json | null
+          chasse: number
           chronicle_id: string
+          chronicle_tenets: string | null
+          city: string | null
+          coterie_advantages_and_flaws: string | null
+          coterie_boons_and_debts: string | null
+          coterie_goals: string | null
+          coterie_type: string | null
           created_at: string
           description: string | null
           domain: string | null
+          domain_merits: string | null
+          domain_resonance: string | null
+          haven_location: string | null
+          haven_merits_and_flaws: string | null
           id: string
           is_primary: boolean
+          lien: number
           name: string
+          portillon: number
           updated_at: string
           user_id: string
         }
         Insert: {
+          attachments?: Json | null
+          chasse?: number
           chronicle_id: string
+          chronicle_tenets?: string | null
+          city?: string | null
+          coterie_advantages_and_flaws?: string | null
+          coterie_boons_and_debts?: string | null
+          coterie_goals?: string | null
+          coterie_type?: string | null
           created_at?: string
           description?: string | null
           domain?: string | null
+          domain_merits?: string | null
+          domain_resonance?: string | null
+          haven_location?: string | null
+          haven_merits_and_flaws?: string | null
           id?: string
           is_primary?: boolean
+          lien?: number
           name: string
+          portillon?: number
           updated_at?: string
           user_id: string
         }
         Update: {
+          attachments?: Json | null
+          chasse?: number
           chronicle_id?: string
+          chronicle_tenets?: string | null
+          city?: string | null
+          coterie_advantages_and_flaws?: string | null
+          coterie_boons_and_debts?: string | null
+          coterie_goals?: string | null
+          coterie_type?: string | null
           created_at?: string
           description?: string | null
           domain?: string | null
+          domain_merits?: string | null
+          domain_resonance?: string | null
+          haven_location?: string | null
+          haven_merits_and_flaws?: string | null
           id?: string
           is_primary?: boolean
+          lien?: number
           name?: string
+          portillon?: number
           updated_at?: string
           user_id?: string
         }

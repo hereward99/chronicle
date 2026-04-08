@@ -190,7 +190,7 @@ export function useGlobalSearch() {
           type: 'coterie' as const,
           title: c.name,
           subtitle: 'Coterie',
-          route: '/coteries',
+          route: '/characters',
         })),
       ];
 
