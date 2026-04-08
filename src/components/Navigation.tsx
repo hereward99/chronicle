@@ -72,8 +72,8 @@ export function Navigation() {
                 <Skull className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground">Chronicle</h1>
-                <p className="text-sm text-muted-foreground">Keeper</p>
+                <h1 className="text-xl font-bold text-gold font-gothic">Chronicle</h1>
+                <p className="text-sm text-muted-foreground font-label tracking-wider uppercase text-[10px]">Keeper</p>
               </div>
             </div>
           </div>
