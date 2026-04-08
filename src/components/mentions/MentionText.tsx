@@ -23,7 +23,7 @@ const typeRoutes: Record<MentionType, string> = {
   session: '/sessions',
   note: '/chronicle',
   faction: '/relationships',
-  coterie: '/coteries',
+  coterie: '/characters',
    location: '/locations',
 };
 

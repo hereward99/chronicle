@@ -10,6 +10,20 @@ export interface Coterie {
   description: string | null;
   domain: string | null;
   is_primary: boolean;
+  coterie_type: string | null;
+  city: string | null;
+  chasse: number;
+  portillon: number;
+  lien: number;
+  domain_merits: string | null;
+  domain_resonance: string | null;
+  haven_location: string | null;
+  haven_merits_and_flaws: string | null;
+  coterie_advantages_and_flaws: string | null;
+  coterie_boons_and_debts: string | null;
+  chronicle_tenets: string | null;
+  coterie_goals: string | null;
+  attachments: any[] | null;
   created_at: string;
   updated_at: string;
 }
