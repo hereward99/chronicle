@@ -1,55 +1,74 @@
 
 
-## Character Grouping, Filtering, and Sorting Toolbar
+## Build V5 Coterie Sheet with File Attachments
 
-### What changes
+### Overview
 
-Replace the current PC/NPC tabs and bare search bar with a compact toolbar that provides **filter dropdowns**, a **group-by selector**, and a **sort-by selector** — all in one row beneath the search bar.
+Add 13 new columns to the `coteries` table for V5 Coterie Sheet fields, create a `coterie-files` storage bucket, integrate coteries as a tab on the Characters page with full V5 sheet display, and support file uploads.
 
-### Toolbar layout
+### 1. Database Migration
 
-```text
-[ Search ..._________________________ ]
-[ Type ▼ ] [ Clan ▼ ] [ Status ▼ ] [ Coterie ▼ ] [ Faction ▼ ] [ Story ▼ ]  |  Group by ▼  |  Sort by ▼  | [Clear filters]
+Add columns to `coteries`:
+
+```sql
+ALTER TABLE coteries
+  ADD COLUMN coterie_type text,
+  ADD COLUMN city text,
+  ADD COLUMN chasse integer NOT NULL DEFAULT 0,
+  ADD COLUMN portillon integer NOT NULL DEFAULT 0,
+  ADD COLUMN lien integer NOT NULL DEFAULT 0,
+  ADD COLUMN domain_merits text,
+  ADD COLUMN domain_resonance text,
+  ADD COLUMN haven_location text,
+  ADD COLUMN haven_merits_and_flaws text,
+  ADD COLUMN coterie_advantages_and_flaws text,
+  ADD COLUMN coterie_boons_and_debts text,
+  ADD COLUMN chronicle_tenets text,
+  ADD COLUMN coterie_goals text,
+  ADD COLUMN attachments jsonb DEFAULT '[]';
 ```
 
-### Filter dropdowns
+Create storage bucket + RLS:
 
-Each dropdown is populated dynamically from the current character data (plus linked data for Factions and Stories):
+```sql
+INSERT INTO storage.buckets (id, name, public) VALUES ('coterie-files', 'coterie-files', true);
 
-| Filter | Source | Values |
-|--------|--------|--------|
-| Type | `character.type` | All, PC, NPC |
-| Clan | `character.clan` | Distinct clans from data |
-| Status | `character.status` | Active, Ally, Enemy, Unknown, Dead, Missing, Inactive |
-| Coterie | `character.coterie` + coterie_members | Distinct coterie names |
-| Sire | `character.sire` | Distinct sire names |
-| Faction | `character_factions` join | Distinct faction names |
-| Story | `plot_characters` join | Distinct story titles |
+CREATE POLICY "Auth users upload coterie files" ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'coterie-files');
+CREATE POLICY "Anyone can view coterie files" ON storage.objects FOR SELECT
+  USING (bucket_id = 'coterie-files');
+CREATE POLICY "Auth users delete own coterie files" ON storage.objects FOR DELETE TO authenticated
+  USING (bucket_id = 'coterie-files' AND (storage.foldername(name))[1] = auth.uid()::text);
+```
 
-Filters combine with AND logic. A "Clear filters" button resets all.
+### 2. New Component: DotRating
 
-### Group-by selector
+`src/components/characters/DotRating.tsx` — reusable 1-5 filled/empty circle display with optional click-to-edit. Used for Chasse, Portillon, Lien.
 
-Options: None, Clan, Status, Type, Coterie, Sire, Generation.
+### 3. New Component: CoterieCard
 
-When active, characters render in collapsible sections with a header showing the group name and count. Cards within each group follow the current sort order.
+`src/components/characters/CoterieCard.tsx` — expandable card displaying:
+- Header: name, type, city, primary badge
+- Domain: Chasse/Portillon/Lien as dots, resonance, domain merits
+- Haven: location, merits & flaws
+- Social Ledger: advantages/flaws, boons/debts
+- Ideology: chronicle tenets, coterie goals
+- Members list with clan
+- Attachment gallery (images + document links)
 
-### Sort-by selector
+### 4. Update Existing Files
 
-Options: Name (A-Z), Name (Z-A), Clan, Status, Recently Updated, Generation.
+| File | Change |
+|------|--------|
+| `src/hooks/useCoteries.tsx` | Add all new fields to `Coterie` interface |
+| `src/components/ui/file-upload.tsx` | Add `'coterie'` to `entityType` union |
+| `src/components/dialogs/CreateCoterieDialog.tsx` | Add all V5 fields, dot selectors, file upload |
+| `src/components/dialogs/ManageCoterieDialog.tsx` | Add all V5 fields, dot selectors, file upload, attachment gallery |
+| `src/pages/Characters.tsx` | Add "Characters / Coteries" tab toggle at top; Coteries tab renders coterie cards + create button |
+| `src/hooks/useGlobalSearch.tsx` | Change coterie route from `/coteries` to `/characters` |
+| `src/components/mentions/MentionText.tsx` | Change coterie route from `/coteries` to `/characters` |
 
-### Technical approach
+### 5. Cleanup
 
-**Single file change**: `src/pages/Characters.tsx`
-
-1. Add state variables: `filterClan`, `filterStatus`, `filterCoterie`, `filterFaction`, `filterStory`, `groupBy`, `sortBy`.
-2. Import linked data hooks (`useFactions`, `usePlotCharacters`, `useCoteries`) to populate the Faction and Story filter options and to match characters against them.
-3. Replace the `<Tabs>` component with the toolbar row of `<Select>` dropdowns.
-4. Extend the `filteredCharacters` logic to apply all active filters.
-5. Add a `groupedCharacters` computation that buckets the filtered list by the selected `groupBy` field, then sorts within each group by `sortBy`.
-6. Render grouped output as collapsible `<Collapsible>` sections when grouping is active, or a flat sorted grid when grouping is "None".
-7. Persist toolbar state to `localStorage` so selections survive page navigation.
-
-No database changes or new hooks required — all data is already available client-side.
+Delete `src/pages/Coteries.tsx` (standalone page, no route references it).
 
