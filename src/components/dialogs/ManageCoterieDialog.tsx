@@ -130,13 +130,13 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle>Manage Coterie</DialogTitle>
             <DialogDescription>Update coterie details, members, and attachments.</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
-            <ScrollArea className="flex-1 pr-4">
+          <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+            <ScrollArea className="flex-1 min-h-0 pr-4">
               <div className="space-y-6 pb-4">
               {/* Basic Info */}
               <div className="space-y-3">
