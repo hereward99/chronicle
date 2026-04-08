@@ -107,10 +107,10 @@ export function Navigation() {
                       to={item.href}
                       onClick={() => setIsOpen(false)}
                       className={cn(
-                        "flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 group",
+                        "flex items-center space-x-3 px-4 py-3 rounded transition-all duration-200 group",
                         isActive 
                           ? "bg-primary text-primary-foreground shadow-crimson" 
-                          : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                          : "text-muted-foreground hover:text-gold hover:bg-secondary"
                       )}
                     >
                       <Icon className={cn(
