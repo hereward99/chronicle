@@ -409,6 +409,10 @@ export async function exportCharacterToPDF(character: {
   if (character.resonance && isVampire) {
     y = addLabelValue(pdf, 'Resonance', character.resonance, y, 20, infoMaxWidth);
   }
+  // Ensure we're past the portrait before full-width sections
+  if (hasPortrait && y < portraitBottomY) {
+    y = portraitBottomY;
+  }
   y += 5;
   
   // Dice Pools section (for Storyteller Characters)
