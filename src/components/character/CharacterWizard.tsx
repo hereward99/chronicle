@@ -12,6 +12,7 @@ import { useChronicles } from "@/hooks/useChronicles";
 import { useToast } from "@/hooks/use-toast";
 import { useFormDraft } from "@/hooks/useFormDraft";
 import { ChevronLeft, ChevronRight, Check, Wand2 } from "lucide-react";
+import { DISCIPLINES as DISCIPLINE_LIST, getDisciplinePowersLegacy } from "@/lib/v5/disciplineData";
 import { PortraitGenerator } from "@/components/character/PortraitGenerator";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
