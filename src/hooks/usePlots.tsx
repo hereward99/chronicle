@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useChronicles } from './useChronicles';
 
 export interface Plot {
   id: string;
@@ -21,13 +22,17 @@ export interface Plot {
 export function usePlots() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { currentChronicle } = useChronicles();
+  const chronicleId = currentChronicle?.id;
 
   const { data: plots = [], isLoading: loading } = useQuery({
-    queryKey: ['plots'],
+    queryKey: ['plots', chronicleId],
     queryFn: async () => {
+      if (!chronicleId) return [];
       const { data, error } = await supabase
         .from('plots')
         .select('*')
+        .eq('chronicle_id', chronicleId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -36,6 +41,7 @@ export function usePlots() {
         attachments: plot.attachments || []
       })) as Plot[];
     },
+    enabled: !!chronicleId,
   });
 
   const createPlotMutation = useMutation({

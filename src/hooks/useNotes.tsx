@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useChronicles } from './useChronicles';
 
 export interface Note {
   id: string;
@@ -16,18 +17,23 @@ export interface Note {
 export function useNotes() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { currentChronicle } = useChronicles();
+  const chronicleId = currentChronicle?.id;
 
   const { data: notes = [], isLoading: loading } = useQuery({
-    queryKey: ['notes'],
+    queryKey: ['notes', chronicleId],
     queryFn: async () => {
+      if (!chronicleId) return [];
       const { data, error } = await supabase
         .from('notes')
         .select('*')
+        .eq('chronicle_id', chronicleId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data as Note[] || [];
     },
+    enabled: !!chronicleId,
   });
 
   const createNoteMutation = useMutation({

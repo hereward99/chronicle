@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import { useChronicles } from './useChronicles';
 
 export interface ChronicleStats {
   characters: { total: number; pcs: number; npcs: number };
@@ -18,14 +19,20 @@ export function useChronicleStats() {
   });
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { currentChronicle } = useChronicles();
+  const chronicleId = currentChronicle?.id;
 
   const fetchStats = async () => {
+    if (!chronicleId) {
+      setLoading(false);
+      return;
+    }
     try {
       const [charactersRes, sessionsRes, plotsRes, notesRes] = await Promise.all([
-        supabase.from('characters').select('type'),
-        supabase.from('sessions').select('date_played').order('date_played', { ascending: false }),
-        supabase.from('plots').select('status'),
-        supabase.from('notes').select('id'),
+        supabase.from('characters').select('type').eq('chronicle_id', chronicleId),
+        supabase.from('sessions').select('date_played').eq('chronicle_id', chronicleId).order('date_played', { ascending: false }),
+        supabase.from('plots').select('status').eq('chronicle_id', chronicleId),
+        supabase.from('notes').select('id').eq('chronicle_id', chronicleId),
       ]);
 
       if (charactersRes.error) throw charactersRes.error;
@@ -69,7 +76,7 @@ export function useChronicleStats() {
 
   useEffect(() => {
     fetchStats();
-  }, []);
+  }, [chronicleId]);
 
   return { stats, loading, refetch: fetchStats };
 }

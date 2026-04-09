@@ -49,10 +49,10 @@
      e.preventDefault();
      if (!location) return;
 
-     await updateLocation.mutateAsync({
-       id: location.id,
-       ...formData,
-     });
+      await updateLocation({
+        id: location.id,
+        ...formData,
+      });
 
      onOpenChange(false);
    };
@@ -146,8 +146,8 @@
              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                Cancel
              </Button>
-             <Button type="submit" disabled={!formData.name || updateLocation.isPending}>
-               {updateLocation.isPending ? 'Saving...' : 'Save Changes'}
+            <Button type="submit" disabled={!formData.name}>
+              Save Changes
              </Button>
            </DialogFooter>
          </form>

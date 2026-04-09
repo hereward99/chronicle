@@ -154,7 +154,7 @@ export default function Locations() {
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    await deleteLocation.mutateAsync(deleteTarget.id);
+    await deleteLocation(deleteTarget.id);
     setDeleteTarget(null);
   };
 

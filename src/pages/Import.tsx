@@ -8,7 +8,7 @@ import { useImport, ImportType, ImportMode } from "@/hooks/useImport";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useChronicles } from "@/hooks/useChronicles";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 // Template structures matching the database schema
 // =============================================================================
 // CHARACTER CREATION METHODS & TEMPLATES

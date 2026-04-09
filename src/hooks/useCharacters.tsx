@@ -1,17 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import { useChronicles } from './useChronicles';
 
 // Dice Pool types for Storyteller Characters
 export interface SimpleDicePool {
   type: 'simple';
-  difficulty: number; // Difficulty to beat / rolls 2x this for pool
+  difficulty: number;
 }
 
 export interface GeneralDicePool {
   type: 'general';
-  primary: number;   // Pool for areas of expertise
-  secondary: number; // Pool for mediocre/poor areas
+  primary: number;
+  secondary: number;
 }
 
 export interface ExceptionalPool {
@@ -52,47 +53,36 @@ export interface Character {
   updated_at: string;
   attachments?: any[];
   
-  // Dice Pools (for Storyteller Characters)
   use_dice_pools?: boolean;
   skip_attributes?: boolean;
   dice_pools?: DicePoolConfig | null;
   
-  // Physical Attributes
   strength?: number;
   dexterity?: number;
   stamina?: number;
-  
-  // Social Attributes
   charisma?: number;
   manipulation?: number;
   composure?: number;
-  
-  // Mental Attributes
   intelligence?: number;
   wits?: number;
   resolve?: number;
   
-  // Skills & Disciplines
   skills?: Record<string, { rating: number; specialty?: string }>;
   disciplines?: Array<{ name: string; level: number }>;
   powers?: Array<{ name: string; discipline: string; level: number; cost?: string; description?: string }>;
   
-  // Character Creation
   predator_type?: string;
   chronicle_tenets?: string[];
   
-  // Advantages & Flaws
   advantages?: Array<{ name: string; type: string; rating?: number; description?: string }>;
   flaws?: Array<{ name: string; rating?: number; description?: string }>;
   loresheets?: Array<{ name: string; benefits: string[] }>;
   
-  // Beliefs
   convictions?: string[];
   touchstones?: Array<{ name: string; conviction?: string; description?: string }>;
   ambition?: string;
   desire?: string;
   
-  // Trackers
   health_max?: number;
   health_superficial?: number;
   health_aggravated?: number;
@@ -103,11 +93,9 @@ export interface Character {
   hunger?: number;
   blood_potency?: number;
   
-  // Experience
   experience_total?: number;
   experience_spent?: number;
   
-  // Additional Details
   appearance?: string;
   distinguishing_features?: string;
   history?: string;
@@ -115,26 +103,29 @@ export interface Character {
   resonance?: string;
 }
 
-const fetchCharacters = async (): Promise<Character[]> => {
-  const { data, error } = await supabase
-    .from('characters')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return (data as unknown as Character[] || []).map(char => ({
-    ...char,
-    attachments: char.attachments || []
-  }));
-};
-
 export function useCharacters() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { currentChronicle } = useChronicles();
+  const chronicleId = currentChronicle?.id;
 
   const { data: characters = [], isLoading: loading } = useQuery({
-    queryKey: ['characters'],
-    queryFn: fetchCharacters,
+    queryKey: ['characters', chronicleId],
+    queryFn: async () => {
+      if (!chronicleId) return [];
+      const { data, error } = await supabase
+        .from('characters')
+        .select('*')
+        .eq('chronicle_id', chronicleId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return (data as unknown as Character[] || []).map(char => ({
+        ...char,
+        attachments: char.attachments || []
+      }));
+    },
+    enabled: !!chronicleId,
   });
 
   const createMutation = useMutation({
