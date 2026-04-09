@@ -73,7 +73,8 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
       setAttachments(Array.isArray(coterie.attachments) ? coterie.attachments : []);
       getCoterieMembers(coterie.id).then(ids => setMemberIds(new Set(ids)));
     }
-  }, [coterie, getCoterieMembers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coterie?.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
