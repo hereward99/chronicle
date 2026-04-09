@@ -113,7 +113,7 @@ export function DiceRoller({
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Pool, Hunger, Difficulty controls */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4">
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground uppercase tracking-wider">Dice Pool</Label>
               <div className="flex items-center gap-1">
@@ -132,7 +132,7 @@ export function DiceRoller({
                   max={30}
                   value={pool}
                   onChange={(e) => setPool(Math.max(1, Math.min(30, parseInt(e.target.value) || 1)))}
-                  className="h-8 text-center text-lg font-bold"
+                  className="h-8 text-center text-lg font-bold min-w-0 px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
                 <Button
                   type="button"
@@ -167,7 +167,7 @@ export function DiceRoller({
                   max={5}
                   value={hunger}
                   onChange={(e) => setHunger(Math.max(0, Math.min(5, parseInt(e.target.value) || 0)))}
-                  className="h-8 text-center text-lg font-bold text-destructive"
+                  className="h-8 text-center text-lg font-bold text-destructive min-w-0 px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
                 <Button
                   type="button"
@@ -199,7 +199,7 @@ export function DiceRoller({
                   max={15}
                   value={difficulty}
                   onChange={(e) => setDifficulty(Math.max(1, Math.min(15, parseInt(e.target.value) || 1)))}
-                  className="h-8 text-center text-lg font-bold"
+                  className="h-8 text-center text-lg font-bold min-w-0 px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
                 <Button
                   type="button"
