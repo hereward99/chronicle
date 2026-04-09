@@ -26,6 +26,7 @@ import { Loader2, Trash2, X, Plus, Wand2 } from "lucide-react";
 import { Character, DicePoolConfig, SimpleDicePool, GeneralDicePool, StandardDicePool, CombinedDicePool, ExceptionalPool, useCharacters } from "@/hooks/useCharacters";
 import { useFiles } from "@/hooks/useFiles";
 import { supabase } from "@/integrations/supabase/client";
+import { DISCIPLINES, DISCIPLINE_POWERS, getPowersForDiscipline, type PowerInfo } from "@/lib/v5/disciplineData";
 import { useToast } from "@/hooks/use-toast";
 import { BoonsSection } from "@/components/boons/BoonsSection";
 
@@ -87,6 +88,8 @@ export function EditCharacterDialog({
   const [generatingPortrait, setGeneratingPortrait] = useState(false);
   const [overrideHealthMax, setOverrideHealthMax] = useState(false);
   const [overrideWillpowerMax, setOverrideWillpowerMax] = useState(false);
+  const [customDisciplineFlags, setCustomDisciplineFlags] = useState<Record<number, boolean>>({});
+  const [customPowerFlags, setCustomPowerFlags] = useState<Record<number, boolean>>({});
   const { uploadFile } = useFiles();
   const { toast } = useToast();
   
@@ -191,6 +194,8 @@ export function EditCharacterDialog({
       
       setOverrideHealthMax(hasHealthOverride);
       setOverrideWillpowerMax(hasWillpowerOverride);
+      setCustomDisciplineFlags({});
+      setCustomPowerFlags({});
       
       setFormData({
         name: character.name,
@@ -1356,22 +1361,60 @@ export function EditCharacterDialog({
                   </Button>
                 </div>
                 <div className="space-y-3">
-                  {formData.disciplines?.map((disc, idx) => (
-                    <div key={idx} className="flex gap-2 items-center">
-                      <Input
-                        placeholder="Discipline name"
-                        value={disc.name}
-                        onChange={(e) => updateDiscipline(idx, 'name', e.target.value)}
-                      />
-                      <DotSelector 
-                        value={disc.level} 
-                        onChange={(val) => updateDiscipline(idx, 'level', val)}
-                      />
-                      <Button variant="ghost" size="sm" onClick={() => removeDiscipline(idx)}>
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
+                  {formData.disciplines?.map((disc, idx) => {
+                    const isCustom = disc.name !== "" && !DISCIPLINES.includes(disc.name as any);
+                    return (
+                      <div key={idx} className="space-y-2">
+                        <div className="flex gap-2 items-center">
+                          <Select
+                            value={isCustom ? "__custom__" : disc.name}
+                            onValueChange={(value) => {
+                              if (value === "__custom__") {
+                                updateDiscipline(idx, 'name', '');
+                                // Mark as needing custom input
+                                setCustomDisciplineFlags(prev => ({ ...prev, [idx]: true }));
+                              } else {
+                                updateDiscipline(idx, 'name', value);
+                                setCustomDisciplineFlags(prev => ({ ...prev, [idx]: false }));
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="flex-1">
+                              <SelectValue placeholder="Select discipline" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {DISCIPLINES.map((d) => (
+                                <SelectItem key={d} value={d}>{d}</SelectItem>
+                              ))}
+                              <SelectItem value="__custom__">✏️ Custom (Homebrew)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <DotSelector 
+                            value={disc.level} 
+                            onChange={(val) => updateDiscipline(idx, 'level', val)}
+                          />
+                          <Button variant="ghost" size="sm" onClick={() => {
+                            removeDiscipline(idx);
+                            setCustomDisciplineFlags(prev => {
+                              const next = { ...prev };
+                              delete next[idx];
+                              return next;
+                            });
+                          }}>
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        {(isCustom || customDisciplineFlags[idx]) && (
+                          <Input
+                            placeholder="Custom discipline name"
+                            value={disc.name}
+                            onChange={(e) => updateDiscipline(idx, 'name', e.target.value)}
+                            className="ml-0"
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </Card>
 
@@ -1383,53 +1426,120 @@ export function EditCharacterDialog({
                   </Button>
                 </div>
                 <div className="space-y-4">
-                  {formData.powers?.map((power, idx) => (
-                    <div key={idx} className="border rounded-lg p-3 space-y-2">
-                      <div className="flex justify-between items-start">
-                        <Input
-                          placeholder="Power name"
-                          value={power.name}
-                          onChange={(e) => updatePower(idx, 'name', e.target.value)}
-                          className="flex-1"
+                  {formData.powers?.map((power, idx) => {
+                    const isCustomPower = power.name !== "" && !Object.values(DISCIPLINE_POWERS).flat().some(p => p.name === power.name);
+                    // Get available powers for the selected discipline
+                    const availablePowers = power.discipline ? getPowersForDiscipline(power.discipline) : [];
+                    
+                    return (
+                      <div key={idx} className="border rounded-lg p-3 space-y-2">
+                        <div className="flex justify-between items-start gap-2">
+                          <Select
+                            value={power.discipline}
+                            onValueChange={(value) => {
+                              updatePower(idx, 'discipline', value);
+                              // Reset power name when discipline changes
+                              updatePower(idx, 'name', '');
+                              setCustomPowerFlags(prev => ({ ...prev, [idx]: false }));
+                            }}
+                          >
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue placeholder="Discipline" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {(formData.disciplines || []).filter(d => d.name).map((disc) => (
+                                <SelectItem key={disc.name} value={disc.name}>{disc.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <div className="flex-1">
+                            {availablePowers.length > 0 && !customPowerFlags[idx] ? (
+                              <Select
+                                value={isCustomPower ? "__custom__" : power.name}
+                                onValueChange={(value) => {
+                                  if (value === "__custom__") {
+                                    updatePower(idx, 'name', '');
+                                    setCustomPowerFlags(prev => ({ ...prev, [idx]: true }));
+                                  } else {
+                                    updatePower(idx, 'name', value);
+                                    // Auto-fill level from data
+                                    const powerInfo = availablePowers.find(p => p.name === value);
+                                    if (powerInfo) {
+                                      updatePower(idx, 'level', powerInfo.level);
+                                    }
+                                    setCustomPowerFlags(prev => ({ ...prev, [idx]: false }));
+                                  }
+                                }}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select power" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {availablePowers.map((p) => (
+                                    <SelectItem key={p.name} value={p.name}>
+                                      {p.name} (Lv{p.level}){p.amalgam ? ` [${p.amalgam}]` : ''}{p.source && p.source !== 'CR' ? ` · ${p.source}` : ''}
+                                    </SelectItem>
+                                  ))}
+                                  <SelectItem value="__custom__">✏️ Custom (Homebrew)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <div className="flex gap-2">
+                                <Input
+                                  placeholder="Custom power name"
+                                  value={power.name}
+                                  onChange={(e) => updatePower(idx, 'name', e.target.value)}
+                                  className="flex-1"
+                                />
+                                {availablePowers.length > 0 && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setCustomPowerFlags(prev => ({ ...prev, [idx]: false }))}
+                                    title="Switch back to dropdown"
+                                  >
+                                    ↩
+                                  </Button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          <Button variant="ghost" size="sm" onClick={() => {
+                            removePower(idx);
+                            setCustomPowerFlags(prev => {
+                              const next = { ...prev };
+                              delete next[idx];
+                              return next;
+                            });
+                          }}>
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input
+                            type="number"
+                            placeholder="Level"
+                            min={1}
+                            max={5}
+                            value={power.level}
+                            onChange={(e) => updatePower(idx, 'level', parseInt(e.target.value) || 1)}
+                          />
+                          <Input
+                            placeholder="Cost"
+                            value={power.cost}
+                            onChange={(e) => updatePower(idx, 'cost', e.target.value)}
+                          />
+                        </div>
+                        <Textarea
+                          placeholder="Description (optional)"
+                          value={power.description}
+                          onChange={(e) => updatePower(idx, 'description', e.target.value)}
+                          rows={2}
                         />
-                        <Button variant="ghost" size="sm" onClick={() => removePower(idx)}>
-                          <X className="w-4 h-4" />
-                        </Button>
                       </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        <Select
-                          value={power.discipline}
-                          onValueChange={(value) => updatePower(idx, 'discipline', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Discipline" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {(formData.disciplines || []).map((disc) => (
-                              <SelectItem key={disc.name} value={disc.name}>{disc.name}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Input
-                          type="number"
-                          placeholder="Level"
-                          value={power.level}
-                          onChange={(e) => updatePower(idx, 'level', parseInt(e.target.value) || 1)}
-                        />
-                        <Input
-                          placeholder="Cost"
-                          value={power.cost}
-                          onChange={(e) => updatePower(idx, 'cost', e.target.value)}
-                        />
-                      </div>
-                      <Textarea
-                        placeholder="Description"
-                        value={power.description}
-                        onChange={(e) => updatePower(idx, 'description', e.target.value)}
-                        rows={2}
-                      />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </Card>
             </TabsContent>

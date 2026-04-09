@@ -12,6 +12,7 @@ import { useChronicles } from "@/hooks/useChronicles";
 import { useToast } from "@/hooks/use-toast";
 import { useFormDraft } from "@/hooks/useFormDraft";
 import { ChevronLeft, ChevronRight, Check, Wand2 } from "lucide-react";
+import { DISCIPLINES as DISCIPLINE_LIST, getDisciplinePowersLegacy } from "@/lib/v5/disciplineData";
 import { PortraitGenerator } from "@/components/character/PortraitGenerator";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -72,98 +73,8 @@ const SKILLS = {
   mental: ["Academics", "Awareness", "Finance", "Investigation", "Medicine", "Occult", "Politics", "Science", "Technology"]
 };
 
-const DISCIPLINES = [
-  "Animalism", "Auspex", "Blood Sorcery", "Celerity", "Dominate", "Fortitude",
-  "Obfuscate", "Oblivion", "Potence", "Presence", "Protean", "Thin-Blood Alchemy"
-];
-
-// VTM 5e Core Powers by Discipline and Level
-const DISCIPLINE_POWERS: Record<string, Record<number, string[]>> = {
-  "Animalism": {
-    1: ["Bond Famulus", "Sense the Beast"],
-    2: ["Feral Whispers"],
-    3: ["Animal Succulence", "Quell the Beast"],
-    4: ["Subsume the Spirit", "Unliving Hive"],
-    5: ["Drawing Out the Beast"],
-  },
-  "Auspex": {
-    1: ["Heightened Senses", "Sense the Unseen"],
-    2: ["Premonition"],
-    3: ["Scry the Soul", "Share the Senses"],
-    4: ["Spirit's Touch"],
-    5: ["Clairvoyance", "Possession", "Telepathy"],
-  },
-  "Blood Sorcery": {
-    1: ["Corrosive Vitae", "A Taste for Blood"],
-    2: ["Extinguish Vitae"],
-    3: ["Blood of Potency", "Scorpion's Touch"],
-    4: ["Theft of Vitae"],
-    5: ["Baal's Caress", "Cauldron of Blood"],
-  },
-  "Celerity": {
-    1: ["Cat's Grace", "Rapid Reflexes"],
-    2: ["Fleetness"],
-    3: ["Blink", "Traversal"],
-    4: ["Draught of Elegance", "Unerring Aim"],
-    5: ["Lightning Strike", "Split Second"],
-  },
-  "Dominate": {
-    1: ["Cloud Memory", "Compel"],
-    2: ["Mesmerize"],
-    3: ["Dementation", "The Forgetful Mind"],
-    4: ["Submerged Directive"],
-    5: ["Mass Manipulation", "Terminal Decree"],
-  },
-  "Fortitude": {
-    1: ["Resilience", "Unswayable Mind"],
-    2: ["Toughness"],
-    3: ["Defy Bane", "Fortify the Inner Facade"],
-    4: ["Draught of Endurance"],
-    5: ["Flesh of Marble", "Prowess from Pain"],
-  },
-  "Obfuscate": {
-    1: ["Cloak of Shadows", "Silence of Death"],
-    2: ["Unseen Passage"],
-    3: ["Ghost in the Machine", "Mask of a Thousand Faces"],
-    4: ["Conceal", "Vanish"],
-    5: ["Cloak the Gathering", "Imposter's Guise"],
-  },
-  "Oblivion": {
-    1: ["Ashes to Ashes", "Oblivion's Sight", "Shadow Cloak", "The Binding Fetter"],
-    2: ["Arms of Ahriman", "Shadow Cast", "Where the Shroud Thins"],
-    3: ["Aura of Decay", "Passion Feast", "Shadow Perspective", "Touch of Oblivion"],
-    4: ["Necrotic Plague", "Stygian Shroud", "Tenebrous Avatar"],
-    5: ["Withering Spirit", "Skuld Fulfilled", "Shadow Step"],
-  },
-  "Potence": {
-    1: ["Lethal Body", "Soaring Leap"],
-    2: ["Prowess"],
-    3: ["Brutal Feed", "Uncanny Grip"],
-    4: ["Draught of Might"],
-    5: ["Earthshock", "Fist of Caine"],
-  },
-  "Presence": {
-    1: ["Awe", "Daunt"],
-    2: ["Lingering Kiss"],
-    3: ["Dread Gaze", "Entrancement"],
-    4: ["Irresistible Voice", "Summon"],
-    5: ["Majesty", "Star Magnetism"],
-  },
-  "Protean": {
-    1: ["Eyes of the Beast", "Weight of the Feather"],
-    2: ["Feral Weapons"],
-    3: ["Earth Meld", "Shapechange"],
-    4: ["Metamorphosis"],
-    5: ["Mist Form", "The Unfettered Heart"],
-  },
-  "Thin-Blood Alchemy": {
-    1: ["Far Reach", "Haze"],
-    2: ["Envelop", "Profane Hieros Gamos"],
-    3: ["Airborne Momentum", "Defractionate"],
-    4: ["Awaken the Sleeper"],
-    5: ["Cauldron of Rebirth"],
-  },
-};
+const DISCIPLINES = [...DISCIPLINE_LIST];
+const DISCIPLINE_POWERS = getDisciplinePowersLegacy();
 
 interface CharacterWizardProps {
   open: boolean;
