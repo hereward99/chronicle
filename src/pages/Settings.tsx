@@ -314,6 +314,7 @@ export default function Settings() {
             </CardContent>
           </Card>
 
+        </div>
       </div>
 
       <GuidedTour open={showTour} onClose={() => setShowTour(false)} />
