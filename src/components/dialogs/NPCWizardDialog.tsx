@@ -293,7 +293,7 @@ export function NPCWizardDialog({ open, onOpenChange, generatedData, creationMet
           : [],
         powers: isVampire
           ? characterData.disciplines.flatMap(d => 
-              d.powers.map(p => ({ discipline: d.name, name: p }))
+              d.powers.map(p => ({ discipline: d.name, name: p, level: d.level }))
             )
           : [],
         

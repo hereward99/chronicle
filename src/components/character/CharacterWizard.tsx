@@ -410,7 +410,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
           : [],
         powers: characterData.characterType === "vampire"
           ? characterData.disciplines.flatMap(d => 
-              d.powers.map(p => ({ discipline: d.name, name: p }))
+              d.powers.map(p => ({ discipline: d.name, name: p, level: d.level }))
             )
           : [],
         
