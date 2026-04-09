@@ -27,12 +27,30 @@ import { ChronicleManager } from "@/components/chronicle/ChronicleManager";
 export default function Chronicle() {
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [headerEditOpen, setHeaderEditOpen] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editSetting, setEditSetting] = useState("");
   
-  const { currentChronicle } = useChronicles();
+  const { currentChronicle, updateChronicle } = useChronicles();
   const { stats, loading: statsLoading } = useChronicleStats();
   const { plots, loading: plotsLoading } = usePlots();
   const { notes, loading: notesLoading, deleteNote } = useNotes();
   const { activities, loading: activitiesLoading } = useRecentActivity();
+
+  const openHeaderEdit = () => {
+    if (!currentChronicle) return;
+    setEditName(currentChronicle.name);
+    setEditDescription(currentChronicle.description || "");
+    setEditSetting(currentChronicle.setting || "");
+    setHeaderEditOpen(true);
+  };
+
+  const handleHeaderSave = async () => {
+    if (!currentChronicle) return;
+    await updateChronicle({ id: currentChronicle.id, name: editName, description: editDescription, setting: editSetting });
+    setHeaderEditOpen(false);
+  };
 
   const handleEditNote = (note: Note) => {
     setEditingNote(note);
