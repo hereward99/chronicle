@@ -113,7 +113,7 @@ export function DiceRoller({
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Pool, Hunger, Difficulty controls */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4">
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground uppercase tracking-wider">Dice Pool</Label>
               <div className="flex items-center gap-1">
