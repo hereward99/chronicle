@@ -168,7 +168,7 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
               </div>
               <div className="space-y-1">
                 <Label>City</Label>
-                <Input value={city} onChange={e => setCity(e.target.value)} />
+                <MentionInput value={city} onChange={setCity} placeholder="City name or @mention a location..." className="min-h-10 resize-none" maxLength={500} />
               </div>
               <div className="space-y-1">
                 <Label>Description</Label>
