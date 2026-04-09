@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import { useChronicles } from './useChronicles';
+import { useCharacters } from './useCharacters';
 
 export interface Relationship {
   id: string;
@@ -19,9 +21,13 @@ export interface Relationship {
 export function useRelationships(characterId?: string) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { characters } = useCharacters();
+
+  // Derive chronicle character IDs to scope relationships
+  const characterIds = characters.map(c => c.id);
 
   const { data: relationships = [], isLoading: loading } = useQuery({
-    queryKey: ['relationships', characterId],
+    queryKey: ['relationships', characterId, characterIds],
     queryFn: async () => {
       let query = supabase
         .from('relationships')
@@ -34,8 +40,15 @@ export function useRelationships(characterId?: string) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as Relationship[] || [];
+      
+      // Filter to only relationships involving characters in the current chronicle
+      const allRels = data as Relationship[] || [];
+      if (characterIds.length > 0 && !characterId) {
+        return allRels.filter(r => characterIds.includes(r.character_id) || characterIds.includes(r.related_character_id));
+      }
+      return allRels;
     },
+    enabled: characterIds.length > 0 || !!characterId,
   });
 
   const createRelationshipMutation = useMutation({

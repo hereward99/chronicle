@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useChronicles } from './useChronicles';
 
 export interface Session {
   id: string;
@@ -22,13 +23,17 @@ export interface Session {
 export function useSessions() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { currentChronicle } = useChronicles();
+  const chronicleId = currentChronicle?.id;
 
   const { data: sessions = [], isLoading: loading } = useQuery({
-    queryKey: ['sessions'],
+    queryKey: ['sessions', chronicleId],
     queryFn: async () => {
+      if (!chronicleId) return [];
       const { data, error } = await supabase
         .from('sessions')
         .select('*')
+        .eq('chronicle_id', chronicleId)
         .order('sort_order', { ascending: true })
         .order('date_played', { ascending: false });
 
@@ -38,6 +43,7 @@ export function useSessions() {
         attachments: session.attachments || []
       }));
     },
+    enabled: !!chronicleId,
   });
 
   const createSessionMutation = useMutation({
@@ -100,7 +106,6 @@ export function useSessions() {
 
   const deleteSessionMutation = useMutation({
     mutationFn: async (id: string) => {
-      // Delete associated session_characters first
       const { error: scError } = await supabase
         .from('session_characters')
         .delete()
@@ -145,7 +150,6 @@ export function useSessions() {
 
   const reorderSessions = async (orderedIds: string[]) => {
     try {
-      // Update sort_order for each session
       const updates = orderedIds.map((id, index) =>
         supabase.from('sessions').update({ sort_order: index }).eq('id', id)
       );
