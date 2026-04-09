@@ -636,7 +636,7 @@ export async function exportCharacterToPDF(character: {
   }
   
   // Disciplines and Powers - grouped together
-  if (isVampire && character.disciplines && (character.disciplines as any[]).length > 0) {
+  if (isVampire && character.disciplines && (Array.isArray(character.disciplines) && character.disciplines.length) > 0) {
     y = checkNewPage(pdf, y, 30);
     y = addSection(pdf, 'Disciplines & Powers', y);
     y += 4;
@@ -673,7 +673,7 @@ export async function exportCharacterToPDF(character: {
   }
   
   // Beliefs & Touchstones
-  const hasTouchstones = character.touchstones && (character.touchstones as any[]).length > 0;
+  const hasTouchstones = character.touchstones && (Array.isArray(character.touchstones) && character.touchstones.length) > 0;
   if (character.ambition || character.desire || (character.convictions && character.convictions.length > 0) || hasTouchstones) {
     y = checkNewPage(pdf, y, 30);
     y = addSection(pdf, 'Beliefs & Touchstones', y);
@@ -715,8 +715,8 @@ export async function exportCharacterToPDF(character: {
   }
   
   // Advantages & Flaws
-  const hasAdvantages = character.advantages && (character.advantages as any[]).length > 0;
-  const hasFlaws = character.flaws && (character.flaws as any[]).length > 0;
+  const hasAdvantages = character.advantages && (Array.isArray(character.advantages) && character.advantages.length) > 0;
+  const hasFlaws = character.flaws && (Array.isArray(character.flaws) && character.flaws.length) > 0;
   
   if (hasAdvantages || hasFlaws) {
     y = checkNewPage(pdf, y, 30);
@@ -761,7 +761,7 @@ export async function exportCharacterToPDF(character: {
   }
   
   // Loresheets
-  if (character.loresheets && (character.loresheets as any[]).length > 0) {
+  if (character.loresheets && (Array.isArray(character.loresheets) && character.loresheets.length) > 0) {
     y = checkNewPage(pdf, y, 25);
     y = addSection(pdf, 'Loresheets', y);
     y += 4;
