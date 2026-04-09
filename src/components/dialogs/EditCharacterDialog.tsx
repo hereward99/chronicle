@@ -26,6 +26,7 @@ import { Loader2, Trash2, X, Plus, Wand2 } from "lucide-react";
 import { Character, DicePoolConfig, SimpleDicePool, GeneralDicePool, StandardDicePool, CombinedDicePool, ExceptionalPool, useCharacters } from "@/hooks/useCharacters";
 import { useFiles } from "@/hooks/useFiles";
 import { supabase } from "@/integrations/supabase/client";
+import { DISCIPLINES, DISCIPLINE_POWERS, getPowersForDiscipline, type PowerInfo } from "@/lib/v5/disciplineData";
 import { useToast } from "@/hooks/use-toast";
 import { BoonsSection } from "@/components/boons/BoonsSection";
 
