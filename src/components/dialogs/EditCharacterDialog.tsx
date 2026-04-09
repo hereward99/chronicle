@@ -88,6 +88,8 @@ export function EditCharacterDialog({
   const [generatingPortrait, setGeneratingPortrait] = useState(false);
   const [overrideHealthMax, setOverrideHealthMax] = useState(false);
   const [overrideWillpowerMax, setOverrideWillpowerMax] = useState(false);
+  const [customDisciplineFlags, setCustomDisciplineFlags] = useState<Record<number, boolean>>({});
+  const [customPowerFlags, setCustomPowerFlags] = useState<Record<number, boolean>>({});
   const { uploadFile } = useFiles();
   const { toast } = useToast();
   
