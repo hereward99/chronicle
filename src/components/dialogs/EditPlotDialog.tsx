@@ -75,11 +75,11 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
     if (open) {
       setFormData({
         title: plot.title,
-        summary: (plot as any).summary || "",
+        summary: plot.summary || "",
         description: plot.description || "",
         status: plot.status as "Active" | "Planned" | "Completed" | "Critical",
         priority: plot.priority as "Low" | "Medium" | "High" | "Critical",
-        attachments: (plot as any).attachments || [],
+        attachments: plot.attachments || [],
         in_game_date_start: plot.in_game_date_start || "",
         in_game_date_end: plot.in_game_date_end || "",
       });
