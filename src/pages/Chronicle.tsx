@@ -48,7 +48,7 @@ export default function Chronicle() {
             {currentChronicle?.name || "Chronicle Dashboard"}
           </h1>
           <p className="text-lg text-muted-foreground">
-            {currentChronicle?.description || "Manage your Vampire: The Masquerade chronicle"}
+            {currentChronicle?.description || "Your Vampire: The Masquerade tabletop roleplaying game chronicle"}
           </p>
         </div>
         <CreateNoteDialog>
