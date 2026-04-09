@@ -194,6 +194,8 @@ export function EditCharacterDialog({
       
       setOverrideHealthMax(hasHealthOverride);
       setOverrideWillpowerMax(hasWillpowerOverride);
+      setCustomDisciplineFlags({});
+      setCustomPowerFlags({});
       
       setFormData({
         name: character.name,
