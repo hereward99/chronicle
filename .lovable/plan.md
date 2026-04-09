@@ -1,67 +1,24 @@
 
 
-## Restyling Kindred Chronicle Scribe to Match "The Sanctum"
+## Make Chronicle Header Visibly Editable
 
-### Style Comparison
+### Problem
+The page header (title + subtitle) is pulled from the current chronicle's `name` and `description`, but there's no visual cue that these are editable or that they come from the Chronicle Management section at the bottom of the page.
 
-The Sanctum uses a warmer, more atmospheric gothic palette compared to the current app's cooler blue-gray tones. Key differences:
+### Proposal
+Add a subtle **edit affordance** directly on the header text — a small pencil icon that appears on hover (desktop) or is always visible (mobile). Clicking it opens the existing Edit Chronicle dialog inline, right from the header. This avoids duplicating any logic; it reuses the same `updateChronicle` flow already in `ChronicleManager`.
 
-| Aspect | Current App | The Sanctum |
-|--------|------------|-------------|
-| Background | Cool blue-gray (`220 13% 8%`) | Warm black-purple (`#0a0608`) with blood-red radial glows and noise texture |
-| Cards | Blue-gray (`220 13% 12%`) | Warm purple-black (`#1a1015`) with warm border (`#3a2830`) |
-| Text | Pure white/gray | Ivory/parchment (`#f0e6d3`) with dim ivory (`#c8b99a`) |
-| Accent color | Crimson only | Gold (`#c9a84c`) for labels/headings, blood-red for actions |
-| Headings font | Cinzel | Cinzel Decorative (display) + Cinzel (labels) |
-| Body font | Inter | IM Fell English (serif) |
-| Border radius | 0.75rem (rounded) | 2-4px (nearly square) |
-| Borders | Cool gray | Warm mauve (`#3a2830`) |
-| Badges | Rounded pills | Cinzel uppercase, pill-shaped, gold/green/neutral variants |
-| Buttons | Flat with hover opacity | Blood gradient with glow shadow on hover |
-| Section titles | Standard weight | Cinzel, tiny uppercase, letterspaced, with trailing gradient line |
+Specifically:
+- Wrap the header title + subtitle in a clickable/hoverable group
+- Show a small `Pencil` icon on hover (or tap target on mobile) with a tooltip "Edit chronicle details"
+- On click, open a dialog pre-filled with the current chronicle's name, description, and setting (same form as the existing edit dialog in `ChronicleManager`)
+- Add a subtle dashed underline or slight opacity change on hover to signal editability
 
-### What I Would Change
-
-**1. CSS Variables (src/index.css)**
-Remap all root variables to Sanctum's warm palette in HSL:
-- `--background` → warm near-black (`350 20% 3%`)
-- `--card` → warm panel (`330 18% 8%`)
-- `--border` → warm mauve (`340 16% 19%`)
-- `--foreground` → ivory (`36 44% 90%`)
-- `--muted-foreground` → dim ivory/mauve (`330 8% 45%`)
-- Add `--gold: 43 50% 54%` as a new accent for headings/labels
-- `--primary` stays blood-red but shifts warmer to match `#8b0000` / `#c0392b`
-- `--radius` → `0.25rem` (nearly square corners throughout)
-- Add background texture (radial blood glows + SVG noise) to body
-
-**2. Fonts (index.html + tailwind.config.ts)**
-- Import Cinzel Decorative, Cinzel, IM Fell English, and Cormorant Garamond from Google Fonts
-- Change `--font-gothic` to `'Cinzel Decorative', serif` for main titles
-- Change `--font-body` to `'IM Fell English', Georgia, serif`
-- Add a `--font-label` for `'Cinzel', serif` used on card titles, badges, buttons
-- Apply body font globally
-
-**3. Tailwind Config (tailwind.config.ts)**
-- Add `gold` color token
-- Reduce `--radius` to `0.25rem`
-- Add `font-label` family
-- Update gradient/shadow utilities to match Sanctum's warm glows
-
-**4. Component-Level Tweaks**
-- **Buttons**: Primary gets blood gradient + glow shadow; secondary gets warm panel bg with gold hover
-- **Card titles/section headers**: Cinzel, tiny uppercase, wide letter-spacing, with trailing gradient divider line (CSS `::after`)
-- **Badges**: Cinzel font, smaller text, gold/green/neutral color variants
-- **Navigation**: Gold accent for active states instead of crimson
-- **Body background**: Add radial gradient overlays and noise texture SVG
-
-**5. No structural changes** — all changes are purely in the design tokens, fonts, and a handful of utility classes. The component architecture and Tailwind approach remain the same.
-
-### Files Modified
+### Technical Details
 
 | File | Change |
 |------|--------|
-| `index.html` | Add Google Fonts link for Cinzel Decorative, IM Fell English, Cormorant Garamond |
-| `src/index.css` | Remap all CSS variables to Sanctum palette; add body texture; add card-title utility class |
-| `tailwind.config.ts` | Add gold color, font-label family, reduce radius, update shadows/gradients |
-| Various components | Minimal — swap a few hardcoded color classes to use new gold accent where appropriate (nav active states, section headers) |
+| `src/pages/Chronicle.tsx` | Add local state for an inline edit dialog. Wrap the `<h1>` and `<p>` in a `group` div with `cursor-pointer` and hover styles. Show a `Pencil` icon on `group-hover`. On click, open a small dialog with Name/Description/Setting fields that calls `updateChronicle`. |
+
+No new components needed — the edit form is simple (3 fields) and can be a local dialog within `Chronicle.tsx`, reusing `useChronicles().updateChronicle`. The `ChronicleManager` card at the bottom remains unchanged for full chronicle CRUD (create, switch, delete).
 
