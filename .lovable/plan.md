@@ -1,24 +1,53 @@
 
 
-## Make Chronicle Header Visibly Editable
+## Items 1–4: Chronicle Filtering, Toast Cleanup, Location Hook Alignment, Dead Code Removal
 
-### Problem
-The page header (title + subtitle) is pulled from the current chronicle's `name` and `description`, but there's no visual cue that these are editable or that they come from the Chronicle Management section at the bottom of the page.
+### 1. Add `chronicle_id` filtering to 7 hooks
 
-### Proposal
-Add a subtle **edit affordance** directly on the header text — a small pencil icon that appears on hover (desktop) or is always visible (mobile). Clicking it opens the existing Edit Chronicle dialog inline, right from the header. This avoids duplicating any logic; it reuses the same `updateChronicle` flow already in `ChronicleManager`.
+Each of these hooks will import `useChronicles` and filter queries by the active chronicle:
 
-Specifically:
-- Wrap the header title + subtitle in a clickable/hoverable group
-- Show a small `Pencil` icon on hover (or tap target on mobile) with a tooltip "Edit chronicle details"
-- On click, open a dialog pre-filled with the current chronicle's name, description, and setting (same form as the existing edit dialog in `ChronicleManager`)
-- Add a subtle dashed underline or slight opacity change on hover to signal editability
+| Hook | Current behavior | Fix |
+|------|-----------------|-----|
+| `useCharacters` | Fetches all user's characters | Add `.eq('chronicle_id', chronicleId)`, include `chronicleId` in query key, disable query when no chronicle |
+| `useSessions` | Fetches all sessions | Same pattern |
+| `usePlots` | Fetches all plots | Same pattern |
+| `useNotes` | Fetches all notes | Same pattern |
+| `useRelationships` | Fetches all relationships | Same pattern |
+| `useChronicleStats` | Counts everything | Add `.eq('chronicle_id', chronicleId)` to all 4 stat queries |
+| `useRecentActivity` | Shows all recent items | Add `.eq('chronicle_id', chronicleId)` to all 4 activity queries |
 
-### Technical Details
+The pattern follows what `useLocations` and `useBoons` already do.
 
-| File | Change |
-|------|--------|
-| `src/pages/Chronicle.tsx` | Add local state for an inline edit dialog. Wrap the `<h1>` and `<p>` in a `group` div with `cursor-pointer` and hover styles. Show a `Pencil` icon on `group-hover`. On click, open a small dialog with Name/Description/Setting fields that calls `updateChronicle`. |
+### 2. Standardize toast imports
 
-No new components needed — the edit form is simple (3 fields) and can be a local dialog within `Chronicle.tsx`, reusing `useChronicles().updateChronicle`. The `ChronicleManager` card at the bottom remains unchanged for full chronicle CRUD (create, switch, delete).
+7 files import from `@/components/ui/use-toast` (a 2-line re-export wrapper). Change all to import directly from `@/hooks/use-toast`:
+- `useChronicleStats.tsx`
+- `useBoons.tsx`
+- `useCharacters.tsx`
+- `useCoteries.tsx`
+- `useFactions.tsx`
+- `useRelationships.tsx`
+- `Settings.tsx`
+
+1 file (`useLocations.tsx`) imports from `sonner` — replace with `@/hooks/use-toast` and convert `toast.success()`/`toast.error()` calls to the standard `toast({ title, variant })` pattern.
+
+Delete the wrapper file `src/components/ui/use-toast.ts` afterward.
+
+### 3. Align `useLocations` API
+
+`useLocations` currently returns raw mutation objects (`createLocation.mutate(...)`). Wrap them in async helper functions like every other hook does:
+```
+const createLocation = async (loc) => createLocationMutation.mutateAsync(loc);
+```
+
+### 4. Delete dead files
+
+- Delete `src/pages/Index.tsx` — unused, no imports reference it
+- Delete `src/components/ui/use-toast.ts` — the re-export wrapper (after step 2 redirects all imports)
+
+Also remove the duplicate `<Sonner />` toaster from `App.tsx` since the app standardizes on the shadcn toast system, not sonner. Remove the sonner import as well.
+
+---
+
+**After implementation**: We pause and review before proceeding to items 5–7 (CRUD factory hook, Supabase type regeneration, useChecklists migration).
 
