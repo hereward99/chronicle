@@ -127,13 +127,13 @@ export function DiceRoller({
                   <Minus className="h-3 w-3" />
                 </Button>
                 <Input
-                  type="number"
-                  min={1}
-                  max={30}
-                  value={pool}
-                  onChange={(e) => setPool(Math.max(1, Math.min(30, parseInt(e.target.value) || 1)))}
-                  className="h-8 text-center text-lg font-bold"
-                />
+130:                   type="number"
+131:                   min={1}
+132:                   max={30}
+133:                   value={pool}
+134:                   onChange={(e) => setPool(Math.max(1, Math.min(30, parseInt(e.target.value) || 1)))}
+135:                   className="h-8 text-center text-lg font-bold min-w-0 px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+136:                 />
                 <Button
                   type="button"
                   variant="outline"
