@@ -66,13 +66,27 @@ export default function Chronicle() {
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold text-foreground mb-2">
-            {currentChronicle?.name || "Chronicle Dashboard"}
-          </h1>
-          <p className="text-lg text-muted-foreground">
-            {currentChronicle?.description || "Your Vampire: The Masquerade tabletop roleplaying game chronicle"}
-          </p>
+        <div 
+          className="group cursor-pointer flex items-start gap-3"
+          onClick={openHeaderEdit}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && openHeaderEdit()}
+        >
+          <div>
+            <h1 className="text-4xl font-bold text-foreground mb-2 group-hover:text-primary/80 transition-colors">
+              {currentChronicle?.name || "Chronicle Dashboard"}
+            </h1>
+            <p className="text-lg text-muted-foreground group-hover:text-foreground/70 transition-colors">
+              {currentChronicle?.description || "Your Vampire: The Masquerade tabletop roleplaying game chronicle"}
+            </p>
+          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Pencil className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 md:mt-3 mt-0 md:opacity-0 opacity-60 transition-opacity shrink-0" />
+            </TooltipTrigger>
+            <TooltipContent>Edit chronicle details</TooltipContent>
+          </Tooltip>
         </div>
         <CreateNoteDialog>
           <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
@@ -81,6 +95,33 @@ export default function Chronicle() {
           </Button>
         </CreateNoteDialog>
       </div>
+
+      {/* Edit Chronicle Header Dialog */}
+      <Dialog open={headerEditOpen} onOpenChange={setHeaderEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Chronicle Details</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="chronicle-name">Name</Label>
+              <Input id="chronicle-name" value={editName} onChange={(e) => setEditName(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="chronicle-description">Description</Label>
+              <Textarea id="chronicle-description" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} rows={3} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="chronicle-setting">Setting</Label>
+              <Input id="chronicle-setting" value={editSetting} onChange={(e) => setEditSetting(e.target.value)} placeholder="e.g. Modern Nights" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setHeaderEditOpen(false)}>Cancel</Button>
+            <Button onClick={handleHeaderSave} disabled={!editName.trim()}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
