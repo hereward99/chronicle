@@ -48,7 +48,7 @@ export default function Chronicle() {
 
   const handleHeaderSave = async () => {
     if (!currentChronicle) return;
-    await updateChronicle({ id: currentChronicle.id, name: editName, description: editDescription, setting: editSetting });
+    await updateChronicle(currentChronicle.id, { name: editName, description: editDescription, setting: editSetting });
     setHeaderEditOpen(false);
   };
 
