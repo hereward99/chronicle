@@ -72,7 +72,38 @@ export const CLAN_DATA: Record<string, ClanInfo> = {
   },
 };
 
+export const CLAN_DISCIPLINES: Record<string, string[]> = {
+  "Brujah": ["Celerity", "Potence", "Presence"],
+  "Gangrel": ["Animalism", "Fortitude", "Protean"],
+  "Malkavian": ["Auspex", "Dominate", "Obfuscate"],
+  "Nosferatu": ["Animalism", "Obfuscate", "Potence"],
+  "Toreador": ["Auspex", "Celerity", "Presence"],
+  "Tremere": ["Auspex", "Blood Sorcery", "Dominate"],
+  "Ventrue": ["Dominate", "Fortitude", "Presence"],
+  "Lasombra": ["Dominate", "Oblivion", "Potence"],
+  "Tzimisce": ["Animalism", "Dominate", "Protean"],
+  "Hecata": ["Auspex", "Fortitude", "Oblivion"],
+  "Ravnos": ["Animalism", "Obfuscate", "Presence"],
+  "Salubri": ["Auspex", "Dominate", "Fortitude"],
+  "Ministry": ["Obfuscate", "Presence", "Protean"],
+  "Banu Haqim": ["Blood Sorcery", "Celerity", "Obfuscate"],
+  "Caitiff": [],
+  "Thin-Blood": ["Thin-Blood Alchemy"],
+};
+
 export function getClanData(clan: string): ClanInfo | null {
   if (clan === "Human" || clan === "Ghoul") return null;
   return CLAN_DATA[clan] || null;
+}
+
+export function getClanDisciplines(clan: string): string[] {
+  return CLAN_DISCIPLINES[clan] || [];
+}
+
+export function isInClanDiscipline(clan: string, discipline: string): boolean | null {
+  if (clan === "Human" || clan === "Ghoul") return null;
+  if (clan === "Caitiff") return null; // No affinity
+  const inClan = CLAN_DISCIPLINES[clan];
+  if (!inClan) return null;
+  return inClan.some(d => d.toLowerCase() === discipline.toLowerCase());
 }

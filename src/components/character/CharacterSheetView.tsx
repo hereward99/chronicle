@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { HelpCircle, Droplet, Download, Dices, X, BookOpen, Calendar, Skull, Brain } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { getClanData } from "@/lib/v5/clanData";
+import { getClanData, isInClanDiscipline } from "@/lib/v5/clanData";
 import { QuickRollButton } from "@/components/dice/QuickRollButton";
 import { CharacterAttachmentsGallery } from "./CharacterAttachmentsGallery";
 import { BoonsSection } from "@/components/boons/BoonsSection";
@@ -726,7 +726,18 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                     {character.disciplines.map((disc, idx) => (
                       <div key={idx}>
                         <div className="flex justify-between items-center mb-2">
-                          <span className="font-semibold text-primary">{disc.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-primary">{disc.name}</span>
+                            {(() => {
+                              const affinity = isInClanDiscipline(character.clan, disc.name);
+                              if (affinity === null) return null;
+                              return affinity ? (
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/40 text-primary">In-Clan</Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-muted-foreground/30 text-muted-foreground">Out-of-Clan</Badge>
+                              );
+                            })()}
+                          </div>
                           <DotRating current={disc.level} />
                         </div>
                         {/* Powers for this discipline */}
