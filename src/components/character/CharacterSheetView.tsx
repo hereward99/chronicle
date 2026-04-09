@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { HelpCircle, Droplet, Download, Dices, X, BookOpen, Calendar, Skull, Brain } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { getClanData, isInClanDiscipline } from "@/lib/v5/clanData";
+import { getBloodPotencyEffects } from "@/lib/v5/bloodPotencyData";
 import { QuickRollButton } from "@/components/dice/QuickRollButton";
 import { CharacterAttachmentsGallery } from "./CharacterAttachmentsGallery";
 import { BoonsSection } from "@/components/boons/BoonsSection";
