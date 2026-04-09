@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useChronicles } from '@/hooks/useChronicles';
@@ -70,7 +70,6 @@ export const CHECKLIST_TEMPLATES = {
       'Prepare revelation moments',
     ],
   },
-  // VtM Scene Templates
   elysium: {
     name: 'Elysium Gathering',
     items: [
@@ -105,7 +104,6 @@ export const CHECKLIST_TEMPLATES = {
       'Note consequences for disrespect or breaches of Tradition',
     ],
   },
-  // VtM Arc Templates
   bloodHunt: {
     name: 'Blood Hunt',
     items: [
@@ -139,7 +137,6 @@ export const CHECKLIST_TEMPLATES = {
       'Note Masquerade breach risks and consequences',
     ],
   },
-  // VtM Session Structure Templates
   threeAct: {
     name: 'Classic Three-Act (VtM)',
     items: [
@@ -166,85 +163,56 @@ export const CHECKLIST_TEMPLATES = {
   },
 };
 
+async function fetchChecklists(chronicleId: string): Promise<SessionChecklist[]> {
+  const { data: checklistData, error: checklistError } = await supabase
+    .from('session_checklists')
+    .select('*')
+    .eq('chronicle_id', chronicleId)
+    .order('created_at', { ascending: false });
+
+  if (checklistError) throw checklistError;
+  if (!checklistData || checklistData.length === 0) return [];
+
+  const checklistIds = checklistData.map(c => c.id);
+  const { data: itemsData, error: itemsError } = await supabase
+    .from('checklist_items')
+    .select('*')
+    .in('checklist_id', checklistIds)
+    .order('sort_order', { ascending: true });
+
+  if (itemsError) throw itemsError;
+
+  return checklistData.map(checklist => ({
+    ...checklist,
+    items: (itemsData || []).filter(item => item.checklist_id === checklist.id),
+  }));
+}
+
 export function useChecklists() {
-  const [checklists, setChecklists] = useState<SessionChecklist[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { currentChronicle } = useChronicles();
+  const queryClient = useQueryClient();
+  const chronicleId = currentChronicle?.id;
+  const queryKey = ['checklists', chronicleId];
 
-  const fetchChecklists = async () => {
-    if (!currentChronicle?.id) {
-      setChecklists([]);
-      setLoading(false);
-      return;
-    }
+  const { data, isLoading } = useQuery({
+    queryKey,
+    queryFn: () => fetchChecklists(chronicleId!),
+    enabled: !!chronicleId,
+  });
 
-    try {
-      // Fetch checklists
-      const { data: checklistData, error: checklistError } = await supabase
-        .from('session_checklists')
-        .select('*')
-        .eq('chronicle_id', currentChronicle.id)
-        .order('created_at', { ascending: false });
-
-      if (checklistError) throw checklistError;
-
-      if (!checklistData || checklistData.length === 0) {
-        setChecklists([]);
-        setLoading(false);
-        return;
-      }
-
-      // Fetch all items for these checklists
-      const checklistIds = checklistData.map(c => c.id);
-      const { data: itemsData, error: itemsError } = await supabase
-        .from('checklist_items')
-        .select('*')
-        .in('checklist_id', checklistIds)
-        .order('sort_order', { ascending: true });
-
-      if (itemsError) throw itemsError;
-
-      // Combine checklists with their items
-      const combined = checklistData.map(checklist => ({
-        ...checklist,
-        items: (itemsData || []).filter(item => item.checklist_id === checklist.id),
-      }));
-
-      setChecklists(combined);
-    } catch (error: any) {
-      toast({
-        title: "Error fetching checklists",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const createChecklist = async (
-    checklist: { title: string; notes?: string; plot_id?: string | null },
-    items: string[]
-  ) => {
-    if (!currentChronicle?.id) {
-      toast({
-        title: "No chronicle selected",
-        description: "Please select a chronicle first.",
-        variant: "destructive",
-      });
-      return null;
-    }
-
-    try {
+  const createMutation = useMutation({
+    mutationFn: async ({ checklist, items }: {
+      checklist: { title: string; notes?: string; plot_id?: string | null };
+      items: string[];
+    }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Create checklist
       const { data: checklistData, error: checklistError } = await supabase
         .from('session_checklists')
         .insert([{
-          chronicle_id: currentChronicle.id,
+          chronicle_id: chronicleId!,
           user_id: user.id,
           title: checklist.title,
           notes: checklist.notes || null,
@@ -255,7 +223,6 @@ export function useChecklists() {
 
       if (checklistError) throw checklistError;
 
-      // Create items
       if (items.length > 0) {
         const itemsToInsert = items.map((text, index) => ({
           checklist_id: checklistData.id,
@@ -263,27 +230,156 @@ export function useChecklists() {
           sort_order: index,
           is_completed: false,
         }));
-
         const { error: itemsError } = await supabase
           .from('checklist_items')
           .insert(itemsToInsert);
-
         if (itemsError) throw itemsError;
       }
 
-      toast({
-        title: "Checklist created",
-        description: `${checklist.title} has been created.`,
-      });
-
-      await fetchChecklists();
       return checklistData;
-    } catch (error: any) {
-      toast({
-        title: "Error creating checklist",
-        description: error.message,
-        variant: "destructive",
-      });
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey });
+      toast({ title: "Checklist created", description: `${variables.checklist.title} has been created.` });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error creating checklist", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, updates }: {
+      id: string;
+      updates: { title?: string; notes?: string; plot_id?: string | null };
+    }) => {
+      const { error } = await supabase
+        .from('session_checklists')
+        .update(updates)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+      toast({ title: "Checklist updated", description: "Your checklist has been updated." });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error updating checklist", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('session_checklists')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+      toast({ title: "Checklist deleted", description: "The checklist has been deleted." });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error deleting checklist", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const toggleMutation = useMutation({
+    mutationFn: async ({ itemId, isCompleted }: { itemId: string; isCompleted: boolean }) => {
+      const { error } = await supabase
+        .from('checklist_items')
+        .update({ is_completed: isCompleted })
+        .eq('id', itemId);
+      if (error) throw error;
+    },
+    onMutate: async ({ itemId, isCompleted }) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<SessionChecklist[]>(queryKey);
+      queryClient.setQueryData<SessionChecklist[]>(queryKey, old =>
+        (old || []).map(checklist => ({
+          ...checklist,
+          items: checklist.items.map(item =>
+            item.id === itemId ? { ...item, is_completed: isCompleted } : item
+          ),
+        }))
+      );
+      return { previous };
+    },
+    onError: (error: Error, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
+      toast({ title: "Error updating item", description: error.message, variant: "destructive" });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
+  });
+
+  const addItemMutation = useMutation({
+    mutationFn: async ({ checklistId, text }: { checklistId: string; text: string }) => {
+      const currentChecklists = queryClient.getQueryData<SessionChecklist[]>(queryKey) || [];
+      const checklist = currentChecklists.find(c => c.id === checklistId);
+      const maxOrder = checklist?.items.reduce((max, item) => Math.max(max, item.sort_order), -1) ?? -1;
+
+      const { data, error } = await supabase
+        .from('checklist_items')
+        .insert([{ checklist_id: checklistId, text, sort_order: maxOrder + 1, is_completed: false }])
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error adding item", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const updateItemMutation = useMutation({
+    mutationFn: async ({ itemId, text }: { itemId: string; text: string }) => {
+      const { error } = await supabase
+        .from('checklist_items')
+        .update({ text })
+        .eq('id', itemId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error updating item", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteItemMutation = useMutation({
+    mutationFn: async (itemId: string) => {
+      const { error } = await supabase
+        .from('checklist_items')
+        .delete()
+        .eq('id', itemId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error deleting item", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Wrapper functions to preserve the existing API shape
+  const createChecklist = async (
+    checklist: { title: string; notes?: string; plot_id?: string | null },
+    items: string[]
+  ) => {
+    if (!chronicleId) {
+      toast({ title: "No chronicle selected", description: "Please select a chronicle first.", variant: "destructive" });
+      return null;
+    }
+    try {
+      return await createMutation.mutateAsync({ checklist, items });
+    } catch {
       return null;
     }
   };
@@ -292,175 +388,36 @@ export function useChecklists() {
     id: string,
     updates: { title?: string; notes?: string; plot_id?: string | null }
   ) => {
-    try {
-      const { error } = await supabase
-        .from('session_checklists')
-        .update(updates)
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setChecklists(prev => prev.map(c => 
-        c.id === id ? { ...c, ...updates } : c
-      ));
-
-      toast({
-        title: "Checklist updated",
-        description: "Your checklist has been updated.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error updating checklist",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+    await updateMutation.mutateAsync({ id, updates });
   };
 
   const deleteChecklist = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('session_checklists')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setChecklists(prev => prev.filter(c => c.id !== id));
-      toast({
-        title: "Checklist deleted",
-        description: "The checklist has been deleted.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error deleting checklist",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+    await deleteMutation.mutateAsync(id);
   };
 
   const toggleItem = async (itemId: string, isCompleted: boolean) => {
-    // Optimistic update
-    setChecklists(prev => prev.map(checklist => ({
-      ...checklist,
-      items: checklist.items.map(item =>
-        item.id === itemId ? { ...item, is_completed: isCompleted } : item
-      ),
-    })));
-
-    try {
-      const { error } = await supabase
-        .from('checklist_items')
-        .update({ is_completed: isCompleted })
-        .eq('id', itemId);
-
-      if (error) throw error;
-    } catch (error: any) {
-      // Rollback on failure
-      setChecklists(prev => prev.map(checklist => ({
-        ...checklist,
-        items: checklist.items.map(item =>
-          item.id === itemId ? { ...item, is_completed: !isCompleted } : item
-        ),
-      })));
-      toast({
-        title: "Error updating item",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+    await toggleMutation.mutateAsync({ itemId, isCompleted });
   };
 
   const addItem = async (checklistId: string, text: string) => {
     try {
-      const checklist = checklists.find(c => c.id === checklistId);
-      const maxOrder = checklist?.items.reduce((max, item) => 
-        Math.max(max, item.sort_order), -1) ?? -1;
-
-      const { data, error } = await supabase
-        .from('checklist_items')
-        .insert([{
-          checklist_id: checklistId,
-          text,
-          sort_order: maxOrder + 1,
-          is_completed: false,
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setChecklists(prev => prev.map(c =>
-        c.id === checklistId
-          ? { ...c, items: [...c.items, data] }
-          : c
-      ));
-
-      return data;
-    } catch (error: any) {
-      toast({
-        title: "Error adding item",
-        description: error.message,
-        variant: "destructive",
-      });
+      return await addItemMutation.mutateAsync({ checklistId, text });
+    } catch {
       return null;
     }
   };
 
   const updateItem = async (itemId: string, text: string) => {
-    try {
-      const { error } = await supabase
-        .from('checklist_items')
-        .update({ text })
-        .eq('id', itemId);
-
-      if (error) throw error;
-
-      setChecklists(prev => prev.map(checklist => ({
-        ...checklist,
-        items: checklist.items.map(item =>
-          item.id === itemId ? { ...item, text } : item
-        ),
-      })));
-    } catch (error: any) {
-      toast({
-        title: "Error updating item",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+    await updateItemMutation.mutateAsync({ itemId, text });
   };
 
   const deleteItem = async (itemId: string) => {
-    try {
-      const { error } = await supabase
-        .from('checklist_items')
-        .delete()
-        .eq('id', itemId);
-
-      if (error) throw error;
-
-      setChecklists(prev => prev.map(checklist => ({
-        ...checklist,
-        items: checklist.items.filter(item => item.id !== itemId),
-      })));
-    } catch (error: any) {
-      toast({
-        title: "Error deleting item",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+    await deleteItemMutation.mutateAsync(itemId);
   };
 
-  useEffect(() => {
-    fetchChecklists();
-  }, [currentChronicle?.id]);
-
   return {
-    checklists,
-    loading,
+    checklists: data ?? [],
+    loading: isLoading,
     createChecklist,
     updateChecklist,
     deleteChecklist,
@@ -468,6 +425,6 @@ export function useChecklists() {
     addItem,
     updateItem,
     deleteItem,
-    refetch: fetchChecklists,
+    refetch: () => queryClient.invalidateQueries({ queryKey }),
   };
 }
