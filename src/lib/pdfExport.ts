@@ -111,17 +111,25 @@ function addText(pdf: jsPDF, text: string, y: number, options?: {
   return y + (lines.length * (fontSize * 0.5));
 }
 
-function addLabelValue(pdf: jsPDF, label: string, value: string, y: number, x: number = 20): number {
+function addLabelValue(pdf: jsPDF, label: string, value: string, y: number, x: number = 20, maxWidth?: number): number {
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  
   pdf.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
   pdf.setFontSize(9);
   pdf.setFont('helvetica', 'normal');
   pdf.text(label + ':', x, y);
   
+  const labelWidth = pdf.getTextWidth(label + ': ') + 2;
+  const valueX = x + labelWidth;
+  const valueMaxWidth = maxWidth ?? (pageWidth - valueX - 15);
+  
   pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
   pdf.setFontSize(10);
-  pdf.text(value, x + pdf.getTextWidth(label + ': ') + 2, y);
+  pdf.setFont('helvetica', 'normal');
+  const lines = pdf.splitTextToSize(value, valueMaxWidth);
+  pdf.text(lines, valueX, y);
   
-  return y + 6;
+  return y + (lines.length * 5);
 }
 
 function addBadge(pdf: jsPDF, text: string, x: number, y: number, isPrimary: boolean = false): number {
@@ -339,31 +347,40 @@ export async function exportCharacterToPDF(character: {
   const pageWidth = pdf.internal.pageSize.getWidth();
   let y = 35;
   
+  // Track portrait area to constrain text
+  const portraitW = 35;
+  const portraitH = 45;
+  const portraitPadding = 5;
+  const portraitX = pageWidth - 15 - portraitW;
+  const portraitY = 30;
+  const portraitBottomY = portraitY + portraitH + 3; // including border
+  let hasPortrait = false;
+  
   // Add portrait if available
   if (character.avatar_url) {
     try {
       const imageData = await loadImageAsBase64(character.avatar_url);
       if (imageData) {
-        const portraitSize = 30;
-        const portraitX = pageWidth - 20 - portraitSize;
-        const portraitY = 30;
+        hasPortrait = true;
         
         // Draw border/frame for portrait
         pdf.setFillColor(COLORS.card.r, COLORS.card.g, COLORS.card.b);
-        pdf.roundedRect(portraitX - 1.5, portraitY - 1.5, portraitSize + 3, portraitSize + 3, 2, 2, 'F');
+        pdf.roundedRect(portraitX - 1.5, portraitY - 1.5, portraitW + 3, portraitH + 3, 2, 2, 'F');
         pdf.setDrawColor(COLORS.primary.r, COLORS.primary.g, COLORS.primary.b);
         pdf.setLineWidth(0.5);
-        pdf.roundedRect(portraitX - 1.5, portraitY - 1.5, portraitSize + 3, portraitSize + 3, 2, 2, 'S');
+        pdf.roundedRect(portraitX - 1.5, portraitY - 1.5, portraitW + 3, portraitH + 3, 2, 2, 'S');
         
-        // Add the portrait image
-        pdf.addImage(imageData, 'JPEG', portraitX, portraitY, portraitSize, portraitSize);
+        // Add the portrait image (portrait-oriented rectangle)
+        pdf.addImage(imageData, 'JPEG', portraitX, portraitY, portraitW, portraitH);
       }
     } catch (e) {
-      // Silently fail if image can't be loaded
       console.warn('Failed to load portrait for PDF:', e);
     }
   }
   const isVampire = character.clan !== 'Human' && character.clan !== 'Ghoul';
+  
+  // Calculate max width for text in the portrait zone
+  const textMaxWidthInPortraitZone = hasPortrait ? (portraitX - portraitPadding - 20) : undefined;
   
   // Badges row
   pdf.setFontSize(8);
@@ -378,18 +395,23 @@ export async function exportCharacterToPDF(character: {
   addBadge(pdf, character.type, badgeX, y);
   y += 10;
   
-  // Basic Info
+  // Basic Info — constrain width while portrait is beside text
+  const infoMaxWidth = (hasPortrait && y < portraitBottomY) ? textMaxWidthInPortraitZone : undefined;
   if (character.concept) {
-    y = addLabelValue(pdf, 'Concept', character.concept, y);
+    y = addLabelValue(pdf, 'Concept', character.concept, y, 20, infoMaxWidth);
   }
   if (character.sire) {
-    y = addLabelValue(pdf, 'Sire', character.sire, y);
+    y = addLabelValue(pdf, 'Sire', character.sire, y, 20, infoMaxWidth);
   }
   if (character.coterie) {
-    y = addLabelValue(pdf, 'Coterie', character.coterie, y);
+    y = addLabelValue(pdf, 'Coterie', character.coterie, y, 20, infoMaxWidth);
   }
   if (character.resonance && isVampire) {
-    y = addLabelValue(pdf, 'Resonance', character.resonance, y);
+    y = addLabelValue(pdf, 'Resonance', character.resonance, y, 20, infoMaxWidth);
+  }
+  // Ensure we're past the portrait before full-width sections
+  if (hasPortrait && y < portraitBottomY) {
+    y = portraitBottomY;
   }
   y += 5;
   
