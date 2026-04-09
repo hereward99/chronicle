@@ -7,10 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useChronicles } from '@/hooks/useChronicles';
 import { useGeneratorSettings } from '@/hooks/useGeneratorSettings';
-import { Download, Upload, Loader2, AlertTriangle, Bot, AtSign, ClipboardList, Plus, X, Check, Pencil, RotateCcw } from 'lucide-react';
+import { Bot, AtSign, ClipboardList, Plus, X, Check, Pencil, RotateCcw } from 'lucide-react';
 import { GuidedTour } from '@/components/onboarding/GuidedTour';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -26,30 +24,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-interface BackupData {
-  version: string;
-  exportedAt: string;
-  chronicle: any;
-  characters: any[];
-  relationships: any[];
-  factions: any[];
-  characterFactions: any[];
-  coteries: any[];
-  coterieMembers: any[];
-  sessions: any[];
-  plots: any[];
-  plotCharacters: any[];
-  notes: any[];
-}
 
 export default function Settings() {
   const { toast } = useToast();
-  const { currentChronicle } = useChronicles();
+  
   const { settings: generatorSettings, updateSettings: updateGeneratorSettings } = useGeneratorSettings();
-  const [exporting, setExporting] = useState(false);
-  const [importing, setImporting] = useState(false);
-  const [showImportDialog, setShowImportDialog] = useState(false);
-  const [pendingImportData, setPendingImportData] = useState<BackupData | null>(null);
   const [showTour, setShowTour] = useState(false);
 
   // Dev notes (Supabase-backed)

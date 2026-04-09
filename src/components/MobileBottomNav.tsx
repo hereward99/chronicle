@@ -30,7 +30,7 @@ const moreItems = [
   { name: "Locations", href: "/locations", icon: MapPin },
   { name: "Dice Roller", href: "/dice", icon: Dices },
   { name: "Generator", href: "/generator", icon: Sparkles },
-  { name: "Import", href: "/import", icon: FileDown },
+  { name: "Import & Export", href: "/import", icon: FileDown },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
