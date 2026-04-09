@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useDevNotes } from '@/hooks/useDevNotes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,21 +8,9 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { useGeneratorSettings } from '@/hooks/useGeneratorSettings';
-import { Bot, AtSign, ClipboardList, Plus, X, Check, Pencil, RotateCcw } from 'lucide-react';
+import { Bot, AtSign, ClipboardList, Plus, X, Check, RotateCcw } from 'lucide-react';
 import { GuidedTour } from '@/components/onboarding/GuidedTour';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 
 
 export default function Settings() {
