@@ -560,9 +560,9 @@ export default function Import() {
     <>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Import Data</h1>
+          <h1 className="text-3xl font-bold text-foreground">Import & Export</h1>
           <p className="text-muted-foreground mt-1">
-            Download JSON templates, populate them with another AI, then import them here
+            Export your chronicle data for backup, or import data from JSON templates
           </p>
         </div>
 
@@ -634,15 +634,14 @@ export default function Import() {
               </CardContent>
             </Card>
 
-            <Card className="bg-muted/30 border-dashed">
-              <CardHeader>
-                <CardTitle className="text-lg">Restore from Backup</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                <p>To restore from a backup file, go to <strong>Settings</strong> and use the Import Data feature. 
-                This will create a new chronicle with "(Restored)" suffix to prevent overwriting existing data.</p>
-              </CardContent>
-            </Card>
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Important</AlertTitle>
+              <AlertDescription>
+                Importing a backup will create a new chronicle with "(Restored)" suffix. 
+                Your existing data will not be modified.
+              </AlertDescription>
+            </Alert>
           </TabsContent>
 
           <TabsContent value="templates" className="space-y-6 mt-6">
