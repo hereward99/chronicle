@@ -41,7 +41,7 @@ export function CoterieCard({ coterie, members, onEdit, onSetPrimary }: CoterieC
                 <>
                   {coterie.coterie_type && <span>·</span>}
                   <MapPin className="h-3 w-3" />
-                  <span>{coterie.city}</span>
+                  <span><MentionText text={coterie.city} /></span>
                 </>
               )}
             </div>
