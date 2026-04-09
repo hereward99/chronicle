@@ -79,7 +79,7 @@ export function CoterieCard({ coterie, members, onEdit, onSetPrimary }: CoterieC
             {coterie.domain_resonance && (
               <p className="text-sm"><span className="text-muted-foreground">Resonance:</span> {coterie.domain_resonance}</p>
             )}
-            <DotRatedDisplay value={coterie.domain_merits} label="Merits" />
+            <DotRatedDisplay value={coterie.domain_merits} />
           </div>
         )}
 

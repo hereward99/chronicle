@@ -92,17 +92,16 @@ export function DotRatedList({ items, onChange, label, placeholder = "Merit name
   );
 }
 
-/** Read-only display of dot-rated items */
-export function DotRatedDisplay({ value, label }: { value: string | null; label?: string }) {
+/** Read-only display of dot-rated items — renders each as a standalone DotRating row */
+export function DotRatedDisplay({ value }: { value: string | null }) {
   const items = parseDotRatedItems(value);
   if (items.length === 0) return null;
 
   return (
-    <div className="space-y-1">
-      {label && <span className="text-sm text-muted-foreground">{label}:</span>}
+    <>
       {items.map((item, i) => (
         <DotRating key={i} value={item.dots} label={item.name} />
       ))}
-    </div>
+    </>
   );
 }
