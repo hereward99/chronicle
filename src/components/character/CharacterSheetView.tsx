@@ -741,8 +741,6 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
         </TabsContent>
 
 
-                <div className="space-y-2">
-                  {physicalAttributes.map((attr) => (
                     <div key={attr.name} className="flex justify-between items-center">
                       <RuleTooltip 
                         title={attr.name} 
