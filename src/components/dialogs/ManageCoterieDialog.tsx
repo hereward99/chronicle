@@ -183,7 +183,7 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
               <DotRating value={lien} onChange={setLien} label="Lien" />
               <div className="space-y-1">
                 <Label>Domain / Territory</Label>
-                <Input value={domain} onChange={e => setDomain(e.target.value)} />
+                <MentionInput value={domain} onChange={setDomain} placeholder="Domain area or @mention a location..." className="min-h-10 resize-none" maxLength={500} />
               </div>
               <div className="space-y-1">
                 <Label>Domain Resonance</Label>
