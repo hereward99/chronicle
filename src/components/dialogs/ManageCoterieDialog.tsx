@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { MentionInput } from "@/components/mentions/MentionInput";
 import { DotRating } from "@/components/characters/DotRating";
+import { DotRatedList, DotRatedItem, parseDotRatedItems, serializeDotRatedItems } from "@/components/characters/DotRatedList";
 import { FileUpload } from "@/components/ui/file-upload";
 import { useCoteries, Coterie } from "@/hooks/useCoteries";
 import { useCharacters } from "@/hooks/useCharacters";
@@ -37,10 +38,10 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
   const [chasse, setChasse] = useState(0);
   const [portillon, setPortillon] = useState(0);
   const [lien, setLien] = useState(0);
-  const [domainMerits, setDomainMerits] = useState("");
+  const [domainMerits, setDomainMerits] = useState<DotRatedItem[]>([]);
   const [domainResonance, setDomainResonance] = useState("");
   const [havenLocation, setHavenLocation] = useState("");
-  const [havenMeritsAndFlaws, setHavenMeritsAndFlaws] = useState("");
+  const [havenMeritsAndFlaws, setHavenMeritsAndFlaws] = useState<DotRatedItem[]>([]);
   const [coterieAdvantagesAndFlaws, setCoterieAdvantagesAndFlaws] = useState("");
   const [coterieBoonsAndDebts, setCoterieBoonsAndDebts] = useState("");
   const [chronicleTenets, setChronicleTenets] = useState("");
@@ -62,10 +63,10 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
       setChasse(coterie.chasse || 0);
       setPortillon(coterie.portillon || 0);
       setLien(coterie.lien || 0);
-      setDomainMerits(coterie.domain_merits || "");
+      setDomainMerits(parseDotRatedItems(coterie.domain_merits));
       setDomainResonance(coterie.domain_resonance || "");
       setHavenLocation(coterie.haven_location || "");
-      setHavenMeritsAndFlaws(coterie.haven_merits_and_flaws || "");
+      setHavenMeritsAndFlaws(parseDotRatedItems(coterie.haven_merits_and_flaws));
       setCoterieAdvantagesAndFlaws(coterie.coterie_advantages_and_flaws || "");
       setCoterieBoonsAndDebts(coterie.coterie_boons_and_debts || "");
       setChronicleTenets(coterie.chronicle_tenets || "");
@@ -90,10 +91,10 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
         chasse,
         portillon,
         lien,
-        domain_merits: domainMerits.trim() || null,
+        domain_merits: serializeDotRatedItems(domainMerits),
         domain_resonance: domainResonance.trim() || null,
         haven_location: havenLocation.trim() || null,
-        haven_merits_and_flaws: havenMeritsAndFlaws.trim() || null,
+        haven_merits_and_flaws: serializeDotRatedItems(havenMeritsAndFlaws),
         coterie_advantages_and_flaws: coterieAdvantagesAndFlaws.trim() || null,
         coterie_boons_and_debts: coterieBoonsAndDebts.trim() || null,
         chronicle_tenets: chronicleTenets.trim() || null,
@@ -189,10 +190,7 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
                 <Label>Domain Resonance</Label>
                 <Input value={domainResonance} onChange={e => setDomainResonance(e.target.value)} />
               </div>
-              <div className="space-y-1">
-                <Label>Domain Merits</Label>
-                <Textarea value={domainMerits} onChange={e => setDomainMerits(e.target.value)} className="min-h-16" />
-              </div>
+              <DotRatedList items={domainMerits} onChange={setDomainMerits} label="Domain Merits" placeholder="e.g. Herd, Rack..." />
             </div>
 
             <div className="space-y-3">
@@ -201,10 +199,7 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
                 <Label>Location</Label>
                 <MentionInput value={havenLocation} onChange={setHavenLocation} placeholder="Haven location or @mention..." className="min-h-10 resize-none" maxLength={500} />
               </div>
-              <div className="space-y-1">
-                <Label>Haven Merits & Flaws</Label>
-                <Textarea value={havenMeritsAndFlaws} onChange={e => setHavenMeritsAndFlaws(e.target.value)} className="min-h-16" />
-              </div>
+              <DotRatedList items={havenMeritsAndFlaws} onChange={setHavenMeritsAndFlaws} label="Haven Merits & Flaws" placeholder="e.g. Postern, Cell..." />
             </div>
 
             <div className="space-y-3">
