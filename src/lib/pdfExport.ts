@@ -121,7 +121,9 @@ function addLabelValue(pdf: jsPDF, label: string, value: string, y: number, x: n
   
   const labelWidth = pdf.getTextWidth(label + ': ') + 2;
   const valueX = x + labelWidth;
-  const valueMaxWidth = maxWidth ?? (pageWidth - valueX - 15);
+  // maxWidth is the total available width from x; subtract the label portion for the value
+  const totalAvailable = maxWidth ?? (pageWidth - x - 15);
+  const valueMaxWidth = totalAvailable - labelWidth;
   
   pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
   pdf.setFontSize(10);
