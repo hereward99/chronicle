@@ -199,7 +199,7 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Haven / Hangout</h3>
               <div className="space-y-1">
                 <Label>Location</Label>
-                <Input value={havenLocation} onChange={e => setHavenLocation(e.target.value)} />
+                <MentionInput value={havenLocation} onChange={setHavenLocation} placeholder="Haven location or @mention..." className="min-h-10 resize-none" maxLength={500} />
               </div>
               <div className="space-y-1">
                 <Label>Haven Merits & Flaws</Label>

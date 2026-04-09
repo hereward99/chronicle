@@ -88,7 +88,7 @@ export function CoterieCard({ coterie, members, onEdit, onSetPrimary }: CoterieC
         {(coterie.haven_location || coterie.haven_merits_and_flaws) && (
           <div className="space-y-1 p-3 rounded-md bg-secondary/30">
             <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Haven / Hangout</h4>
-            {coterie.haven_location && <p className="text-sm">{coterie.haven_location}</p>}
+            {coterie.haven_location && <p className="text-sm"><MentionText text={coterie.haven_location} /></p>}
             {coterie.haven_merits_and_flaws && (
               <p className="text-sm text-muted-foreground">{coterie.haven_merits_and_flaws}</p>
             )}
