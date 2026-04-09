@@ -634,14 +634,6 @@ export default function Import() {
               </CardContent>
             </Card>
 
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Important</AlertTitle>
-              <AlertDescription>
-                Importing a backup will create a new chronicle with "(Restored)" suffix. 
-                Your existing data will not be modified.
-              </AlertDescription>
-            </Alert>
           </TabsContent>
 
           <TabsContent value="templates" className="space-y-6 mt-6">
@@ -943,6 +935,16 @@ Return ONLY the completed JSON, maintaining the exact structure.`}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
+                      {card.type === "chronicle" && (
+                        <Alert>
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertTitle>Important</AlertTitle>
+                          <AlertDescription>
+                            Importing a backup will create a new chronicle with "(Restored)" suffix. 
+                            Your existing data will not be modified.
+                          </AlertDescription>
+                        </Alert>
+                      )}
                       <input
                         ref={(el) => (fileInputRefs.current[card.templateType] = el)}
                         type="file"
