@@ -410,7 +410,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
           : [],
         powers: characterData.characterType === "vampire"
           ? characterData.disciplines.flatMap(d => 
-              d.powers.map(p => ({ discipline: d.name, name: p }))
+              d.powers.map(p => ({ discipline: d.name, name: p, level: d.level }))
             )
           : [],
         
@@ -430,7 +430,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
         willpower_max: willpowerMax,
         hunger: characterData.characterType === "vampire" ? 1 : 0,
         blood_potency: characterData.characterType === "vampire" ? 0 : 0,
-      } as any);
+      });
 
       toast({
         title: "Character created!",
@@ -518,7 +518,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
                         ? "border-primary bg-primary/10"
                         : "hover:border-primary/50"
                     }`}
-                    onClick={() => setCharacterData(prev => ({ ...prev, characterType: type as any }))}
+                    onClick={() => setCharacterData(prev => ({ ...prev, characterType: type as "vampire" | "ghoul" | "human" }))}
                   >
                     <div className="text-center">
                       <div className="font-semibold capitalize">{type}</div>
@@ -571,7 +571,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
                     }`}
                     onClick={() => setCharacterData(prev => ({ 
                       ...prev, 
-                      pcOrNpc: role as any,
+                      pcOrNpc: role as "PC" | "NPC",
                       // Reset to full method when switching to PC
                       creationMethod: role === "PC" ? "full" : prev.creationMethod,
                       skipAttributes: role === "PC" ? false : prev.skipAttributes
@@ -605,7 +605,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
                     } ${characterData.pcOrNpc === "PC" && method.id !== "full" ? "opacity-50 cursor-not-allowed" : ""}`}
                     onClick={() => {
                       if (characterData.pcOrNpc === "PC" && method.id !== "full") return;
-                      setCharacterData(prev => ({ ...prev, creationMethod: method.id as any }));
+                      setCharacterData(prev => ({ ...prev, creationMethod: method.id as "full" | "simple" | "general" | "standard" }));
                     }}
                   >
                     <div className="text-center">

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useChronicles } from './useChronicles';
+import type { TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
 // Dice Pool types for Storyteller Characters
 export interface SimpleDicePool {
@@ -51,7 +52,7 @@ export interface Character {
   user_id: string;
   created_at: string;
   updated_at: string;
-  attachments?: any[];
+  attachments?: Array<{ id: string; name: string; url: string; type: string; size: number; uploaded_at: string }>;
   
   use_dice_pools?: boolean;
   skip_attributes?: boolean;
@@ -120,7 +121,7 @@ export function useCharacters() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data as unknown as Character[] || []).map(char => ({
+      return ((data ?? []) as unknown as Character[]).map(char => ({
         ...char,
         attachments: char.attachments || []
       }));
@@ -135,7 +136,7 @@ export function useCharacters() {
 
       const { data, error } = await supabase
         .from('characters')
-        .insert([{ ...character, user_id: user.id } as any])
+        .insert([{ ...character, user_id: user.id } as unknown as TablesInsert<'characters'>])
         .select()
         .single();
 
@@ -149,7 +150,7 @@ export function useCharacters() {
         description: `${variables.name} has been added to your chronicle.`,
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Error creating character",
         description: error.message,
@@ -162,7 +163,7 @@ export function useCharacters() {
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Character> }) => {
       const { data, error } = await supabase
         .from('characters')
-        .update(updates as any)
+        .update(updates as unknown as TablesUpdate<'characters'>)
         .eq('id', id)
         .select()
         .single();
@@ -177,7 +178,7 @@ export function useCharacters() {
         description: "Character has been successfully updated.",
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Error updating character",
         description: error.message,
@@ -202,7 +203,7 @@ export function useCharacters() {
         description: "Character has been successfully deleted.",
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Error deleting character",
         description: error.message,

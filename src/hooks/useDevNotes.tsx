@@ -23,11 +23,11 @@ export function useDevNotes() {
     queryKey: ['dev_notes'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('dev_notes' as any)
+        .from('dev_notes')
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data as any[]).map((n: any) => ({
+      return (data ?? []).map((n) => ({
         id: n.id,
         text: n.text,
         category: n.category as DevNote['category'],
@@ -50,13 +50,13 @@ export function useDevNotes() {
         localStorage.setItem(MIGRATED_KEY, 'true');
         return;
       }
-      const notes = JSON.parse(stored) as any[];
+      const notes = JSON.parse(stored) as Array<{ text: string; category?: string; done?: boolean; createdAt?: string }>;
       if (!notes.length) {
         localStorage.setItem(MIGRATED_KEY, 'true');
         return;
       }
 
-      const rows = notes.map((n: any) => ({
+      const rows = notes.map((n) => ({
         text: n.text,
         category: n.category || 'idea',
         done: n.done ?? false,
@@ -65,8 +65,8 @@ export function useDevNotes() {
       }));
 
       supabase
-        .from('dev_notes' as any)
-        .insert(rows as any)
+        .from('dev_notes')
+        .insert(rows)
         .then(({ error }) => {
           if (!error) {
             localStorage.removeItem(LOCAL_KEY);
@@ -82,8 +82,8 @@ export function useDevNotes() {
   const addNote = useMutation({
     mutationFn: async ({ text, category }: { text: string; category: DevNote['category'] }) => {
       const { error } = await supabase
-        .from('dev_notes' as any)
-        .insert({ text, category, user_id: user!.id } as any);
+        .from('dev_notes')
+        .insert({ text, category, user_id: user!.id });
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['dev_notes'] }),
@@ -92,8 +92,8 @@ export function useDevNotes() {
   const toggleNote = useMutation({
     mutationFn: async ({ id, done }: { id: string; done: boolean }) => {
       const { error } = await supabase
-        .from('dev_notes' as any)
-        .update({ done } as any)
+        .from('dev_notes')
+        .update({ done })
         .eq('id', id);
       if (error) throw error;
     },
@@ -103,7 +103,7 @@ export function useDevNotes() {
   const removeNote = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('dev_notes' as any)
+        .from('dev_notes')
         .delete()
         .eq('id', id);
       if (error) throw error;

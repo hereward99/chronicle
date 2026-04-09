@@ -293,7 +293,7 @@ export function NPCWizardDialog({ open, onOpenChange, generatedData, creationMet
           : [],
         powers: isVampire
           ? characterData.disciplines.flatMap(d => 
-              d.powers.map(p => ({ discipline: d.name, name: p }))
+              d.powers.map(p => ({ discipline: d.name, name: p, level: d.level }))
             )
           : [],
         
@@ -316,7 +316,7 @@ export function NPCWizardDialog({ open, onOpenChange, generatedData, creationMet
         hunger: isVampire ? 1 : 0,
         blood_potency: isVampire ? characterData.blood_potency : 0,
         resonance: isVampire ? characterData.resonance : null,
-      } as any);
+      });
 
       toast({
         title: "NPC Created!",
@@ -480,7 +480,7 @@ export function NPCWizardDialog({ open, onOpenChange, generatedData, creationMet
                           type="number"
                           min={1}
                           max={5}
-                          value={(characterData as any)[key]}
+                          value={characterData[key as keyof typeof characterData] as number}
                           onChange={(e) => setCharacterData(prev => ({ 
                             ...prev, 
                             [key]: parseInt(e.target.value) || 1 

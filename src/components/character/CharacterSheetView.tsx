@@ -313,7 +313,7 @@ export function CharacterSheetView({ character }: CharacterSheetViewProps) {
 function CharacterSheetContent({ character }: CharacterSheetViewProps) {
   const [lightboxImage, setLightboxImage] = useState<{ url: string; name: string } | null>(null);
 
-  const imageAttachments = (character.attachments || []).filter((a: any) =>
+  const imageAttachments = (character.attachments || []).filter((a) =>
     a.type?.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(a.name || '')
   );
 
@@ -922,7 +922,7 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
           )}
 
           {/* Attachments Gallery */}
-          <CharacterAttachmentsGallery attachments={character.attachments as any} />
+          <CharacterAttachmentsGallery attachments={character.attachments || []} />
         </TabsContent>
       </Tabs>
     </>
