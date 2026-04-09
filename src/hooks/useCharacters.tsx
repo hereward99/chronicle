@@ -52,7 +52,7 @@ export interface Character {
   user_id: string;
   created_at: string;
   updated_at: string;
-  attachments?: Array<{ id: string; name: string; url: string; type?: string; size?: number }>;
+  attachments?: Array<{ id: string; name: string; url: string; type: string; size: number; uploaded_at: string }>;
   
   use_dice_pools?: boolean;
   skip_attributes?: boolean;

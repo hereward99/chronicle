@@ -14,7 +14,7 @@ export interface Plot {
   user_id: string;
   created_at: string;
   updated_at: string;
-  attachments?: Array<{ id: string; name: string; url: string; type?: string; size?: number }>;
+  attachments?: Array<{ id: string; name: string; url: string; type: string; size: number; uploaded_at: string }>;
   in_game_date_start?: string | null;
   in_game_date_end?: string | null;
 }
