@@ -96,7 +96,7 @@ export function useChronicles() {
   const createDefaultChronicle = async () => {
     return createChronicle({
       name: "My Chronicle",
-      description: "Default chronicle for your Vampire: The Masquerade game",
+      description: "Your Vampire: The Masquerade tabletop roleplaying game chronicle",
       setting: "Modern Nights"
     });
   };
