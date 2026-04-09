@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -114,31 +113,25 @@ export function DiceRoller({
         <CardContent className="space-y-4">
           {/* Pool, Hunger, Difficulty controls */}
           <div className="grid grid-cols-3 gap-2 sm:gap-4">
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground uppercase tracking-wider">Dice Pool</Label>
-              <div className="flex items-center gap-1">
+            {/* Dice Pool */}
+            <div className="space-y-1.5">
+              <Label className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider text-center block">Dice Pool</Label>
+              <div className="flex items-center justify-center gap-1">
                 <Button
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8 shrink-0"
+                  className="h-9 w-9 shrink-0"
                   onClick={() => adjustValue(setPool, -1, 1, 30)}
                 >
                   <Minus className="h-3 w-3" />
                 </Button>
-                <Input
-                  type="number"
-                  min={1}
-                  max={30}
-                  value={pool}
-                  onChange={(e) => setPool(Math.max(1, Math.min(30, parseInt(e.target.value) || 1)))}
-                  className="h-8 text-center text-lg font-bold min-w-0 px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
+                <span className="text-2xl font-bold w-10 text-center tabular-nums">{pool}</span>
                 <Button
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8 shrink-0"
+                  className="h-9 w-9 shrink-0"
                   onClick={() => adjustValue(setPool, 1, 1, 30)}
                 >
                   <Plus className="h-3 w-3" />
@@ -146,34 +139,28 @@ export function DiceRoller({
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-xs uppercase tracking-wider flex items-center gap-1">
+            {/* Hunger */}
+            <div className="space-y-1.5">
+              <Label className="text-[10px] sm:text-xs uppercase tracking-wider flex items-center justify-center gap-1">
                 <Droplet className="h-3 w-3 text-destructive" />
                 <span className="text-destructive/80">Hunger</span>
               </Label>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center justify-center gap-1">
                 <Button
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8 shrink-0"
+                  className="h-9 w-9 shrink-0"
                   onClick={() => adjustValue(setHunger, -1, 0, 5)}
                 >
                   <Minus className="h-3 w-3" />
                 </Button>
-                <Input
-                  type="number"
-                  min={0}
-                  max={5}
-                  value={hunger}
-                  onChange={(e) => setHunger(Math.max(0, Math.min(5, parseInt(e.target.value) || 0)))}
-                  className="h-8 text-center text-lg font-bold text-destructive min-w-0 px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
+                <span className="text-2xl font-bold w-10 text-center tabular-nums text-destructive">{hunger}</span>
                 <Button
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8 shrink-0"
+                  className="h-9 w-9 shrink-0"
                   onClick={() => adjustValue(setHunger, 1, 0, 5)}
                 >
                   <Plus className="h-3 w-3" />
@@ -181,31 +168,25 @@ export function DiceRoller({
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground uppercase tracking-wider">Difficulty</Label>
-              <div className="flex items-center gap-1">
+            {/* Difficulty */}
+            <div className="space-y-1.5">
+              <Label className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider text-center block">Difficulty</Label>
+              <div className="flex items-center justify-center gap-1">
                 <Button
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8 shrink-0"
+                  className="h-9 w-9 shrink-0"
                   onClick={() => adjustValue(setDifficulty, -1, 1, 15)}
                 >
                   <Minus className="h-3 w-3" />
                 </Button>
-                <Input
-                  type="number"
-                  min={1}
-                  max={15}
-                  value={difficulty}
-                  onChange={(e) => setDifficulty(Math.max(1, Math.min(15, parseInt(e.target.value) || 1)))}
-                  className="h-8 text-center text-lg font-bold min-w-0 px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
+                <span className="text-2xl font-bold w-10 text-center tabular-nums">{difficulty}</span>
                 <Button
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8 shrink-0"
+                  className="h-9 w-9 shrink-0"
                   onClick={() => adjustValue(setDifficulty, 1, 1, 15)}
                 >
                   <Plus className="h-3 w-3" />
