@@ -24,9 +24,9 @@ interface DiceRollerProps {
 }
 
 export function DiceRoller({
-  initialPool = 5,
+  initialPool = 4,
   initialHunger = 1,
-  initialDifficulty = 3,
+  initialDifficulty = 2,
   label,
   compact = false,
 }: DiceRollerProps) {
