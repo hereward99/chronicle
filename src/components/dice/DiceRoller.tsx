@@ -167,7 +167,7 @@ export function DiceRoller({
                   max={5}
                   value={hunger}
                   onChange={(e) => setHunger(Math.max(0, Math.min(5, parseInt(e.target.value) || 0)))}
-                  className="h-8 text-center text-lg font-bold text-destructive"
+                  className="h-8 text-center text-lg font-bold text-destructive min-w-0 px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
                 <Button
                   type="button"
