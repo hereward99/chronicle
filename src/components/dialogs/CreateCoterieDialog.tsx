@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MentionInput } from "@/components/mentions/MentionInput";
 import { DotRating } from "@/components/characters/DotRating";
+import { DotRatedList, DotRatedItem, serializeDotRatedItems } from "@/components/characters/DotRatedList";
 import { FileUpload } from "@/components/ui/file-upload";
 import { useCoteries } from "@/hooks/useCoteries";
 import { useChronicles } from "@/hooks/useChronicles";
@@ -25,10 +26,10 @@ export function CreateCoterieDialog({ open, onOpenChange }: CreateCoterieDialogP
   const [chasse, setChasse] = useState(0);
   const [portillon, setPortillon] = useState(0);
   const [lien, setLien] = useState(0);
-  const [domainMerits, setDomainMerits] = useState("");
+  const [domainMerits, setDomainMerits] = useState<DotRatedItem[]>([]);
   const [domainResonance, setDomainResonance] = useState("");
   const [havenLocation, setHavenLocation] = useState("");
-  const [havenMeritsAndFlaws, setHavenMeritsAndFlaws] = useState("");
+  const [havenMeritsAndFlaws, setHavenMeritsAndFlaws] = useState<DotRatedItem[]>([]);
   const [coterieAdvantagesAndFlaws, setCoterieAdvantagesAndFlaws] = useState("");
   const [coterieBoonsAndDebts, setCoterieBoonsAndDebts] = useState("");
   const [chronicleTenets, setChronicleTenets] = useState("");
@@ -62,10 +63,10 @@ export function CreateCoterieDialog({ open, onOpenChange }: CreateCoterieDialogP
         coterie_type: coterieType.trim() || null,
         city: city.trim() || null,
         chasse, portillon, lien,
-        domain_merits: domainMerits.trim() || null,
+        domain_merits: serializeDotRatedItems(domainMerits),
         domain_resonance: domainResonance.trim() || null,
         haven_location: havenLocation.trim() || null,
-        haven_merits_and_flaws: havenMeritsAndFlaws.trim() || null,
+        haven_merits_and_flaws: serializeDotRatedItems(havenMeritsAndFlaws),
         coterie_advantages_and_flaws: coterieAdvantagesAndFlaws.trim() || null,
         coterie_boons_and_debts: coterieBoonsAndDebts.trim() || null,
         chronicle_tenets: chronicleTenets.trim() || null,
@@ -125,10 +126,7 @@ export function CreateCoterieDialog({ open, onOpenChange }: CreateCoterieDialogP
                 <Label>Domain Resonance</Label>
                 <Input value={domainResonance} onChange={e => setDomainResonance(e.target.value)} placeholder="Choleric" />
               </div>
-              <div className="space-y-1">
-                <Label>Domain Merits</Label>
-                <Textarea value={domainMerits} onChange={e => setDomainMerits(e.target.value)} placeholder="Domain merits..." className="min-h-16" />
-              </div>
+              <DotRatedList items={domainMerits} onChange={setDomainMerits} label="Domain Merits" placeholder="e.g. Herd, Rack..." />
             </div>
 
             {/* Haven */}
@@ -138,10 +136,7 @@ export function CreateCoterieDialog({ open, onOpenChange }: CreateCoterieDialogP
                 <Label>Location</Label>
                 <Input value={havenLocation} onChange={e => setHavenLocation(e.target.value)} placeholder="Abandoned warehouse on 5th Street" />
               </div>
-              <div className="space-y-1">
-                <Label>Haven Merits & Flaws</Label>
-                <Textarea value={havenMeritsAndFlaws} onChange={e => setHavenMeritsAndFlaws(e.target.value)} placeholder="Merits and flaws..." className="min-h-16" />
-              </div>
+              <DotRatedList items={havenMeritsAndFlaws} onChange={setHavenMeritsAndFlaws} label="Haven Merits & Flaws" placeholder="e.g. Postern, Cell..." />
             </div>
 
             {/* Social Ledger */}
