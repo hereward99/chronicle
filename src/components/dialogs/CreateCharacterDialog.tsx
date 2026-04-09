@@ -123,7 +123,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
         skills: usesDicePools ? {} : undefined,
         health_max: healthMax,
         willpower_max: willpowerMax,
-      } as any);
+      });
 
       setFormData({
         name: "",

@@ -36,7 +36,7 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
     description: "",
     status: "Active" as "Active" | "Planned" | "Completed" | "Critical",
     priority: "Medium" as "Low" | "Medium" | "High" | "Critical",
-    attachments: [] as any[],
+    attachments: [] as Array<{ id: string; name: string; url: string; type: string; size: number; uploaded_at: string }>,
     in_game_date_start: "",
     in_game_date_end: "",
   });

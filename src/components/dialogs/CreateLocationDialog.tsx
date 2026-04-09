@@ -27,7 +27,7 @@
        coordinates: '',
        country: '',
        city_region: '',
-       attachments: [] as any[],
+       attachments: [] as Array<{ id: string; name: string; url: string; type: string; size: number; uploaded_at: string }>,
      });
 
    const handleSubmit = async (e: React.FormEvent) => {

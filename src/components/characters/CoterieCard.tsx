@@ -20,9 +20,9 @@ interface CoterieCardProps {
 export function CoterieCard({ coterie, members, onEdit, onSetPrimary }: CoterieCardProps) {
   const [open, setOpen] = useState(false);
 
-  const attachments = Array.isArray(coterie.attachments) ? coterie.attachments as any[] : [];
-  const images = attachments.filter(a => a.type?.startsWith("image/"));
-  const docs = attachments.filter(a => !a.type?.startsWith("image/"));
+  const attachments = Array.isArray(coterie.attachments) ? coterie.attachments : [];
+  const images = attachments.filter((a: Record<string, unknown>) => typeof a.type === 'string' && (a.type as string).startsWith("image/"));
+  const docs = attachments.filter((a: Record<string, unknown>) => typeof a.type !== 'string' || !(a.type as string).startsWith("image/"));
 
   return (
     <Card data-entity-id={coterie.id} className={`transition-shadow hover:shadow-lg ${coterie.is_primary ? "ring-2 ring-primary" : ""}`}>
