@@ -1,38 +1,35 @@
 
 
-## Item 7: Migrate `useChecklists` to React Query
+## Item 1: Clan Banes & Compulsions Reference Cards
 
-### Problem
-`useChecklists` is the only CRUD hook still using manual `useState`/`useEffect` state management. Every other entity hook (`useCharacters`, `useNotes`, `usePlots`, `useSessions`, `useBoons`, etc.) uses TanStack React Query with `useQuery`/`useMutation`. This causes:
+### What it does
+Adds a static V5 reference data file with every clan's Bane and Compulsion text, then displays them as a read-only reference card on the character sheet — automatically keyed to the character's clan.
 
-- **No automatic cache invalidation** -- after creating/deleting a checklist, it manually calls `fetchChecklists()` or does optimistic `setState`, which can drift out of sync
-- **No background refetching** -- stale data stays until a manual refetch
-- **Inconsistent API** -- every other hook returns `{ data, isLoading }` from `useQuery`; this one returns `{ checklists, loading }`
-- **No query key isolation** -- switching chronicles requires the `useEffect` dependency to fire, rather than React Query's automatic key-based cache separation
+### Changes
 
-### What changes
+**New file: `src/lib/v5/clanData.ts`**
+- A single exported `CLAN_DATA` map keyed by clan name (Brujah, Gangrel, Malkavian, Nosferatu, Toreador, Tremere, Ventrue, Caitiff, Thin-Blood, Lasombra, Tzimisce, Hecata, Ravnos, Salubri, Ministry, Banu Haqim)
+- Each entry contains `{ bane: string, compulsion: string }` — short corebook-accurate descriptions
+- Human and Ghoul entries return null/empty (no bane or compulsion)
 
-**Single file**: `src/hooks/useChecklists.tsx`
+**Modified file: `src/components/character/CharacterSheetView.tsx`**
+- Import `CLAN_DATA` from the new file
+- Add a "Clan Bane & Compulsion" card in the Stats tab, below the header/above attributes (only shown for vampire clans)
+- Two collapsible sections: **Bane** (with a skull/warning icon) and **Compulsion** (with a brain/alert icon)
+- Styled consistently with existing reference tooltips — muted background, small text, thematic coloring (destructive tint for bane, orange tint for compulsion)
+- Caitiff shows "No inherent Bane" note; Thin-Bloods show their unique rules
 
-The exported interfaces (`ChecklistItem`, `SessionChecklist`) and `CHECKLIST_TEMPLATES` stay identical. The returned API shape stays identical (`checklists`, `loading`, `createChecklist`, `updateChecklist`, `deleteChecklist`, `toggleItem`, `addItem`, `updateItem`, `deleteItem`, `refetch`) so no consumer changes are needed.
-
-**Internal changes**:
-1. Replace `useState`/`useEffect` with `useQuery` for fetching checklists + items (query key: `['checklists', chronicleId]`)
-2. Replace each mutation (`createChecklist`, `updateChecklist`, `deleteChecklist`, `toggleItem`, `addItem`, `updateItem`, `deleteItem`) with `useMutation` calls that invalidate the `['checklists', chronicleId]` query on success
-3. Keep the optimistic update on `toggleItem` using React Query's `onMutate`/`onError` rollback pattern
-4. Map the return values to match the current API: `checklists: data ?? []`, `loading: isLoading`
-
-### No other files change
-The consumers (`ChecklistCard.tsx`, `CreateChecklistDialog.tsx`, `EditChecklistDialog.tsx`, and the Sessions page) all consume the same function signatures, so they need no updates.
+### No database changes
+All data is static reference content — no new columns or tables needed.
 
 ### Technical detail
 ```text
-Current pattern:
-  useState([]) → useEffect fetches → setState → manual refetch after mutations
+CLAN_DATA['Brujah'] = {
+  bane: "The Fury: Brujah subtract dice equal to their Bane Severity from pools to resist Fury Frenzy...",
+  compulsion: "Rebellion: The Brujah must stand against whatever the current status quo is..."
+}
 
-New pattern:
-  useQuery(['checklists', chronicleId], fetchFn) → useMutation with queryClient.invalidateQueries
+CharacterSheetView renders:
+  if (CLAN_DATA[character.clan]) → show Bane & Compulsion card
 ```
-
-This is a straightforward 1-file refactor that brings the last holdout hook in line with the rest of the codebase.
 
