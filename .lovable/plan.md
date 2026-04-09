@@ -1,53 +1,63 @@
 
 
-## Items 1–4: Chronicle Filtering, Toast Cleanup, Location Hook Alignment, Dead Code Removal
+## Item 6: Eliminate `as any` Casts
 
-### 1. Add `chronicle_id` filtering to 7 hooks
+### Problem
+There are 168 `as any` casts across 14 files. The Supabase types file is already up-to-date — the casts exist because of type mismatches between the app's TypeScript interfaces and Supabase's generic `Json` type.
 
-Each of these hooks will import `useChronicles` and filter queries by the active chronicle:
+### Root Causes (by category)
 
-| Hook | Current behavior | Fix |
-|------|-----------------|-----|
-| `useCharacters` | Fetches all user's characters | Add `.eq('chronicle_id', chronicleId)`, include `chronicleId` in query key, disable query when no chronicle |
-| `useSessions` | Fetches all sessions | Same pattern |
-| `usePlots` | Fetches all plots | Same pattern |
-| `useNotes` | Fetches all notes | Same pattern |
-| `useRelationships` | Fetches all relationships | Same pattern |
-| `useChronicleStats` | Counts everything | Add `.eq('chronicle_id', chronicleId)` to all 4 stat queries |
-| `useRecentActivity` | Shows all recent items | Add `.eq('chronicle_id', chronicleId)` to all 4 activity queries |
+**Category A: `Json` vs specific types (characters, plots, sessions, coteries)**
+The Supabase type for `characters.disciplines` is `Json | null`, but the app's `Character` interface declares it as `Array<{name: string; level: number}>`. When inserting/updating, TypeScript rejects the mismatch, so `as any` is used. Same for `attachments`, `skills`, `touchstones`, `advantages`, `flaws`, `loresheets`, `powers`, `dice_pools` on characters, and `attachments` on plots/sessions/coteries/locations.
 
-The pattern follows what `useLocations` and `useBoons` already do.
+**Category B: `dev_notes` — phantom casts**
+The types file already includes `dev_notes` (lines 482-508), so all `from('dev_notes' as any)` casts are completely unnecessary and can simply be removed.
 
-### 2. Standardize toast imports
+**Category C: App interface fields missing from Supabase Row type**
+`EditPlotDialog` uses `(plot as any).summary` and `(plot as any).attachments` — but the Supabase `plots.Row` type already has `summary` and `attachments`. The issue is that the component receives a `Plot` interface (from `usePlots`) which already has these fields. So these casts are also unnecessary — the `Plot` interface just needs its `attachments` type fixed from `any[]` to `Json`.
 
-7 files import from `@/components/ui/use-toast` (a 2-line re-export wrapper). Change all to import directly from `@/hooks/use-toast`:
-- `useChronicleStats.tsx`
-- `useBoons.tsx`
-- `useCharacters.tsx`
-- `useCoteries.tsx`
-- `useFactions.tsx`
-- `useRelationships.tsx`
-- `Settings.tsx`
+**Category D: Wizard dialog casts**
+`CharacterWizard` and `NPCWizardDialog` cast their entire `createCharacter()` argument `as any` because the object contains fields typed more specifically than the Supabase `Insert` type accepts.
 
-1 file (`useLocations.tsx`) imports from `sonner` — replace with `@/hooks/use-toast` and convert `toast.success()`/`toast.error()` calls to the standard `toast({ title, variant })` pattern.
+### Solution
 
-Delete the wrapper file `src/components/ui/use-toast.ts` afterward.
+1. **Create a helper type** in `src/integrations/supabase/types.ts` (or a new `src/types/database.ts` file) that properly types the Supabase row types with the app's specific JSON structures. Use the `Tables` helper already exported from the types file, then extend with proper JSON field types.
 
-### 3. Align `useLocations` API
+2. **Update entity interfaces** (`Character`, `Plot`, `Session`, `Boon`) to use `Json` for their JSON fields at the Supabase boundary, or cast at the query boundary (one place) instead of at every usage site.
 
-`useLocations` currently returns raw mutation objects (`createLocation.mutate(...)`). Wrap them in async helper functions like every other hook does:
+3. **Recommended approach — cast once at the query layer**: Keep the app interfaces with their specific types. In each hook's `queryFn`, cast the Supabase response once: `data as unknown as Character[]`. For inserts/updates, cast the payload once: `as Tables<'characters'>['Insert']`. This confines casts to one explicit boundary per hook.
+
+### Files to change
+
+| File | Changes |
+|------|---------|
+| `src/hooks/useDevNotes.tsx` | Remove all 8 `as any` casts — they're unnecessary since `dev_notes` is in the types |
+| `src/hooks/useCharacters.tsx` | Replace `as any` on insert/update with typed cast to `Tables<'characters'>['Insert']` |
+| `src/hooks/useBoons.tsx` | Same pattern — typed cast on insert/update |
+| `src/hooks/usePlots.tsx` | Fix `Plot` interface: `attachments` from `any[]` to `Json[] | null` |
+| `src/hooks/useSessions.tsx` | Fix `Session` interface: `attachments` from `any[]` to `Json[] | null` |
+| `src/components/dialogs/EditPlotDialog.tsx` | Remove 4 unnecessary `(plot as any).summary` / `.attachments` casts |
+| `src/components/dialogs/EditSessionDialog.tsx` | Remove 4 unnecessary `(session as any).in_game_date_*` casts |
+| `src/components/dialogs/CreatePlotDialog.tsx` | Change `[] as any[]` to typed empty array |
+| `src/components/dialogs/CreateLocationDialog.tsx` | Change `[] as any[]` to typed empty array |
+| `src/components/dialogs/EditLocationDialog.tsx` | Change `[] as any[]` to typed empty array |
+| `src/components/dialogs/CreateCharacterDialog.tsx` | Replace `as any` with typed Supabase insert cast |
+| `src/components/dialogs/NPCWizardDialog.tsx` | Replace `as any` with typed insert cast; fix `(characterData as any)[key]` |
+| `src/components/character/CharacterWizard.tsx` | Replace `as any` with typed insert cast; fix UI event handler casts |
+| `src/components/character/CharacterSheetView.tsx` | Replace `attachments as any` with proper type |
+| `src/components/characters/CoterieCard.tsx` | Replace `attachments as any[]` with `Json[]` cast |
+| `src/lib/pdfExport.ts` | Replace `as any[]` length checks with proper `Array.isArray()` guards or typed casts |
+
+### Technical detail
+The key insight is that `Json` (Supabase's generic JSON type) is compatible with specific object types when reading, but not when writing. The fix pattern:
+
+```text
+// Reading (query): cast Supabase rows to app types (already done in most hooks)
+return data as unknown as Character[];
+
+// Writing (insert/update): cast app objects to Supabase insert type  
+.insert([{ ...character, user_id: user.id } as Database['public']['Tables']['characters']['Insert']])
 ```
-const createLocation = async (loc) => createLocationMutation.mutateAsync(loc);
-```
 
-### 4. Delete dead files
-
-- Delete `src/pages/Index.tsx` — unused, no imports reference it
-- Delete `src/components/ui/use-toast.ts` — the re-export wrapper (after step 2 redirects all imports)
-
-Also remove the duplicate `<Sonner />` toaster from `App.tsx` since the app standardizes on the shadcn toast system, not sonner. Remove the sonner import as well.
-
----
-
-**After implementation**: We pause and review before proceeding to items 5–7 (CRUD factory hook, Supabase type regeneration, useChecklists migration).
+This eliminates all `as any` while preserving type safety at the app layer.
 
