@@ -42,8 +42,8 @@ export function CreateCoterieDialog({ open, onOpenChange }: CreateCoterieDialogP
 
   const resetForm = () => {
     setName(""); setDescription(""); setDomain(""); setCoterieType(""); setCity("");
-    setChasse(0); setPortillon(0); setLien(0); setDomainMerits(""); setDomainResonance("");
-    setHavenLocation(""); setHavenMeritsAndFlaws(""); setCoterieAdvantagesAndFlaws("");
+    setChasse(0); setPortillon(0); setLien(0); setDomainMerits([]); setDomainResonance("");
+    setHavenLocation(""); setHavenMeritsAndFlaws([]); setCoterieAdvantagesAndFlaws("");
     setCoterieBoonsAndDebts(""); setChronicleTenets(""); setCoterieGoals(""); setAttachments([]);
   };
 
