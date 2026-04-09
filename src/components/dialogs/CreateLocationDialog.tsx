@@ -34,11 +34,11 @@
      e.preventDefault();
      if (!chronicleId || !userId) return;
 
-     await createLocation.mutateAsync({
-       ...formData,
-       chronicle_id: chronicleId,
-       user_id: userId,
-     });
+      await createLocation({
+        ...formData,
+        chronicle_id: chronicleId,
+        user_id: userId,
+      });
 
      setFormData({ name: '', description: '', notes: '', coordinates: '', country: '', city_region: '', attachments: [] });
      onOpenChange(false);
@@ -135,8 +135,8 @@
              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                Cancel
              </Button>
-             <Button type="submit" disabled={!formData.name || createLocation.isPending}>
-               {createLocation.isPending ? 'Creating...' : 'Create Location'}
+            <Button type="submit" disabled={!formData.name}>
+              Create Location
              </Button>
            </DialogFooter>
          </form>
