@@ -199,7 +199,7 @@ export function DiceRoller({
                   max={15}
                   value={difficulty}
                   onChange={(e) => setDifficulty(Math.max(1, Math.min(15, parseInt(e.target.value) || 1)))}
-                  className="h-8 text-center text-lg font-bold"
+                  className="h-8 text-center text-lg font-bold min-w-0 px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
                 <Button
                   type="button"
