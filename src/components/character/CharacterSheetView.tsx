@@ -739,9 +739,8 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
             );
           })()}
         </TabsContent>
-            <div className="grid grid-cols-3 gap-6">
-              <div>
-                <h4 className="text-sm font-semibold text-muted-foreground mb-3">Physical</h4>
+
+
                 <div className="space-y-2">
                   {physicalAttributes.map((attr) => (
                     <div key={attr.name} className="flex justify-between items-center">
