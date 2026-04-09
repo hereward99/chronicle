@@ -551,7 +551,155 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
             </div>
           </Card>
 
-          {/* Clan Bane & Compulsion */}
+          {/* Blood Potency Effects */}
+          {character.clan !== "Human" && character.clan !== "Ghoul" && (
+            (() => {
+              const bpEffects = getBloodPotencyEffects(character.blood_potency || 0);
+              return (
+                <Card className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">Blood Potency Effects</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="text-center p-3 rounded-md bg-muted/50">
+                      <p className="text-xs text-muted-foreground mb-1">Blood Surge</p>
+                      <p className="text-lg font-bold text-primary">+{bpEffects.bloodSurge}</p>
+                    </div>
+                    <div className="text-center p-3 rounded-md bg-muted/50">
+                      <p className="text-xs text-muted-foreground mb-1">Power Bonus</p>
+                      <p className="text-lg font-bold text-primary">+{bpEffects.powerBonus}</p>
+                    </div>
+                    <div className="text-center p-3 rounded-md bg-muted/50">
+                      <p className="text-xs text-muted-foreground mb-1">Mending</p>
+                      <p className="text-lg font-bold text-primary">{bpEffects.mending} Superficial</p>
+                    </div>
+                    <div className="text-center p-3 rounded-md bg-destructive/10 border border-destructive/20">
+                      <p className="text-xs text-muted-foreground mb-1">Bane Severity</p>
+                      <p className="text-lg font-bold text-destructive">{bpEffects.baneSeverity}</p>
+                    </div>
+                  </div>
+                  {bpEffects.feedingPenalty !== "No effect" && (
+                    <div className="mt-3 p-3 rounded-md bg-muted/50 border border-border">
+                      <p className="text-xs font-semibold text-muted-foreground mb-1">Feeding Restriction</p>
+                      <p className="text-sm text-muted-foreground">{bpEffects.feedingPenalty}</p>
+                    </div>
+                  )}
+                </Card>
+              );
+            })()
+          )}
+
+          {/* Attributes */}
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Attributes</h3>
+            <div className="grid grid-cols-3 gap-6">
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground mb-3">Physical</h4>
+                <div className="space-y-2">
+                  {physicalAttributes.map((attr) => (
+                    <div key={attr.name} className="flex justify-between items-center">
+                      <RuleTooltip 
+                        title={attr.name} 
+                        description={rulesReference.attributes[attr.name.toLowerCase() as keyof typeof rulesReference.attributes]}
+                      >
+                        <span className="text-sm">{attr.name}</span>
+                      </RuleTooltip>
+                      <div className="flex items-center gap-1">
+                        <DotRating current={attr.value} />
+                        <QuickRollButton basePool={attr.value} hunger={character.hunger || 1} label={attr.name} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground mb-3">Social</h4>
+                <div className="space-y-2">
+                  {socialAttributes.map((attr) => (
+                    <div key={attr.name} className="flex justify-between items-center">
+                      <RuleTooltip 
+                        title={attr.name} 
+                        description={rulesReference.attributes[attr.name.toLowerCase() as keyof typeof rulesReference.attributes]}
+                      >
+                        <span className="text-sm">{attr.name}</span>
+                      </RuleTooltip>
+                      <div className="flex items-center gap-1">
+                        <DotRating current={attr.value} />
+                        <QuickRollButton basePool={attr.value} hunger={character.hunger || 1} label={attr.name} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground mb-3">Mental</h4>
+                <div className="space-y-2">
+                  {mentalAttributes.map((attr) => (
+                    <div key={attr.name} className="flex justify-between items-center">
+                      <RuleTooltip 
+                        title={attr.name} 
+                        description={rulesReference.attributes[attr.name.toLowerCase() as keyof typeof rulesReference.attributes]}
+                      >
+                        <span className="text-sm">{attr.name}</span>
+                      </RuleTooltip>
+                      <div className="flex items-center gap-1">
+                        <DotRating current={attr.value} />
+                        <QuickRollButton basePool={attr.value} hunger={character.hunger || 1} label={attr.name} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Skills or Dice Pools */}
+          {character.use_dice_pools && character.dice_pools ? (
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Dices className="h-5 w-5" />
+                Dice Pools
+              </h3>
+              <DicePoolsDisplay dicePools={character.dice_pools} />
+            </Card>
+          ) : (
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Skills</h3>
+              <div className="grid grid-cols-3 gap-6">
+                {Object.entries(skillCategories).map(([category, skillList]) => (
+                  <div key={category}>
+                    <h4 className="text-sm font-semibold text-muted-foreground mb-3">{category}</h4>
+                    <div className="space-y-2">
+                      {skillList.map((skillKey) => {
+                        const skill = character.skills?.[skillKey];
+                        const rating = skill?.rating || 0;
+                        const displayName = skillKey.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                        
+                        return (
+                          <div key={skillKey} className="flex justify-between items-center">
+                            <div className="flex-1">
+                              <span className="text-sm">{displayName}</span>
+                              {skill?.specialty && (
+                                <span className="text-xs text-muted-foreground ml-1">({skill.specialty})</span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              {rating > 0 && <DotRating current={rating} />}
+                              {rating > 0 && (
+                                <QuickRollButton basePool={rating} hunger={character.hunger || 1} label={displayName} />
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Clan Bane & Compulsion — bottom of Stats tab */}
           {(() => {
             const clanInfo = getClanData(character.clan);
             if (!clanInfo) return null;
@@ -590,10 +738,7 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
               </Card>
             );
           })()}
-
-          {/* Attributes */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Attributes</h3>
+        </TabsContent>
             <div className="grid grid-cols-3 gap-6">
               <div>
                 <h4 className="text-sm font-semibold text-muted-foreground mb-3">Physical</h4>
