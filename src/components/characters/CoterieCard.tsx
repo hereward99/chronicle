@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DotRating } from "./DotRating";
+import { DotRatedDisplay } from "./DotRatedList";
 import { Users, MapPin, ChevronDown, Edit, Star, FileText, Image as ImageIcon } from "lucide-react";
 import type { Coterie } from "@/hooks/useCoteries";
 import type { Character } from "@/hooks/useCharacters";
@@ -78,9 +79,7 @@ export function CoterieCard({ coterie, members, onEdit, onSetPrimary }: CoterieC
             {coterie.domain_resonance && (
               <p className="text-sm"><span className="text-muted-foreground">Resonance:</span> {coterie.domain_resonance}</p>
             )}
-            {coterie.domain_merits && (
-              <p className="text-sm"><span className="text-muted-foreground">Merits:</span> {coterie.domain_merits}</p>
-            )}
+            <DotRatedDisplay value={coterie.domain_merits} label="Merits" />
           </div>
         )}
 
@@ -89,9 +88,7 @@ export function CoterieCard({ coterie, members, onEdit, onSetPrimary }: CoterieC
           <div className="space-y-1 p-3 rounded-md bg-secondary/30">
             <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Haven / Hangout</h4>
             {coterie.haven_location && <p className="text-sm"><MentionText text={coterie.haven_location} /></p>}
-            {coterie.haven_merits_and_flaws && (
-              <p className="text-sm text-muted-foreground">{coterie.haven_merits_and_flaws}</p>
-            )}
+            <DotRatedDisplay value={coterie.haven_merits_and_flaws} />
           </div>
         )}
 
