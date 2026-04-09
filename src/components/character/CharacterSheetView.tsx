@@ -7,7 +7,9 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { HelpCircle, Droplet, Download, Dices, X, BookOpen, Calendar } from "lucide-react";
+import { HelpCircle, Droplet, Download, Dices, X, BookOpen, Calendar, Skull, Brain } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { getClanData } from "@/lib/v5/clanData";
 import { QuickRollButton } from "@/components/dice/QuickRollButton";
 import { CharacterAttachmentsGallery } from "./CharacterAttachmentsGallery";
 import { BoonsSection } from "@/components/boons/BoonsSection";
@@ -547,6 +549,46 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
 
             </div>
           </Card>
+
+          {/* Clan Bane & Compulsion */}
+          {(() => {
+            const clanInfo = getClanData(character.clan);
+            if (!clanInfo) return null;
+            return (
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Clan Bane & Compulsion</h3>
+                <div className="space-y-3">
+                  <Collapsible defaultOpen>
+                    <CollapsibleTrigger className="flex items-center gap-2 w-full text-left group">
+                      <Skull className="h-4 w-4 text-destructive" />
+                      <span className="text-sm font-semibold text-destructive">Bane</span>
+                      <span className="ml-auto text-xs text-muted-foreground group-data-[state=open]:hidden">Show</span>
+                      <span className="ml-auto text-xs text-muted-foreground group-data-[state=closed]:hidden">Hide</span>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="mt-2 p-3 rounded-md bg-destructive/10 border border-destructive/20">
+                        <p className="text-sm text-muted-foreground">{clanInfo.bane}</p>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  <Collapsible defaultOpen>
+                    <CollapsibleTrigger className="flex items-center gap-2 w-full text-left group">
+                      <Brain className="h-4 w-4 text-orange-500" />
+                      <span className="text-sm font-semibold text-orange-500">Compulsion</span>
+                      <span className="ml-auto text-xs text-muted-foreground group-data-[state=open]:hidden">Show</span>
+                      <span className="ml-auto text-xs text-muted-foreground group-data-[state=closed]:hidden">Hide</span>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="mt-2 p-3 rounded-md bg-orange-500/10 border border-orange-500/20">
+                        <p className="text-sm text-muted-foreground">{clanInfo.compulsion}</p>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
+              </Card>
+            );
+          })()}
 
           {/* Attributes */}
           <Card className="p-6">
