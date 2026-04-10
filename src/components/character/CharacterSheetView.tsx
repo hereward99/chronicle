@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { HelpCircle, Droplet, Download, Dices, X, BookOpen, Calendar, Skull, Brain } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { getClanData, isInClanDiscipline } from "@/lib/v5/clanData";
+import { getBloodPotencyEffects } from "@/lib/v5/bloodPotencyData";
 import { QuickRollButton } from "@/components/dice/QuickRollButton";
 import { CharacterAttachmentsGallery } from "./CharacterAttachmentsGallery";
 import { BoonsSection } from "@/components/boons/BoonsSection";
@@ -550,45 +551,41 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
             </div>
           </Card>
 
-          {/* Clan Bane & Compulsion */}
-          {(() => {
-            const clanInfo = getClanData(character.clan);
-            if (!clanInfo) return null;
-            return (
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Clan Bane & Compulsion</h3>
-                <div className="space-y-3">
-                  <Collapsible defaultOpen>
-                    <CollapsibleTrigger className="flex items-center gap-2 w-full text-left group">
-                      <Skull className="h-4 w-4 text-destructive" />
-                      <span className="text-sm font-semibold text-destructive">Bane</span>
-                      <span className="ml-auto text-xs text-muted-foreground group-data-[state=open]:hidden">Show</span>
-                      <span className="ml-auto text-xs text-muted-foreground group-data-[state=closed]:hidden">Hide</span>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <div className="mt-2 p-3 rounded-md bg-destructive/10 border border-destructive/20">
-                        <p className="text-sm text-muted-foreground">{clanInfo.bane}</p>
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-
-                  <Collapsible defaultOpen>
-                    <CollapsibleTrigger className="flex items-center gap-2 w-full text-left group">
-                      <Brain className="h-4 w-4 text-orange-500" />
-                      <span className="text-sm font-semibold text-orange-500">Compulsion</span>
-                      <span className="ml-auto text-xs text-muted-foreground group-data-[state=open]:hidden">Show</span>
-                      <span className="ml-auto text-xs text-muted-foreground group-data-[state=closed]:hidden">Hide</span>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <div className="mt-2 p-3 rounded-md bg-orange-500/10 border border-orange-500/20">
-                        <p className="text-sm text-muted-foreground">{clanInfo.compulsion}</p>
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </div>
-              </Card>
-            );
-          })()}
+          {/* Blood Potency Effects */}
+          {character.clan !== "Human" && character.clan !== "Ghoul" && (
+            (() => {
+              const bpEffects = getBloodPotencyEffects(character.blood_potency || 0);
+              return (
+                <Card className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">Blood Potency Effects</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="text-center p-3 rounded-md bg-muted/50">
+                      <p className="text-xs text-muted-foreground mb-1">Blood Surge</p>
+                      <p className="text-lg font-bold text-primary">+{bpEffects.bloodSurge}</p>
+                    </div>
+                    <div className="text-center p-3 rounded-md bg-muted/50">
+                      <p className="text-xs text-muted-foreground mb-1">Power Bonus</p>
+                      <p className="text-lg font-bold text-primary">+{bpEffects.powerBonus}</p>
+                    </div>
+                    <div className="text-center p-3 rounded-md bg-muted/50">
+                      <p className="text-xs text-muted-foreground mb-1">Mending</p>
+                      <p className="text-lg font-bold text-primary">{bpEffects.mending} Superficial</p>
+                    </div>
+                    <div className="text-center p-3 rounded-md bg-destructive/10 border border-destructive/20">
+                      <p className="text-xs text-muted-foreground mb-1">Bane Severity</p>
+                      <p className="text-lg font-bold text-destructive">{bpEffects.baneSeverity}</p>
+                    </div>
+                  </div>
+                  {bpEffects.feedingPenalty !== "No effect" && (
+                    <div className="mt-3 p-3 rounded-md bg-muted/50 border border-border">
+                      <p className="text-xs font-semibold text-muted-foreground mb-1">Feeding Restriction</p>
+                      <p className="text-sm text-muted-foreground">{bpEffects.feedingPenalty}</p>
+                    </div>
+                  )}
+                </Card>
+              );
+            })()
+          )}
 
           {/* Attributes */}
           <Card className="p-6">
@@ -701,6 +698,46 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
               </div>
             </Card>
           )}
+
+          {/* Clan Bane & Compulsion — bottom of Stats tab */}
+          {(() => {
+            const clanInfo = getClanData(character.clan);
+            if (!clanInfo) return null;
+            return (
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Clan Bane & Compulsion</h3>
+                <div className="space-y-3">
+                  <Collapsible defaultOpen>
+                    <CollapsibleTrigger className="flex items-center gap-2 w-full text-left group">
+                      <Skull className="h-4 w-4 text-destructive" />
+                      <span className="text-sm font-semibold text-destructive">Bane</span>
+                      <span className="ml-auto text-xs text-muted-foreground group-data-[state=open]:hidden">Show</span>
+                      <span className="ml-auto text-xs text-muted-foreground group-data-[state=closed]:hidden">Hide</span>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="mt-2 p-3 rounded-md bg-destructive/10 border border-destructive/20">
+                        <p className="text-sm text-muted-foreground">{clanInfo.bane}</p>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  <Collapsible defaultOpen>
+                    <CollapsibleTrigger className="flex items-center gap-2 w-full text-left group">
+                      <Brain className="h-4 w-4 text-orange-500" />
+                      <span className="text-sm font-semibold text-orange-500">Compulsion</span>
+                      <span className="ml-auto text-xs text-muted-foreground group-data-[state=open]:hidden">Show</span>
+                      <span className="ml-auto text-xs text-muted-foreground group-data-[state=closed]:hidden">Hide</span>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="mt-2 p-3 rounded-md bg-orange-500/10 border border-orange-500/20">
+                        <p className="text-sm text-muted-foreground">{clanInfo.compulsion}</p>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
+              </Card>
+            );
+          })()}
         </TabsContent>
 
         {/* Disciplines Tab */}
