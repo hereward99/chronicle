@@ -331,7 +331,51 @@ export function DiceRoller({
         </Card>
       )}
 
-      {/* Roll Result */}
+      {/* Double Rouse Check Result */}
+      {doubleRouseResult && (
+        <Card className={cn(
+          "border-2 transition-all",
+          doubleRouseResult.hungerGain === 0
+            ? "bg-green-500/5 border-green-500/30"
+            : doubleRouseResult.hungerGain === 1
+              ? "bg-orange-500/5 border-orange-500/30"
+              : "bg-destructive/5 border-destructive/30"
+        )}>
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex">
+                  <Droplet className={cn("h-5 w-5", doubleRouseResult.hungerGain === 0 ? "text-green-400" : "text-destructive")} />
+                  <Droplet className={cn("h-5 w-5 -ml-1", doubleRouseResult.hungerGain === 0 ? "text-green-400" : "text-destructive")} />
+                </div>
+                <div>
+                  <div className="font-semibold">Double Rouse Check</div>
+                  <div className="text-sm text-muted-foreground">
+                    {doubleRouseResult.hungerGain === 0
+                      ? "Both passed — No Hunger increase"
+                      : doubleRouseResult.hungerGain === 1
+                        ? "One failed — Hunger rises by 1"
+                        : "Both failed — Hunger rises by 2"}
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {[doubleRouseResult.die1, doubleRouseResult.die2].map((die, i) => (
+                  <div key={i} className={cn(
+                    "w-11 h-11 rounded-lg flex items-center justify-center text-lg font-bold border-2",
+                    die.success
+                      ? "border-green-500 text-green-400 bg-green-500/10"
+                      : "border-destructive text-destructive bg-destructive/10"
+                  )}>
+                    {die.value}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {result && (
         <Card className={cn("border-2 transition-all", getOutcomeBg(result.outcome))}>
           <CardContent className="py-5 space-y-4">
