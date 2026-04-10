@@ -250,14 +250,41 @@ export function DiceRoller({
               <Dices className="h-5 w-5 mr-2" />
               {rolling ? "Rolling…" : "Roll Dice"}
             </Button>
-            <Button
-              onClick={handleRouse}
-              variant="outline"
-              className="h-12 border-destructive/50 text-destructive hover:bg-destructive/10"
-              title="Rouse Check"
-            >
-              <Droplet className="h-5 w-5" />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={handleRouse}
+                    variant="outline"
+                    className="h-12 border-destructive/50 text-destructive hover:bg-destructive/10"
+                  >
+                    <Droplet className="h-5 w-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Rouse Check (1d10)</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={handleDoubleRouse}
+                    variant="ghost"
+                    className="h-12 text-destructive/60 hover:text-destructive hover:bg-destructive/5 text-xs gap-1"
+                  >
+                    <Droplet className="h-4 w-4" />
+                    <Droplet className="h-4 w-4 -ml-2" />
+                    <span className="hidden sm:inline">×2</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-[220px] text-center">
+                  <p className="font-medium">Double Rouse Check</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Used for costly powers like certain Disciplines and Blood Sorcery. Rolls 2d10 independently — Hunger can increase by 0, 1, or 2.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             {result && (
               <Button
                 onClick={handleReroll}
