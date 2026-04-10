@@ -300,6 +300,12 @@ export function DiceRoller({
                 <div>
                   <div className={cn("text-xl font-bold font-[family-name:var(--font-gothic)]", getOutcomeColor(result.outcome))}>
                     {getOutcomeLabel(result.outcome)}
+                    {result.willpowerReroll && (
+                      <Badge variant="outline" className="ml-2 text-xs font-normal align-middle">
+                        <BrainCircuit className="h-3 w-3 mr-1" />
+                        Willpower Reroll
+                      </Badge>
+                    )}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {getOutcomeDescription(result.outcome)}
@@ -316,6 +322,32 @@ export function DiceRoller({
 
             <Separator />
 
+            {/* Willpower Mode Banner */}
+            {willpowerMode && (
+              <div className="flex items-center gap-2 p-3 rounded-md bg-primary/10 border border-primary/20">
+                <BrainCircuit className="h-4 w-4 text-primary shrink-0" />
+                <p className="text-sm text-primary flex-1">
+                  Select up to 3 non-hunger dice to reroll ({selectedDice.size}/3 selected)
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => { setWillpowerMode(false); setSelectedDice(new Set()); }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    disabled={selectedDice.size === 0}
+                    onClick={handleWillpowerReroll}
+                  >
+                    Reroll ({selectedDice.size})
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Dice Display */}
             <div>
               <div className="text-xs text-muted-foreground uppercase tracking-wider mb-2">
@@ -331,7 +363,15 @@ export function DiceRoller({
               </div>
               <div className="flex flex-wrap gap-2">
                 {result.dice.map((die, idx) => (
-                  <Die key={idx} die={die} index={idx} />
+                  <Die
+                    key={idx}
+                    die={die}
+                    index={idx}
+                    selectable={willpowerMode}
+                    selected={selectedDice.has(idx)}
+                    locked={die.isHunger}
+                    onToggle={handleToggleDie}
+                  />
                 ))}
               </div>
             </div>
@@ -348,6 +388,18 @@ export function DiceRoller({
                 <Badge variant="outline" className="text-green-400 border-green-500/30">
                   +{result.margin} margin
                 </Badge>
+              )}
+              {!willpowerMode && !result.willpowerReroll && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs gap-1"
+                  onClick={() => setWillpowerMode(true)}
+                  title="Spend a Willpower point to reroll up to 3 non-hunger dice"
+                >
+                  <BrainCircuit className="h-3 w-3" />
+                  Spend Willpower
+                </Button>
               )}
             </div>
           </CardContent>
