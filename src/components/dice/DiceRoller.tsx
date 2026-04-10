@@ -56,6 +56,7 @@ export function DiceRoller({
   const handleRoll = useCallback(() => {
     setRolling(true);
     setRouseResult(null);
+    setDoubleRouseResult(null);
     setWillpowerMode(false);
     setSelectedDice(new Set());
     setTimeout(() => {
@@ -68,6 +69,12 @@ export function DiceRoller({
 
   const handleRouse = useCallback(() => {
     setRouseResult(rollRouseCheck());
+    setDoubleRouseResult(null);
+  }, []);
+
+  const handleDoubleRouse = useCallback(() => {
+    setDoubleRouseResult(rollDoubleRouseCheck());
+    setRouseResult(null);
   }, []);
 
   const handleReroll = useCallback(() => {
