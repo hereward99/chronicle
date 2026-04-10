@@ -28,6 +28,7 @@ export interface RollResult {
   hasMessyCritical: boolean;
   hasBestialFailure: boolean;
   margin: number; // successes - difficulty (positive = exceeded)
+  willpowerReroll?: boolean; // true if this result came from a Willpower reroll
 }
 
 /**
@@ -159,4 +160,77 @@ export function getOutcomeColor(outcome: RollOutcome): string {
     case "messy-critical": return "text-orange-400";
     case "critical": return "text-yellow-400";
   }
+}
+
+/**
+ * Reroll selected non-hunger dice (Willpower reroll).
+ * Up to 3 dice can be rerolled. Only non-hunger dice are valid targets.
+ */
+export function rerollWillpower(
+  previousResult: RollResult,
+  indicesToReroll: number[]
+): RollResult {
+  // Validate: max 3, only non-hunger dice
+  const validIndices = indicesToReroll
+    .filter(i => i >= 0 && i < previousResult.dice.length && !previousResult.dice[i].isHunger)
+    .slice(0, 3);
+
+  // Clone dice array and reroll selected
+  const newDice: DieResult[] = previousResult.dice.map((die, idx) => {
+    if (validIndices.includes(idx)) {
+      const value = Math.floor(Math.random() * 10) + 1;
+      return {
+        value,
+        isHunger: false,
+        isSuccess: value >= 6,
+        isCritical: value === 10,
+        isBestial: false,
+      };
+    }
+    return { ...die };
+  });
+
+  // Recalculate results
+  let regularSuccesses = newDice.filter(d => d.isSuccess && !d.isCritical).length;
+  const criticalDice = newDice.filter(d => d.isCritical);
+  const criticalPairs = Math.floor(criticalDice.length / 2);
+  const unpairedCriticals = criticalDice.length % 2;
+  const totalSuccesses = regularSuccesses + (criticalPairs * 4) + unpairedCriticals;
+
+  const hungerCriticals = newDice.filter(d => d.isHunger && d.isCritical);
+  const hasMessyCritical = criticalPairs > 0 && hungerCriticals.length > 0;
+
+  const hungerOnes = newDice.filter(d => d.isHunger && d.isBestial);
+  const failed = totalSuccesses < previousResult.difficulty;
+  const hasBestialFailure = failed && hungerOnes.length > 0;
+
+  let outcome: RollOutcome;
+  if (hasBestialFailure) {
+    outcome = "bestial-failure";
+  } else if (totalSuccesses === 0) {
+    outcome = "total-failure";
+  } else if (failed) {
+    outcome = "failure";
+  } else if (hasMessyCritical) {
+    outcome = "messy-critical";
+  } else if (criticalPairs > 0) {
+    outcome = "critical";
+  } else {
+    outcome = "success";
+  }
+
+  return {
+    dice: newDice,
+    totalSuccesses,
+    regularSuccesses: regularSuccesses + unpairedCriticals,
+    criticalPairs,
+    outcome,
+    difficulty: previousResult.difficulty,
+    poolSize: previousResult.poolSize,
+    hungerDice: previousResult.hungerDice,
+    hasMessyCritical,
+    hasBestialFailure,
+    margin: totalSuccesses - previousResult.difficulty,
+    willpowerReroll: true,
+  };
 }
