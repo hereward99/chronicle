@@ -8,11 +8,18 @@ import { Die } from "@/components/dice/Die";
 import {
   rollV5Dice,
   rollRouseCheck,
+  rollDoubleRouseCheck,
   rerollWillpower,
   RollResult,
   getOutcomeLabel,
   getOutcomeColor,
 } from "@/lib/diceEngine";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Dices, RotateCcw, Droplet, Skull, Sparkles, Crown, X, Minus, Plus, BrainCircuit } from "lucide-react";
 import { cn } from "@/lib/utils";
 
