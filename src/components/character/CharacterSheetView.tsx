@@ -560,25 +560,35 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                   <h3 className="text-lg font-semibold mb-4">Blood Potency Effects</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div className="text-center p-3 rounded-md bg-muted/50">
-                      <p className="text-xs text-muted-foreground mb-1">Blood Surge</p>
+                      <RuleTooltip title="Blood Surge" description="Spend a Rouse Check to add bonus dice to a single Attribute-based dice pool. The bonus equals your Blood Surge value.">
+                        <p className="text-xs text-muted-foreground mb-1">Blood Surge</p>
+                      </RuleTooltip>
                       <p className="text-lg font-bold text-primary">+{bpEffects.bloodSurge}</p>
                     </div>
                     <div className="text-center p-3 rounded-md bg-muted/50">
-                      <p className="text-xs text-muted-foreground mb-1">Power Bonus</p>
+                      <RuleTooltip title="Power Bonus" description="Added to the dice pool or damage of Discipline powers that scale with Blood Potency.">
+                        <p className="text-xs text-muted-foreground mb-1">Power Bonus</p>
+                      </RuleTooltip>
                       <p className="text-lg font-bold text-primary">+{bpEffects.powerBonus}</p>
                     </div>
                     <div className="text-center p-3 rounded-md bg-muted/50">
-                      <p className="text-xs text-muted-foreground mb-1">Mending</p>
+                      <RuleTooltip title="Mending" description="Amount of Superficial Health damage healed per Rouse Check. Aggravated damage always heals at 1 per night of rest plus a Rouse Check.">
+                        <p className="text-xs text-muted-foreground mb-1">Mending</p>
+                      </RuleTooltip>
                       <p className="text-lg font-bold text-primary">{bpEffects.mending} Superficial</p>
                     </div>
                     <div className="text-center p-3 rounded-md bg-destructive/10 border border-destructive/20">
-                      <p className="text-xs text-muted-foreground mb-1">Bane Severity</p>
+                      <RuleTooltip title="Bane Severity" description="Intensifies your clan's Bane. Higher values make the Bane harder to avoid or more punishing when triggered.">
+                        <p className="text-xs text-muted-foreground mb-1">Bane Severity</p>
+                      </RuleTooltip>
                       <p className="text-lg font-bold text-destructive">{bpEffects.baneSeverity}</p>
                     </div>
                   </div>
                   {bpEffects.feedingPenalty !== "No effect" && (
                     <div className="mt-3 p-3 rounded-md bg-muted/50 border border-border">
-                      <p className="text-xs font-semibold text-muted-foreground mb-1">Feeding Restriction</p>
+                      <RuleTooltip title="Feeding Restriction" description="As Blood Potency rises, lesser blood sources become unable to slake Hunger. At higher levels, only draining humans (or even Kindred) can sustain you.">
+                        <p className="text-xs font-semibold text-muted-foreground mb-1">Feeding Restriction</p>
+                      </RuleTooltip>
                       <p className="text-sm text-muted-foreground">{bpEffects.feedingPenalty}</p>
                     </div>
                   )}
