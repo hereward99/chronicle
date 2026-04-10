@@ -38,6 +38,8 @@ export function DiceRoller({
   const [rouseResult, setRouseResult] = useState<{ success: boolean; value: number } | null>(null);
   const [rolling, setRolling] = useState(false);
   const [history, setHistory] = useState<RollResult[]>([]);
+  const [willpowerMode, setWillpowerMode] = useState(false);
+  const [selectedDice, setSelectedDice] = useState<Set<number>>(new Set());
 
   const handleRoll = useCallback(() => {
     setRolling(true);
