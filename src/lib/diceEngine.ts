@@ -28,6 +28,7 @@ export interface RollResult {
   hasMessyCritical: boolean;
   hasBestialFailure: boolean;
   margin: number; // successes - difficulty (positive = exceeded)
+  willpowerReroll?: boolean; // true if this result came from a Willpower reroll
 }
 
 /**
