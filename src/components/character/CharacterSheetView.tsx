@@ -777,6 +777,7 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
               </Card>
             );
           })()}
+        </TabsContent>
 
         {/* Disciplines Tab */}
         <TabsContent value="disciplines" className="space-y-6">
