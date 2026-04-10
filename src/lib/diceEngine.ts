@@ -159,6 +159,7 @@ export function getOutcomeColor(outcome: RollOutcome): string {
     case "success": return "text-green-400";
     case "messy-critical": return "text-orange-400";
     case "critical": return "text-yellow-400";
+  }
 }
 
 /**
