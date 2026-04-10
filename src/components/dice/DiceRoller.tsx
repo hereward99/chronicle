@@ -8,11 +8,18 @@ import { Die } from "@/components/dice/Die";
 import {
   rollV5Dice,
   rollRouseCheck,
+  rollDoubleRouseCheck,
   rerollWillpower,
   RollResult,
   getOutcomeLabel,
   getOutcomeColor,
 } from "@/lib/diceEngine";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Dices, RotateCcw, Droplet, Skull, Sparkles, Crown, X, Minus, Plus, BrainCircuit } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -36,6 +43,11 @@ export function DiceRoller({
   const [difficulty, setDifficulty] = useState(initialDifficulty);
   const [result, setResult] = useState<RollResult | null>(null);
   const [rouseResult, setRouseResult] = useState<{ success: boolean; value: number } | null>(null);
+  const [doubleRouseResult, setDoubleRouseResult] = useState<{
+    die1: { success: boolean; value: number };
+    die2: { success: boolean; value: number };
+    hungerGain: number;
+  } | null>(null);
   const [rolling, setRolling] = useState(false);
   const [history, setHistory] = useState<RollResult[]>([]);
   const [willpowerMode, setWillpowerMode] = useState(false);
@@ -44,6 +56,7 @@ export function DiceRoller({
   const handleRoll = useCallback(() => {
     setRolling(true);
     setRouseResult(null);
+    setDoubleRouseResult(null);
     setWillpowerMode(false);
     setSelectedDice(new Set());
     setTimeout(() => {
@@ -56,6 +69,12 @@ export function DiceRoller({
 
   const handleRouse = useCallback(() => {
     setRouseResult(rollRouseCheck());
+    setDoubleRouseResult(null);
+  }, []);
+
+  const handleDoubleRouse = useCallback(() => {
+    setDoubleRouseResult(rollDoubleRouseCheck());
+    setRouseResult(null);
   }, []);
 
   const handleReroll = useCallback(() => {
@@ -231,14 +250,41 @@ export function DiceRoller({
               <Dices className="h-5 w-5 mr-2" />
               {rolling ? "Rolling…" : "Roll Dice"}
             </Button>
-            <Button
-              onClick={handleRouse}
-              variant="outline"
-              className="h-12 border-destructive/50 text-destructive hover:bg-destructive/10"
-              title="Rouse Check"
-            >
-              <Droplet className="h-5 w-5" />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={handleRouse}
+                    variant="outline"
+                    className="h-12 border-destructive/50 text-destructive hover:bg-destructive/10"
+                  >
+                    <Droplet className="h-5 w-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Rouse Check (1d10)</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={handleDoubleRouse}
+                    variant="ghost"
+                    className="h-12 text-destructive/60 hover:text-destructive hover:bg-destructive/5 text-xs gap-1"
+                  >
+                    <Droplet className="h-4 w-4" />
+                    <Droplet className="h-4 w-4 -ml-2" />
+                    <span className="hidden sm:inline">×2</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-[220px] text-center">
+                  <p className="font-medium">Double Rouse Check</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Used for costly powers like certain Disciplines and Blood Sorcery. Rolls 2d10 independently — Hunger can increase by 0, 1, or 2.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             {result && (
               <Button
                 onClick={handleReroll}
@@ -285,7 +331,51 @@ export function DiceRoller({
         </Card>
       )}
 
-      {/* Roll Result */}
+      {/* Double Rouse Check Result */}
+      {doubleRouseResult && (
+        <Card className={cn(
+          "border-2 transition-all",
+          doubleRouseResult.hungerGain === 0
+            ? "bg-green-500/5 border-green-500/30"
+            : doubleRouseResult.hungerGain === 1
+              ? "bg-orange-500/5 border-orange-500/30"
+              : "bg-destructive/5 border-destructive/30"
+        )}>
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex">
+                  <Droplet className={cn("h-5 w-5", doubleRouseResult.hungerGain === 0 ? "text-green-400" : "text-destructive")} />
+                  <Droplet className={cn("h-5 w-5 -ml-1", doubleRouseResult.hungerGain === 0 ? "text-green-400" : "text-destructive")} />
+                </div>
+                <div>
+                  <div className="font-semibold">Double Rouse Check</div>
+                  <div className="text-sm text-muted-foreground">
+                    {doubleRouseResult.hungerGain === 0
+                      ? "Both passed — No Hunger increase"
+                      : doubleRouseResult.hungerGain === 1
+                        ? "One failed — Hunger rises by 1"
+                        : "Both failed — Hunger rises by 2"}
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {[doubleRouseResult.die1, doubleRouseResult.die2].map((die, i) => (
+                  <div key={i} className={cn(
+                    "w-11 h-11 rounded-lg flex items-center justify-center text-lg font-bold border-2",
+                    die.success
+                      ? "border-green-500 text-green-400 bg-green-500/10"
+                      : "border-destructive text-destructive bg-destructive/10"
+                  )}>
+                    {die.value}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {result && (
         <Card className={cn("border-2 transition-all", getOutcomeBg(result.outcome))}>
           <CardContent className="py-5 space-y-4">

@@ -135,6 +135,27 @@ export function rollRouseCheck(): { success: boolean; value: number } {
 }
 
 /**
+ * Roll a Double Rouse Check (2d10 independently).
+ * Each die that rolls 1–5 increases Hunger by 1.
+ * Total Hunger gain: 0, 1, or 2.
+ */
+export function rollDoubleRouseCheck(): {
+  die1: { success: boolean; value: number };
+  die2: { success: boolean; value: number };
+  hungerGain: number;
+} {
+  const v1 = rollD10();
+  const v2 = rollD10();
+  const die1 = { success: v1 >= 6, value: v1 };
+  const die2 = { success: v2 >= 6, value: v2 };
+  return {
+    die1,
+    die2,
+    hungerGain: (die1.success ? 0 : 1) + (die2.success ? 0 : 1),
+  };
+}
+
+/**
  * Get a human-readable label for the outcome
  */
 export function getOutcomeLabel(outcome: RollOutcome): string {
