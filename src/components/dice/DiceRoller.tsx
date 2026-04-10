@@ -43,6 +43,11 @@ export function DiceRoller({
   const [difficulty, setDifficulty] = useState(initialDifficulty);
   const [result, setResult] = useState<RollResult | null>(null);
   const [rouseResult, setRouseResult] = useState<{ success: boolean; value: number } | null>(null);
+  const [doubleRouseResult, setDoubleRouseResult] = useState<{
+    die1: { success: boolean; value: number };
+    die2: { success: boolean; value: number };
+    hungerGain: number;
+  } | null>(null);
   const [rolling, setRolling] = useState(false);
   const [history, setHistory] = useState<RollResult[]>([]);
   const [willpowerMode, setWillpowerMode] = useState(false);
