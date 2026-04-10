@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useFormDraft } from "@/hooks/useFormDraft";
 import { ChevronLeft, ChevronRight, Check, Wand2 } from "lucide-react";
 import { DISCIPLINES as DISCIPLINE_LIST, getDisciplinePowersLegacy } from "@/lib/v5/disciplineData";
+import { getPredatorTypeData } from "@/lib/v5/predatorTypeData";
 import { PortraitGenerator } from "@/components/character/PortraitGenerator";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -871,6 +872,24 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
                         ))}
                       </SelectContent>
                     </Select>
+                    {(() => {
+                      const ptData = getPredatorTypeData(characterData.predatorType);
+                      if (!ptData) return null;
+                      return (
+                        <Alert className="mt-2 border-primary/20 bg-primary/5">
+                          <Info className="h-4 w-4 text-primary" />
+                          <AlertDescription className="ml-2">
+                            <p className="font-medium text-sm mb-1">Creation Bonuses — {characterData.predatorType}</p>
+                            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5">
+                              {ptData.creationBonuses.map((bonus, i) => (
+                                <li key={i}>{bonus}</li>
+                              ))}
+                            </ul>
+                            <p className="text-xs text-muted-foreground mt-2 italic">Remember to allocate these during character creation.</p>
+                          </AlertDescription>
+                        </Alert>
+                      );
+                    })()}
                   </div>
                 </div>
               </>

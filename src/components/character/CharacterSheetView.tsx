@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { HelpCircle, Droplet, Download, Dices, X, BookOpen, Calendar, Skull, Brain } from "lucide-react";
+import { HelpCircle, Droplet, Download, Dices, X, BookOpen, Calendar, Skull, Brain, Crosshair } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { getClanData, isInClanDiscipline } from "@/lib/v5/clanData";
 import { getBloodPotencyEffects } from "@/lib/v5/bloodPotencyData";
