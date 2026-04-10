@@ -7,10 +7,11 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { HelpCircle, Droplet, Download, Dices, X, BookOpen, Calendar, Skull, Brain } from "lucide-react";
+import { HelpCircle, Droplet, Download, Dices, X, BookOpen, Calendar, Skull, Brain, Crosshair } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { getClanData, isInClanDiscipline } from "@/lib/v5/clanData";
 import { getBloodPotencyEffects } from "@/lib/v5/bloodPotencyData";
+import { getPredatorTypeData } from "@/lib/v5/predatorTypeData";
 import { QuickRollButton } from "@/components/dice/QuickRollButton";
 import { CharacterAttachmentsGallery } from "./CharacterAttachmentsGallery";
 import { BoonsSection } from "@/components/boons/BoonsSection";
@@ -745,6 +746,34 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                     </CollapsibleContent>
                   </Collapsible>
                 </div>
+              </Card>
+            );
+          })()}
+          {/* Predator Type — gameplay effects only */}
+          {(() => {
+            const ptData = getPredatorTypeData(character.predator_type);
+            if (!ptData) return null;
+            return (
+              <Card className="p-6">
+                <Collapsible defaultOpen>
+                  <CollapsibleTrigger className="flex items-center gap-2 w-full text-left group">
+                    <Crosshair className="h-4 w-4 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold">Predator Type — {character.predator_type}</h3>
+                    <span className="ml-auto text-xs text-muted-foreground group-data-[state=open]:hidden">Show</span>
+                    <span className="ml-auto text-xs text-muted-foreground group-data-[state=closed]:hidden">Hide</span>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <p className="text-sm text-muted-foreground mt-2 mb-3">{ptData.summary}</p>
+                    <ul className="space-y-1.5">
+                      {ptData.gameplayEffects.map((effect, i) => (
+                        <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                          <span className="text-primary mt-1">•</span>
+                          <span>{effect}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CollapsibleContent>
+                </Collapsible>
               </Card>
             );
           })()}
