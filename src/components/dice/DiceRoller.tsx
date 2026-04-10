@@ -44,7 +44,8 @@ export function DiceRoller({
   const handleRoll = useCallback(() => {
     setRolling(true);
     setRouseResult(null);
-    // Brief delay for animation feel
+    setWillpowerMode(false);
+    setSelectedDice(new Set());
     setTimeout(() => {
       const newResult = rollV5Dice(pool, hunger, difficulty);
       setResult(newResult);
@@ -62,6 +63,28 @@ export function DiceRoller({
       handleRoll();
     }
   }, [result, handleRoll]);
+
+  const handleToggleDie = useCallback((index: number) => {
+    setSelectedDice(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else if (next.size < 3) {
+        next.add(index);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleWillpowerReroll = useCallback(() => {
+    if (result && selectedDice.size > 0) {
+      const newResult = rerollWillpower(result, Array.from(selectedDice));
+      setResult(newResult);
+      setHistory(prev => [newResult, ...prev].slice(0, 20));
+      setWillpowerMode(false);
+      setSelectedDice(new Set());
+    }
+  }, [result, selectedDice]);
 
   const adjustValue = (setter: React.Dispatch<React.SetStateAction<number>>, delta: number, min: number, max: number) => {
     setter(prev => Math.max(min, Math.min(max, prev + delta)));
