@@ -21,6 +21,12 @@ import DiceRollerPage from "./pages/DiceRoller";
 import { toast } from "@/hooks/use-toast";
 
 const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 2 * 60 * 1000,
+      refetchOnWindowFocus: false,
+    },
+  },
   mutationCache: new MutationCache({
     onMutate: () => {
       if (!navigator.onLine) {

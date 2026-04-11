@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { useChronicles } from './useChronicles';
 
 export interface ChronicleStats {
@@ -10,29 +9,25 @@ export interface ChronicleStats {
   notes: { total: number };
 }
 
+const defaultStats: ChronicleStats = {
+  characters: { total: 0, pcs: 0, npcs: 0 },
+  sessions: { total: 0, lastSession: null },
+  plots: { total: 0, active: 0 },
+  notes: { total: 0 },
+};
+
 export function useChronicleStats() {
-  const [stats, setStats] = useState<ChronicleStats>({
-    characters: { total: 0, pcs: 0, npcs: 0 },
-    sessions: { total: 0, lastSession: null },
-    plots: { total: 0, active: 0 },
-    notes: { total: 0 },
-  });
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
   const { currentChronicle } = useChronicles();
   const chronicleId = currentChronicle?.id;
 
-  const fetchStats = async () => {
-    if (!chronicleId) {
-      setLoading(false);
-      return;
-    }
-    try {
+  const { data: stats = defaultStats, isLoading: loading, refetch } = useQuery({
+    queryKey: ['chronicleStats', chronicleId],
+    queryFn: async () => {
       const [charactersRes, sessionsRes, plotsRes, notesRes] = await Promise.all([
-        supabase.from('characters').select('type').eq('chronicle_id', chronicleId),
-        supabase.from('sessions').select('date_played').eq('chronicle_id', chronicleId).order('date_played', { ascending: false }),
-        supabase.from('plots').select('status').eq('chronicle_id', chronicleId),
-        supabase.from('notes').select('id').eq('chronicle_id', chronicleId),
+        supabase.from('characters').select('type').eq('chronicle_id', chronicleId!),
+        supabase.from('sessions').select('date_played').eq('chronicle_id', chronicleId!).order('date_played', { ascending: false }),
+        supabase.from('plots').select('status').eq('chronicle_id', chronicleId!),
+        supabase.from('notes').select('id').eq('chronicle_id', chronicleId!),
       ]);
 
       if (charactersRes.error) throw charactersRes.error;
@@ -45,7 +40,7 @@ export function useChronicleStats() {
       const plots = plotsRes.data || [];
       const notes = notesRes.data || [];
 
-      setStats({
+      return {
         characters: {
           total: characters.length,
           pcs: characters.filter(c => c.type === 'PC').length,
@@ -59,24 +54,11 @@ export function useChronicleStats() {
           total: plots.length,
           active: plots.filter(p => p.status === 'Active' || p.status === 'Critical').length,
         },
-        notes: {
-          total: notes.length,
-        },
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error fetching chronicle stats",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+        notes: { total: notes.length },
+      };
+    },
+    enabled: !!chronicleId,
+  });
 
-  useEffect(() => {
-    fetchStats();
-  }, [chronicleId]);
-
-  return { stats, loading, refetch: fetchStats };
+  return { stats, loading, refetch };
 }
