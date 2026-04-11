@@ -25,9 +25,10 @@ export function useRelationships(characterId?: string) {
 
   // Derive chronicle character IDs to scope relationships
   const characterIds = characters.map(c => c.id);
+  const characterIdsKey = characterIds.slice().sort().join(',');
 
   const { data: relationships = [], isLoading: loading } = useQuery({
-    queryKey: ['relationships', characterId, characterIds],
+    queryKey: ['relationships', characterId, characterIdsKey],
     queryFn: async () => {
       let query = supabase
         .from('relationships')

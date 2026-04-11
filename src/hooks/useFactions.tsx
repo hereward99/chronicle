@@ -28,31 +28,33 @@ export function useFactions(chronicleId?: string) {
   const { data: factions = [], isLoading: loading } = useQuery({
     queryKey: ['factions', chronicleId],
     queryFn: async () => {
-      let query = supabase
+      const { data, error } = await supabase
         .from('factions')
         .select('*')
+        .eq('chronicle_id', chronicleId!)
         .order('name', { ascending: true });
 
-      if (chronicleId) {
-        query = query.eq('chronicle_id', chronicleId);
-      }
-
-      const { data, error } = await query;
       if (error) throw error;
       return data as Faction[] || [];
     },
+    enabled: !!chronicleId,
   });
+
+  const factionIds = factions.map(f => f.id);
 
   const { data: characterFactions = [] } = useQuery({
     queryKey: ['characterFactions', chronicleId],
     queryFn: async () => {
+      if (factionIds.length === 0) return [];
       const { data, error } = await supabase
         .from('character_factions')
-        .select('*');
+        .select('*')
+        .in('faction_id', factionIds);
 
       if (error) throw error;
       return data as CharacterFaction[] || [];
     },
+    enabled: !!chronicleId && factionIds.length > 0,
   });
 
   const createFactionMutation = useMutation({

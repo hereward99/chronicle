@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { useChronicles } from './useChronicles';
 
 export interface Activity {
@@ -11,28 +10,22 @@ export interface Activity {
 }
 
 export function useRecentActivity() {
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
   const { currentChronicle } = useChronicles();
   const chronicleId = currentChronicle?.id;
 
-  const fetchActivities = async () => {
-    if (!chronicleId) {
-      setLoading(false);
-      return;
-    }
-    try {
+  const { data: activities = [], isLoading: loading, refetch } = useQuery({
+    queryKey: ['recentActivity', chronicleId],
+    queryFn: async () => {
       const [
         { data: characters, error: charError },
         { data: sessions, error: sessError },
         { data: plots, error: plotError },
         { data: notes, error: noteError },
       ] = await Promise.all([
-        supabase.from('characters').select('id, name, created_at, updated_at').eq('chronicle_id', chronicleId).order('created_at', { ascending: false }).limit(10),
-        supabase.from('sessions').select('id, title, created_at, updated_at').eq('chronicle_id', chronicleId).order('created_at', { ascending: false }).limit(10),
-        supabase.from('plots').select('id, title, created_at, updated_at').eq('chronicle_id', chronicleId).order('created_at', { ascending: false }).limit(10),
-        supabase.from('notes').select('id, title, created_at, updated_at').eq('chronicle_id', chronicleId).order('created_at', { ascending: false }).limit(10),
+        supabase.from('characters').select('id, name, created_at, updated_at').eq('chronicle_id', chronicleId!).order('created_at', { ascending: false }).limit(10),
+        supabase.from('sessions').select('id, title, created_at, updated_at').eq('chronicle_id', chronicleId!).order('created_at', { ascending: false }).limit(10),
+        supabase.from('plots').select('id, title, created_at, updated_at').eq('chronicle_id', chronicleId!).order('created_at', { ascending: false }).limit(10),
+        supabase.from('notes').select('id, title, created_at, updated_at').eq('chronicle_id', chronicleId!).order('created_at', { ascending: false }).limit(10),
       ]);
 
       if (charError) throw charError;
@@ -67,29 +60,12 @@ export function useRecentActivity() {
         })),
       ];
 
-      const sortedActivities = allActivities
+      return allActivities
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
         .slice(0, 5);
+    },
+    enabled: !!chronicleId,
+  });
 
-      setActivities(sortedActivities);
-    } catch (error: any) {
-      toast({
-        title: "Error fetching recent activity",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchActivities();
-  }, [chronicleId]);
-
-  return {
-    activities,
-    loading,
-    refetch: fetchActivities,
-  };
+  return { activities, loading, refetch };
 }
