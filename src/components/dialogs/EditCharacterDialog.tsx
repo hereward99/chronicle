@@ -22,7 +22,8 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileUpload } from "@/components/ui/file-upload";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Trash2, X, Plus, Wand2 } from "lucide-react";
+import { Loader2, Trash2, X, Plus, Wand2, AlertTriangle } from "lucide-react";
+import { getMaxBloodPotency } from "@/lib/v5/bloodPotencyData";
 import { Character, DicePoolConfig, SimpleDicePool, GeneralDicePool, StandardDicePool, CombinedDicePool, ExceptionalPool, useCharacters } from "@/hooks/useCharacters";
 import { useFiles } from "@/hooks/useFiles";
 import { supabase } from "@/integrations/supabase/client";
@@ -793,12 +794,34 @@ export function EditCharacterDialog({
                     />
                   </div>
                   <div>
-                    <Label>Blood Potency</Label>
+                    <div className="flex items-center gap-2">
+                      <Label>Blood Potency</Label>
+                      {(() => {
+                        const maxBP = getMaxBloodPotency(formData.generation);
+                        if (maxBP !== null) {
+                          return <span className="text-xs text-muted-foreground">(Max {maxBP} for Gen {formData.generation})</span>;
+                        }
+                        return null;
+                      })()}
+                    </div>
                     <DotSelector 
                       value={formData.blood_potency || 0} 
                       max={10}
                       onChange={(val) => setFormData(prev => ({ ...prev, blood_potency: val }))}
                     />
+                    {(() => {
+                      const maxBP = getMaxBloodPotency(formData.generation);
+                      const currentBP = formData.blood_potency || 0;
+                      if (maxBP !== null && currentBP > maxBP) {
+                        return (
+                          <div className="flex items-center gap-1.5 mt-1 text-amber-500">
+                            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                            <span className="text-xs">Blood Potency {currentBP} exceeds the cap of {maxBP} for Generation {formData.generation}</span>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
               </Card>

@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { HelpCircle, Droplet, Download, Dices, X, BookOpen, Calendar, Skull, Brain, Crosshair } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { getClanData, isInClanDiscipline } from "@/lib/v5/clanData";
-import { getBloodPotencyEffects } from "@/lib/v5/bloodPotencyData";
+import { getBloodPotencyEffects, getMaxBloodPotency } from "@/lib/v5/bloodPotencyData";
 import { getPredatorTypeData } from "@/lib/v5/predatorTypeData";
 import { QuickRollButton } from "@/components/dice/QuickRollButton";
 import { CharacterAttachmentsGallery } from "./CharacterAttachmentsGallery";
@@ -546,6 +546,23 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                     <span className="text-xs text-muted-foreground">{character.blood_potency || 0}</span>
                   </div>
                   <DotRating current={character.blood_potency || 0} max={10} />
+                  {(() => {
+                    const maxBP = getMaxBloodPotency(character.generation);
+                    const currentBP = character.blood_potency || 0;
+                    if (maxBP !== null && currentBP > maxBP) {
+                      return (
+                        <p className="text-xs text-amber-500 mt-1 flex items-center gap-1">
+                          <span>⚠</span> Exceeds Gen {character.generation} cap of {maxBP}
+                        </p>
+                      );
+                    }
+                    if (maxBP !== null && character.clan !== "Ghoul") {
+                      return (
+                        <p className="text-xs text-muted-foreground mt-1">Max BP: {maxBP} (Gen {character.generation})</p>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
               )}
 
