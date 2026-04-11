@@ -34,3 +34,34 @@ export function getBloodPotencyEffects(bp: number): BloodPotencyEffects {
   const clamped = Math.max(0, Math.min(10, bp));
   return BLOOD_POTENCY_TABLE[clamped];
 }
+
+/**
+ * Maximum Blood Potency by Generation (V5 Core Rulebook p.216).
+ * Generations below 4th or above 16th are clamped.
+ */
+const GENERATION_BP_CAP: Record<number, number> = {
+  4: 10,
+  5: 9,
+  6: 8,
+  7: 7,
+  8: 6,
+  9: 5,
+  10: 4,
+  11: 3,
+  12: 2,
+  13: 1,
+  14: 0,
+  15: 0,
+  16: 0,
+};
+
+/**
+ * Get the maximum Blood Potency allowed for a given Generation.
+ * Returns null if generation is unknown/not set.
+ */
+export function getMaxBloodPotency(generation: number | null | undefined): number | null {
+  if (generation == null) return null;
+  if (generation <= 4) return 10;
+  if (generation >= 16) return 0;
+  return GENERATION_BP_CAP[generation] ?? null;
+}
