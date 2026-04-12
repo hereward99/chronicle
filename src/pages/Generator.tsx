@@ -522,6 +522,10 @@ export default function Generator() {
         creationMethod={npcCreationMethod}
         creatureType={npcCreatureType}
       />
+      <BulkNPCDialog
+        open={showBulkNPCDialog}
+        onOpenChange={setShowBulkNPCDialog}
+      />
     </div>
   );
 }
