@@ -1,49 +1,66 @@
 
 
-## Diagnosis: Excessive Supabase Requests
+## Bulk NPC Generation — with "Create as Coterie" Option
 
-I identified three root causes draining your Supabase usage:
+### Updated Plan
 
-### Problem 1: No `staleTime` on QueryClient (BIGGEST ISSUE)
-The `QueryClient` in `App.tsx` has no default `staleTime`, which means it defaults to **0 milliseconds**. Combined with `refetchOnWindowFocus` defaulting to `true`, every time you switch browser tabs or click back into the app, **every single query refetches from Supabase**. On the Chronicle dashboard alone, that's 8+ simultaneous requests (chronicles, stats [4 tables], recent activity [4 tables], plots, notes) — fired every single tab-focus.
+Everything from the previously approved plan remains. This revision adds one feature to Step 3 (Review):
 
-### Problem 2: Unstable query key in `useRelationships`
-The query key `['relationships', characterId, characterIds]` includes a `characterIds` array derived from `useCharacters()`. Since `characters.map(c => c.id)` creates a **new array reference on every render**, React Query sees a "new" query key each time, causing the relationships query to refetch in a loop whenever the Relationships page renders.
+### New: "Create as Coterie" toggle
 
-### Problem 3: `useFactions` missing `enabled` guard
-Both queries in `useFactions` run even when `chronicleId` is `undefined` — fetching **all** factions and **all** character_factions across every chronicle, every time any component using factions mounts.
+On the Review step, after all NPCs are generated and before the user hits "Accept All", a toggle/checkbox appears:
 
-### Problem 4: Raw `useEffect` hooks bypass React Query caching
-`useChronicleStats` and `useRecentActivity` use `useState` + `useEffect` instead of `useQuery`. They have no deduplication, no stale-time, and re-fire on every parent re-render that changes `chronicleId`. The stats hook alone makes **4 parallel Supabase calls** each time.
+**"Create as Coterie"** (off by default)
 
----
+When enabled:
+- A text input appears asking for the **Coterie Name** (required)
+- An optional **Description** field
+- On "Accept All":
+  1. All accepted NPCs are saved as characters (existing logic)
+  2. A new Coterie is created using `createCoterie()` from `useCoteries`, with the given name, description, and the active chronicle ID
+  3. Each saved NPC is added as a member via `addMember(coterieId, characterId)`
+  4. The coterie immediately appears on the Characters > Coteries tab
 
-## Fix Plan
+### Implementation detail
 
-### Step 1: Add global `staleTime` and disable aggressive refetching
-In `App.tsx`, configure the `QueryClient` with sensible defaults:
-- `staleTime: 2 * 60 * 1000` (2 minutes) — queries won't refetch if data is less than 2 min old
-- `refetchOnWindowFocus: false` — stop the tab-focus refetch storm
+**Files to create:**
+1. `src/components/dialogs/BulkNPCDialog.tsx` — 3-step wizard with group template, individual guidance, and review/accept flow. Includes the "Create as Coterie" toggle and name input in the review step.
 
-### Step 2: Stabilize `useRelationships` query key
-Replace the raw `characterIds` array in the query key with a sorted, joined string (`characterIds.sort().join(',')`) so the key is referentially stable across renders.
+**Files to modify:**
+2. `src/pages/Generator.tsx` — Add "Generate Group" button on NPC tab
+3. `supabase/functions/generate-content/index.ts` — Add `bulk-npc` prompt variant with group context, clan constraints, and duplicate-name avoidance
 
-### Step 3: Add `enabled` guard to `useFactions`
-Add `enabled: !!chronicleId` to both queries in `useFactions`, and scope the `character_factions` query by joining through the factions table or filtering by chronicle.
+**Save flow (Accept All):**
+```text
+For each NPC:
+  1. createCharacter(npcData) → character.id
+  
+If "Create as Coterie" is checked:
+  2. createCoterie({ name, description, chronicle_id }) → coterie.id
+  3. For each character.id:
+       addMember(coterie.id, character.id)
+```
 
-### Step 4: Convert `useChronicleStats` and `useRecentActivity` to `useQuery`
-Rewrite both hooks to use React Query instead of raw `useEffect` + `useState`. This gives them automatic deduplication, stale-time respect, and cache sharing.
+**No database changes needed** — uses existing `coteries` and `coterie_members` tables.
 
----
+### Wizard flow summary
 
-### Technical detail
+```text
+Step 1: Group Template
+  - Theme, count (2-8), creature type, clan filter, generation range, status
 
-**File changes:**
-1. `src/App.tsx` — add `defaultOptions.queries` to `QueryClient`
-2. `src/hooks/useRelationships.tsx` — stabilize query key
-3. `src/hooks/useFactions.tsx` — add `enabled` guards
-4. `src/hooks/useChronicleStats.tsx` — rewrite with `useQuery`
-5. `src/hooks/useRecentActivity.tsx` — rewrite with `useQuery`
+Step 2: Individual Guidance (optional)
+  - Per-NPC role/concept hints
 
-**Estimated impact:** Should reduce Supabase requests by roughly 80-90% during normal usage (tab switching, page navigation).
+Step 3: Review & Save
+  - Progress bar during generation
+  - NPC cards with Accept/Edit/Regenerate/Remove
+  - [Toggle] Create as Coterie → Name input, optional Description
+  - [Accept All] button saves NPCs + optionally creates coterie
+```
+
+### Rate-limit handling
+- Sequential API calls with 1-second delay between each
+- Max 8 NPCs per batch
+- Per-NPC retry on failure; others unaffected
 
