@@ -325,10 +325,10 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
     }
   };
 
-  const buildDicePools = (parsed: any, method: CreationMethod) => {
-    if (method === "simple") return { type: "simple", difficulty: 4 };
-    if (method === "general") return { type: "general", primary: 6, secondary: 4 };
-    if (method === "standard") return { type: "standard", physical: 5, social: 5, mental: 5, exceptional: [] };
+  const buildDicePools = (_parsed: any, method: CreationMethod) => {
+    if (method === "simple") return { type: "simple" as const, difficulty: 4 };
+    if (method === "general") return { type: "general" as const, primary: 6, secondary: 4 };
+    if (method === "standard") return { type: "standard" as const, physical: 5, social: 5, mental: 5, exceptional: [] };
     return null;
   };
 
