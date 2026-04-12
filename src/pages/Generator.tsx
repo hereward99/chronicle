@@ -14,6 +14,7 @@ import { useGeneratorSettings } from "@/hooks/useGeneratorSettings";
 import { generateWithOllama } from "@/lib/ollama";
 import { GenerateNPCDialog } from "@/components/dialogs/GenerateNPCDialog";
 import { NPCWizardDialog } from "@/components/dialogs/NPCWizardDialog";
+import { BulkNPCDialog } from "@/components/dialogs/BulkNPCDialog";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 type CreationMethod = "full" | "simple" | "general" | "standard";
