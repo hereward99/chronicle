@@ -14,6 +14,7 @@ import { useGeneratorSettings } from "@/hooks/useGeneratorSettings";
 import { generateWithOllama } from "@/lib/ollama";
 import { GenerateNPCDialog } from "@/components/dialogs/GenerateNPCDialog";
 import { NPCWizardDialog } from "@/components/dialogs/NPCWizardDialog";
+import { BulkNPCDialog } from "@/components/dialogs/BulkNPCDialog";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 type CreationMethod = "full" | "simple" | "general" | "standard";
@@ -41,6 +42,7 @@ export default function Generator() {
   
   // NPC Generation Dialog State
   const [showNPCDialog, setShowNPCDialog] = useState(false);
+  const [showBulkNPCDialog, setShowBulkNPCDialog] = useState(false);
   const [showNPCWizard, setShowNPCWizard] = useState(false);
   const [npcGeneratedData, setNPCGeneratedData] = useState<any>(null);
   const [npcCreationMethod, setNPCCreationMethod] = useState<CreationMethod>("full");
@@ -298,6 +300,16 @@ export default function Generator() {
                       Generate New NPC
                     </Button>
 
+                    <Button
+                      onClick={() => setShowBulkNPCDialog(true)}
+                      variant="outline"
+                      className="w-full"
+                      size="lg"
+                    >
+                      <Users className="w-5 h-5 mr-2" />
+                      Generate Group
+                    </Button>
+
                     <div className="space-y-3 pt-4 border-t">
                       <h4 className="font-medium text-sm">How it works:</h4>
                       <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
@@ -509,6 +521,10 @@ export default function Generator() {
         generatedData={npcGeneratedData}
         creationMethod={npcCreationMethod}
         creatureType={npcCreatureType}
+      />
+      <BulkNPCDialog
+        open={showBulkNPCDialog}
+        onOpenChange={setShowBulkNPCDialog}
       />
     </div>
   );
