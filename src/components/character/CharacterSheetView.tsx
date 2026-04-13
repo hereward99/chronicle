@@ -576,7 +576,7 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
               return (
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold mb-4">Blood Potency Effects</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
                     <div className="text-center p-3 rounded-md bg-muted/50">
                       <RuleTooltip title="Blood Surge" description="Spend a Rouse Check to add bonus dice to a single Attribute-based dice pool. The bonus equals your Blood Surge value.">
                         <p className="text-xs text-muted-foreground mb-1">Blood Surge</p>
@@ -588,6 +588,12 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                         <p className="text-xs text-muted-foreground mb-1">Power Bonus</p>
                       </RuleTooltip>
                       <p className="text-lg font-bold text-primary">+{bpEffects.powerBonus}</p>
+                    </div>
+                    <div className="text-center p-3 rounded-md bg-muted/50">
+                      <RuleTooltip title="Rouse Re-roll" description="Discipline powers at or below this level allow you to re-roll a failed Rouse Check (roll two dice, keep the best result).">
+                        <p className="text-xs text-muted-foreground mb-1">Rouse Re-roll</p>
+                      </RuleTooltip>
+                      <p className="text-lg font-bold text-primary">Level {bpEffects.rouseReroll}</p>
                     </div>
                     <div className="text-center p-3 rounded-md bg-muted/50">
                       <RuleTooltip title="Mending" description="Amount of Superficial Health damage healed per Rouse Check. Aggravated damage always heals at 1 per night of rest plus a Rouse Check.">
