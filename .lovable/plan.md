@@ -1,66 +1,23 @@
 
 
-## Bulk NPC Generation — with "Create as Coterie" Option
+## Add Rouse Re-roll to Blood Potency Effects
 
-### Updated Plan
+### What changes
 
-Everything from the previously approved plan remains. This revision adds one feature to Step 3 (Review):
+Add the missing "Rouse Re-roll" column from the V5 corebook Blood Potency table to both the data model and the character sheet display.
 
-### New: "Create as Coterie" toggle
+### Steps
 
-On the Review step, after all NPCs are generated and before the user hits "Accept All", a toggle/checkbox appears:
+1. **Update data model** (`src/lib/v5/bloodPotencyData.ts`)
+   - Add `rouseReroll: number` to `BloodPotencyEffects` interface
+   - Add the value to each entry in `BLOOD_POTENCY_TABLE` (0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5)
 
-**"Create as Coterie"** (off by default)
+2. **Update character sheet** (`src/components/character/CharacterSheetView.tsx`)
+   - Add a fifth stat tile in the Blood Potency Effects grid showing the Rouse Re-roll value
+   - Change grid from `grid-cols-2 sm:grid-cols-4` to `grid-cols-2 sm:grid-cols-5`
+   - Include a `RuleTooltip` explaining: "Discipline powers at or below this level allow you to re-roll a failed Rouse Check (roll two dice, keep the best result)."
 
-When enabled:
-- A text input appears asking for the **Coterie Name** (required)
-- An optional **Description** field
-- On "Accept All":
-  1. All accepted NPCs are saved as characters (existing logic)
-  2. A new Coterie is created using `createCoterie()` from `useCoteries`, with the given name, description, and the active chronicle ID
-  3. Each saved NPC is added as a member via `addMember(coterieId, characterId)`
-  4. The coterie immediately appears on the Characters > Coteries tab
+### Technical detail
 
-### Implementation detail
-
-**Files to create:**
-1. `src/components/dialogs/BulkNPCDialog.tsx` — 3-step wizard with group template, individual guidance, and review/accept flow. Includes the "Create as Coterie" toggle and name input in the review step.
-
-**Files to modify:**
-2. `src/pages/Generator.tsx` — Add "Generate Group" button on NPC tab
-3. `supabase/functions/generate-content/index.ts` — Add `bulk-npc` prompt variant with group context, clan constraints, and duplicate-name avoidance
-
-**Save flow (Accept All):**
-```text
-For each NPC:
-  1. createCharacter(npcData) → character.id
-  
-If "Create as Coterie" is checked:
-  2. createCoterie({ name, description, chronicle_id }) → coterie.id
-  3. For each character.id:
-       addMember(coterie.id, character.id)
-```
-
-**No database changes needed** — uses existing `coteries` and `coterie_members` tables.
-
-### Wizard flow summary
-
-```text
-Step 1: Group Template
-  - Theme, count (2-8), creature type, clan filter, generation range, status
-
-Step 2: Individual Guidance (optional)
-  - Per-NPC role/concept hints
-
-Step 3: Review & Save
-  - Progress bar during generation
-  - NPC cards with Accept/Edit/Regenerate/Remove
-  - [Toggle] Create as Coterie → Name input, optional Description
-  - [Accept All] button saves NPCs + optionally creates coterie
-```
-
-### Rate-limit handling
-- Sequential API calls with 1-second delay between each
-- Max 8 NPCs per batch
-- Per-NPC retry on failure; others unaffected
+Two files changed, zero new files, no database changes.
 
