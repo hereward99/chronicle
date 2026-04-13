@@ -633,32 +633,105 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
                 ))}
               </div>
 
-              {/* Coterie toggle */}
+              {/* Coterie & Faction options */}
               {!isGenerating && acceptableNPCs.length > 0 && (
-                <div className="space-y-3 border-t pt-4">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="coterie-toggle" className="cursor-pointer">Create as Coterie</Label>
-                    <Switch
-                      id="coterie-toggle"
-                      checked={createAsCoterie}
-                      onCheckedChange={setCreateAsCoterie}
-                    />
-                  </div>
-
-                  {createAsCoterie && (
-                    <div className="space-y-2">
-                      <Input
-                        placeholder="Coterie name *"
-                        value={coterieName}
-                        onChange={(e) => setCoterieName(e.target.value)}
-                      />
-                      <Input
-                        placeholder="Description (optional)"
-                        value={coterieDescription}
-                        onChange={(e) => setCoterieDescription(e.target.value)}
+                <div className="space-y-4 border-t pt-4">
+                  {/* Coterie section */}
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Coterie</p>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="coterie-toggle" className="cursor-pointer text-sm">Create new Coterie</Label>
+                      <Switch
+                        id="coterie-toggle"
+                        checked={createAsCoterie}
+                        onCheckedChange={(v) => { setCreateAsCoterie(v); if (v) setAddToExistingCoterie(false); }}
                       />
                     </div>
-                  )}
+                    {createAsCoterie && (
+                      <div className="space-y-2 pl-1">
+                        <Input placeholder="Coterie name *" value={coterieName} onChange={(e) => setCoterieName(e.target.value)} />
+                        <Input placeholder="Description (optional)" value={coterieDescription} onChange={(e) => setCoterieDescription(e.target.value)} />
+                      </div>
+                    )}
+
+                    {coteries.length > 0 && (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="existing-coterie-toggle" className="cursor-pointer text-sm">Add to existing Coterie</Label>
+                          <Switch
+                            id="existing-coterie-toggle"
+                            checked={addToExistingCoterie}
+                            onCheckedChange={(v) => { setAddToExistingCoterie(v); if (v) setCreateAsCoterie(false); }}
+                          />
+                        </div>
+                        {addToExistingCoterie && (
+                          <div className="pl-1">
+                            <Select value={selectedCoterieId} onValueChange={setSelectedCoterieId}>
+                              <SelectTrigger><SelectValue placeholder="Select coterie..." /></SelectTrigger>
+                              <SelectContent>
+                                {coteries.map(c => (
+                                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  {/* Faction section */}
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Faction</p>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="faction-toggle" className="cursor-pointer text-sm">Create new Faction</Label>
+                      <Switch
+                        id="faction-toggle"
+                        checked={createAsFaction}
+                        onCheckedChange={(v) => { setCreateAsFaction(v); if (v) setAddToExistingFaction(false); }}
+                      />
+                    </div>
+                    {createAsFaction && (
+                      <div className="space-y-2 pl-1">
+                        <Input placeholder="Faction name *" value={factionName} onChange={(e) => setFactionName(e.target.value)} />
+                        <Input placeholder="Description (optional)" value={factionDescription} onChange={(e) => setFactionDescription(e.target.value)} />
+                        <div className="flex items-center gap-2">
+                          <Label className="text-sm">Color</Label>
+                          <input type="color" value={factionColor} onChange={(e) => setFactionColor(e.target.value)} className="h-8 w-10 rounded border border-border cursor-pointer" />
+                        </div>
+                      </div>
+                    )}
+
+                    {factions.length > 0 && (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="existing-faction-toggle" className="cursor-pointer text-sm">Add to existing Faction</Label>
+                          <Switch
+                            id="existing-faction-toggle"
+                            checked={addToExistingFaction}
+                            onCheckedChange={(v) => { setAddToExistingFaction(v); if (v) setCreateAsFaction(false); }}
+                          />
+                        </div>
+                        {addToExistingFaction && (
+                          <div className="pl-1">
+                            <Select value={selectedFactionId} onValueChange={setSelectedFactionId}>
+                              <SelectTrigger><SelectValue placeholder="Select faction..." /></SelectTrigger>
+                              <SelectContent>
+                                {factions.map(f => (
+                                  <SelectItem key={f.id} value={f.id}>
+                                    <span className="flex items-center gap-2">
+                                      <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: f.color }} />
+                                      {f.name}
+                                    </span>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
 
                   <Button
                     onClick={handleAcceptAll}
