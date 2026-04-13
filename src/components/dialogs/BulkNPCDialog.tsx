@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useChronicles } from "@/hooks/useChronicles";
 import { useCharacters } from "@/hooks/useCharacters";
 import { useCoteries } from "@/hooks/useCoteries";
+import { useFactions } from "@/hooks/useFactions";
 import { useGeneratorSettings } from "@/hooks/useGeneratorSettings";
 import { generateWithOllama } from "@/lib/ollama";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
@@ -44,7 +45,8 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
   const { toast } = useToast();
   const { currentChronicle } = useChronicles();
   const { createCharacter } = useCharacters();
-  const { createCoterie, addMember } = useCoteries(currentChronicle?.id);
+  const { coteries, createCoterie, addMember } = useCoteries(currentChronicle?.id);
+  const { factions, createFaction, addCharacterToFaction } = useFactions(currentChronicle?.id);
   const { settings: generatorSettings } = useGeneratorSettings();
   const { requireOnline } = useOnlineStatus();
 
@@ -70,10 +72,20 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
   const [generationProgress, setGenerationProgress] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Coterie option
+  // Coterie options
   const [createAsCoterie, setCreateAsCoterie] = useState(false);
   const [coterieName, setCoterieName] = useState("");
   const [coterieDescription, setCoterieDescription] = useState("");
+  const [addToExistingCoterie, setAddToExistingCoterie] = useState(false);
+  const [selectedCoterieId, setSelectedCoterieId] = useState("");
+
+  // Faction options
+  const [createAsFaction, setCreateAsFaction] = useState(false);
+  const [factionName, setFactionName] = useState("");
+  const [factionDescription, setFactionDescription] = useState("");
+  const [factionColor, setFactionColor] = useState("#64748b");
+  const [addToExistingFaction, setAddToExistingFaction] = useState(false);
+  const [selectedFactionId, setSelectedFactionId] = useState("");
 
   // Edit individual NPC
   const [editingNPC, setEditingNPC] = useState<{ data: any; index: number } | null>(null);
@@ -96,6 +108,14 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
     setCreateAsCoterie(false);
     setCoterieName("");
     setCoterieDescription("");
+    setAddToExistingCoterie(false);
+    setSelectedCoterieId("");
+    setCreateAsFaction(false);
+    setFactionName("");
+    setFactionDescription("");
+    setFactionColor("#64748b");
+    setAddToExistingFaction(false);
+    setSelectedFactionId("");
     setEditingNPC(null);
   }, []);
 
