@@ -243,6 +243,10 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
       toast({ title: "Coterie name required", description: "Please enter a name for the coterie.", variant: "destructive" });
       return;
     }
+    if (createAsFaction && !factionName.trim()) {
+      toast({ title: "Faction name required", description: "Please enter a name for the faction.", variant: "destructive" });
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -299,7 +303,7 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
         if (result?.id) savedIds.push(result.id);
       }
 
-      // Create coterie if toggled
+      // Create new coterie if toggled
       if (createAsCoterie && savedIds.length > 0) {
         const coterieResult = await createCoterie({
           chronicle_id: currentChronicle.id,
@@ -330,10 +334,52 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
         }
       }
 
+      // Add to existing coterie if selected
+      if (addToExistingCoterie && selectedCoterieId && savedIds.length > 0) {
+        for (const charId of savedIds) {
+          await addMember(selectedCoterieId, charId);
+        }
+      }
+
+      // Create new faction if toggled
+      if (createAsFaction && savedIds.length > 0) {
+        const factionResult = await createFaction({
+          chronicle_id: currentChronicle.id,
+          name: factionName.trim(),
+          description: factionDescription.trim() || null,
+          color: factionColor,
+        });
+
+        if (factionResult?.id) {
+          for (const charId of savedIds) {
+            await addCharacterToFaction(charId, factionResult.id);
+          }
+        }
+      }
+
+      // Add to existing faction if selected
+      if (addToExistingFaction && selectedFactionId && savedIds.length > 0) {
+        for (const charId of savedIds) {
+          await addCharacterToFaction(charId, selectedFactionId);
+        }
+      }
+
+      const extras: string[] = [];
+      if (createAsCoterie) extras.push(`coterie "${coterieName}" created`);
+      if (addToExistingCoterie && selectedCoterieId) {
+        const cot = coteries.find(c => c.id === selectedCoterieId);
+        extras.push(`added to coterie "${cot?.name}"`);
+      }
+      if (createAsFaction) extras.push(`faction "${factionName}" created`);
+      if (addToExistingFaction && selectedFactionId) {
+        const fac = factions.find(f => f.id === selectedFactionId);
+        extras.push(`added to faction "${fac?.name}"`);
+      }
+
       toast({
         title: `${savedIds.length} NPCs saved`,
-        description: createAsCoterie
-          ? `Added to chronicle and coterie "${coterieName}" created.`
+        description: extras.length > 0
+          ? `Added to chronicle. ${extras.join("; ")}.`
           : "All NPCs added to your chronicle.",
       });
 
