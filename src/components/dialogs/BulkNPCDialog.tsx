@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useChronicles } from "@/hooks/useChronicles";
 import { useCharacters } from "@/hooks/useCharacters";
 import { useCoteries } from "@/hooks/useCoteries";
+import { useFactions } from "@/hooks/useFactions";
 import { useGeneratorSettings } from "@/hooks/useGeneratorSettings";
 import { generateWithOllama } from "@/lib/ollama";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
@@ -44,7 +45,8 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
   const { toast } = useToast();
   const { currentChronicle } = useChronicles();
   const { createCharacter } = useCharacters();
-  const { createCoterie, addMember } = useCoteries(currentChronicle?.id);
+  const { coteries, createCoterie, addMember } = useCoteries(currentChronicle?.id);
+  const { factions, createFaction, addCharacterToFaction } = useFactions(currentChronicle?.id);
   const { settings: generatorSettings } = useGeneratorSettings();
   const { requireOnline } = useOnlineStatus();
 
@@ -70,10 +72,20 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
   const [generationProgress, setGenerationProgress] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Coterie option
+  // Coterie options
   const [createAsCoterie, setCreateAsCoterie] = useState(false);
   const [coterieName, setCoterieName] = useState("");
   const [coterieDescription, setCoterieDescription] = useState("");
+  const [addToExistingCoterie, setAddToExistingCoterie] = useState(false);
+  const [selectedCoterieId, setSelectedCoterieId] = useState("");
+
+  // Faction options
+  const [createAsFaction, setCreateAsFaction] = useState(false);
+  const [factionName, setFactionName] = useState("");
+  const [factionDescription, setFactionDescription] = useState("");
+  const [factionColor, setFactionColor] = useState("#64748b");
+  const [addToExistingFaction, setAddToExistingFaction] = useState(false);
+  const [selectedFactionId, setSelectedFactionId] = useState("");
 
   // Edit individual NPC
   const [editingNPC, setEditingNPC] = useState<{ data: any; index: number } | null>(null);
@@ -96,6 +108,14 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
     setCreateAsCoterie(false);
     setCoterieName("");
     setCoterieDescription("");
+    setAddToExistingCoterie(false);
+    setSelectedCoterieId("");
+    setCreateAsFaction(false);
+    setFactionName("");
+    setFactionDescription("");
+    setFactionColor("#64748b");
+    setAddToExistingFaction(false);
+    setSelectedFactionId("");
     setEditingNPC(null);
   }, []);
 
@@ -223,6 +243,10 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
       toast({ title: "Coterie name required", description: "Please enter a name for the coterie.", variant: "destructive" });
       return;
     }
+    if (createAsFaction && !factionName.trim()) {
+      toast({ title: "Faction name required", description: "Please enter a name for the faction.", variant: "destructive" });
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -279,7 +303,7 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
         if (result?.id) savedIds.push(result.id);
       }
 
-      // Create coterie if toggled
+      // Create new coterie if toggled
       if (createAsCoterie && savedIds.length > 0) {
         const coterieResult = await createCoterie({
           chronicle_id: currentChronicle.id,
@@ -310,10 +334,52 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
         }
       }
 
+      // Add to existing coterie if selected
+      if (addToExistingCoterie && selectedCoterieId && savedIds.length > 0) {
+        for (const charId of savedIds) {
+          await addMember(selectedCoterieId, charId);
+        }
+      }
+
+      // Create new faction if toggled
+      if (createAsFaction && savedIds.length > 0) {
+        const factionResult = await createFaction({
+          chronicle_id: currentChronicle.id,
+          name: factionName.trim(),
+          description: factionDescription.trim() || null,
+          color: factionColor,
+        });
+
+        if (factionResult?.id) {
+          for (const charId of savedIds) {
+            await addCharacterToFaction(charId, factionResult.id);
+          }
+        }
+      }
+
+      // Add to existing faction if selected
+      if (addToExistingFaction && selectedFactionId && savedIds.length > 0) {
+        for (const charId of savedIds) {
+          await addCharacterToFaction(charId, selectedFactionId);
+        }
+      }
+
+      const extras: string[] = [];
+      if (createAsCoterie) extras.push(`coterie "${coterieName}" created`);
+      if (addToExistingCoterie && selectedCoterieId) {
+        const cot = coteries.find(c => c.id === selectedCoterieId);
+        extras.push(`added to coterie "${cot?.name}"`);
+      }
+      if (createAsFaction) extras.push(`faction "${factionName}" created`);
+      if (addToExistingFaction && selectedFactionId) {
+        const fac = factions.find(f => f.id === selectedFactionId);
+        extras.push(`added to faction "${fac?.name}"`);
+      }
+
       toast({
         title: `${savedIds.length} NPCs saved`,
-        description: createAsCoterie
-          ? `Added to chronicle and coterie "${coterieName}" created.`
+        description: extras.length > 0
+          ? `Added to chronicle. ${extras.join("; ")}.`
           : "All NPCs added to your chronicle.",
       });
 
@@ -567,32 +633,105 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
                 ))}
               </div>
 
-              {/* Coterie toggle */}
+              {/* Coterie & Faction options */}
               {!isGenerating && acceptableNPCs.length > 0 && (
-                <div className="space-y-3 border-t pt-4">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="coterie-toggle" className="cursor-pointer">Create as Coterie</Label>
-                    <Switch
-                      id="coterie-toggle"
-                      checked={createAsCoterie}
-                      onCheckedChange={setCreateAsCoterie}
-                    />
-                  </div>
-
-                  {createAsCoterie && (
-                    <div className="space-y-2">
-                      <Input
-                        placeholder="Coterie name *"
-                        value={coterieName}
-                        onChange={(e) => setCoterieName(e.target.value)}
-                      />
-                      <Input
-                        placeholder="Description (optional)"
-                        value={coterieDescription}
-                        onChange={(e) => setCoterieDescription(e.target.value)}
+                <div className="space-y-4 border-t pt-4">
+                  {/* Coterie section */}
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Coterie</p>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="coterie-toggle" className="cursor-pointer text-sm">Create new Coterie</Label>
+                      <Switch
+                        id="coterie-toggle"
+                        checked={createAsCoterie}
+                        onCheckedChange={(v) => { setCreateAsCoterie(v); if (v) setAddToExistingCoterie(false); }}
                       />
                     </div>
-                  )}
+                    {createAsCoterie && (
+                      <div className="space-y-2 pl-1">
+                        <Input placeholder="Coterie name *" value={coterieName} onChange={(e) => setCoterieName(e.target.value)} />
+                        <Input placeholder="Description (optional)" value={coterieDescription} onChange={(e) => setCoterieDescription(e.target.value)} />
+                      </div>
+                    )}
+
+                    {coteries.length > 0 && (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="existing-coterie-toggle" className="cursor-pointer text-sm">Add to existing Coterie</Label>
+                          <Switch
+                            id="existing-coterie-toggle"
+                            checked={addToExistingCoterie}
+                            onCheckedChange={(v) => { setAddToExistingCoterie(v); if (v) setCreateAsCoterie(false); }}
+                          />
+                        </div>
+                        {addToExistingCoterie && (
+                          <div className="pl-1">
+                            <Select value={selectedCoterieId} onValueChange={setSelectedCoterieId}>
+                              <SelectTrigger><SelectValue placeholder="Select coterie..." /></SelectTrigger>
+                              <SelectContent>
+                                {coteries.map(c => (
+                                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  {/* Faction section */}
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Faction</p>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="faction-toggle" className="cursor-pointer text-sm">Create new Faction</Label>
+                      <Switch
+                        id="faction-toggle"
+                        checked={createAsFaction}
+                        onCheckedChange={(v) => { setCreateAsFaction(v); if (v) setAddToExistingFaction(false); }}
+                      />
+                    </div>
+                    {createAsFaction && (
+                      <div className="space-y-2 pl-1">
+                        <Input placeholder="Faction name *" value={factionName} onChange={(e) => setFactionName(e.target.value)} />
+                        <Input placeholder="Description (optional)" value={factionDescription} onChange={(e) => setFactionDescription(e.target.value)} />
+                        <div className="flex items-center gap-2">
+                          <Label className="text-sm">Color</Label>
+                          <input type="color" value={factionColor} onChange={(e) => setFactionColor(e.target.value)} className="h-8 w-10 rounded border border-border cursor-pointer" />
+                        </div>
+                      </div>
+                    )}
+
+                    {factions.length > 0 && (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="existing-faction-toggle" className="cursor-pointer text-sm">Add to existing Faction</Label>
+                          <Switch
+                            id="existing-faction-toggle"
+                            checked={addToExistingFaction}
+                            onCheckedChange={(v) => { setAddToExistingFaction(v); if (v) setCreateAsFaction(false); }}
+                          />
+                        </div>
+                        {addToExistingFaction && (
+                          <div className="pl-1">
+                            <Select value={selectedFactionId} onValueChange={setSelectedFactionId}>
+                              <SelectTrigger><SelectValue placeholder="Select faction..." /></SelectTrigger>
+                              <SelectContent>
+                                {factions.map(f => (
+                                  <SelectItem key={f.id} value={f.id}>
+                                    <span className="flex items-center gap-2">
+                                      <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: f.color }} />
+                                      {f.name}
+                                    </span>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
 
                   <Button
                     onClick={handleAcceptAll}
