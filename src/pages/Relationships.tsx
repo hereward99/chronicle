@@ -284,15 +284,15 @@ export default function Relationships() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-4xl font-bold mb-2">Relationship Map</h1>
           <p className="text-muted-foreground">
             Track connections, alliances, and rivalries between characters
           </p>
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)}>
+        <Button onClick={() => setCreateDialogOpen(true)} className="shrink-0 self-start">
           <Plus className="w-4 h-4 mr-2" />
           Add Relationship
         </Button>
@@ -318,7 +318,7 @@ export default function Relationships() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
             <div className="flex-1">
               <Input
                 placeholder="Search characters..."
@@ -328,7 +328,7 @@ export default function Relationships() {
               />
             </div>
             <Select value={selectedCharacter} onValueChange={setSelectedCharacter}>
-              <SelectTrigger className="w-[250px]">
+              <SelectTrigger className="w-full sm:w-[250px]">
                 <SelectValue placeholder="Focus on character" />
               </SelectTrigger>
               <SelectContent>
@@ -514,18 +514,18 @@ export default function Relationships() {
       </Card>
 
       <Tabs defaultValue="graph" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="graph" className="gap-2">
-            <Network className="w-4 h-4" />
-            Graph View
+        <TabsList className="w-full flex-wrap h-auto gap-1">
+          <TabsTrigger value="graph" className="gap-2 flex-1 min-w-0">
+            <Network className="w-4 h-4 shrink-0" />
+            <span className="truncate">Graph View</span>
           </TabsTrigger>
-          <TabsTrigger value="list" className="gap-2">
-            <Users className="w-4 h-4" />
-            List View
+          <TabsTrigger value="list" className="gap-2 flex-1 min-w-0">
+            <Users className="w-4 h-4 shrink-0" />
+            <span className="truncate">List View</span>
           </TabsTrigger>
-          <TabsTrigger value="factions" className="gap-2">
-            <Flag className="w-4 h-4" />
-            Factions
+          <TabsTrigger value="factions" className="gap-2 flex-1 min-w-0">
+            <Flag className="w-4 h-4 shrink-0" />
+            <span className="truncate">Factions</span>
           </TabsTrigger>
         </TabsList>
 
@@ -692,7 +692,7 @@ export default function Relationships() {
                 return (
                   <Card 
                     key={faction.id} 
-                    className="hover:shadow-lg transition-shadow"
+                    className="hover:shadow-lg transition-shadow overflow-hidden min-w-0"
                     style={{ borderTop: `4px solid ${faction.color}` }}
                   >
                     <CardHeader>
