@@ -75,7 +75,8 @@ export default function Characters() {
   const [selectedCoterie, setSelectedCoterie] = useState<Coterie | null>(null);
 
   const { characters, loading, updateCharacter, deleteCharacter } = useCharacters();
-  const { factions, characterFactions } = useFactions();
+  const { currentChronicle } = useChronicles();
+  const { factions, characterFactions } = useFactions(currentChronicle?.id);
   const { coteries, allCoterieMembers, loading: coteriesLoading, setPrimaryCoterie } = useCoteries();
   const { plots } = usePlots();
   const { plotCharacters } = usePlotCharacters();
