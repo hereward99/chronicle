@@ -692,7 +692,7 @@ export default function Relationships() {
                 return (
                   <Card 
                     key={faction.id} 
-                    className="hover:shadow-lg transition-shadow"
+                    className="hover:shadow-lg transition-shadow overflow-hidden min-w-0"
                     style={{ borderTop: `4px solid ${faction.color}` }}
                   >
                     <CardHeader>
