@@ -212,6 +212,11 @@ export default function Characters() {
           if (coterieIds.length === 0) return "No Coterie";
           return coteries.find(ct => ct.id === coterieIds[0])?.name || "Unknown Coterie";
         }
+        case "faction": {
+          const factionIds = characterFactionMap.get(c.id) || [];
+          if (factionIds.length === 0) return "No Faction";
+          return factions.find(f => f.id === factionIds[0])?.name || "Unknown Faction";
+        }
         case "sire": return c.sire || "Unknown Sire";
         case "generation": {
           if (c.clan === "Human" || c.clan === "Ghoul") return "Mortal";
@@ -229,7 +234,7 @@ export default function Characters() {
     });
 
     return new Map([...groups.entries()].sort(([a], [b]) => a.localeCompare(b)));
-  }, [sortedCharacters, toolbar.groupBy, characterCoterieMap, coteries]);
+  }, [sortedCharacters, toolbar.groupBy, characterCoterieMap, coteries, characterFactionMap, factions]);
 
   return (
     <div className="space-y-6">
@@ -344,6 +349,7 @@ export default function Characters() {
                 <SelectItem value="status">Group by Status</SelectItem>
                 <SelectItem value="type">Group by Type</SelectItem>
                 <SelectItem value="coterie">Group by Coterie</SelectItem>
+                <SelectItem value="faction">Group by Faction</SelectItem>
                 <SelectItem value="sire">Group by Sire</SelectItem>
                 <SelectItem value="generation">Group by Generation</SelectItem>
               </SelectContent>
