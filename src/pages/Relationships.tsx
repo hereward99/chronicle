@@ -514,18 +514,18 @@ export default function Relationships() {
       </Card>
 
       <Tabs defaultValue="graph" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="graph" className="gap-2">
-            <Network className="w-4 h-4" />
-            Graph View
+        <TabsList className="w-full flex-wrap h-auto gap-1">
+          <TabsTrigger value="graph" className="gap-2 flex-1 min-w-0">
+            <Network className="w-4 h-4 shrink-0" />
+            <span className="truncate">Graph View</span>
           </TabsTrigger>
-          <TabsTrigger value="list" className="gap-2">
-            <Users className="w-4 h-4" />
-            List View
+          <TabsTrigger value="list" className="gap-2 flex-1 min-w-0">
+            <Users className="w-4 h-4 shrink-0" />
+            <span className="truncate">List View</span>
           </TabsTrigger>
-          <TabsTrigger value="factions" className="gap-2">
-            <Flag className="w-4 h-4" />
-            Factions
+          <TabsTrigger value="factions" className="gap-2 flex-1 min-w-0">
+            <Flag className="w-4 h-4 shrink-0" />
+            <span className="truncate">Factions</span>
           </TabsTrigger>
         </TabsList>
 
