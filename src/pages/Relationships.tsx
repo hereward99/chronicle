@@ -318,7 +318,7 @@ export default function Relationships() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
             <div className="flex-1">
               <Input
                 placeholder="Search characters..."
@@ -328,7 +328,7 @@ export default function Relationships() {
               />
             </div>
             <Select value={selectedCharacter} onValueChange={setSelectedCharacter}>
-              <SelectTrigger className="w-[250px]">
+              <SelectTrigger className="w-full sm:w-[250px]">
                 <SelectValue placeholder="Focus on character" />
               </SelectTrigger>
               <SelectContent>
