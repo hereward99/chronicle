@@ -234,7 +234,7 @@ export default function Characters() {
     });
 
     return new Map([...groups.entries()].sort(([a], [b]) => a.localeCompare(b)));
-  }, [sortedCharacters, toolbar.groupBy, characterCoterieMap, coteries]);
+  }, [sortedCharacters, toolbar.groupBy, characterCoterieMap, coteries, characterFactionMap, factions]);
 
   return (
     <div className="space-y-6">
