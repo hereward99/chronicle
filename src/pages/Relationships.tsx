@@ -808,27 +808,27 @@ export default function Relationships() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {coteries.map((coterie) => (
-              <Card key={coterie.id} data-entity-id={coterie.id} className={`hover:shadow-lg transition-shadow ${coterie.is_primary ? 'ring-2 ring-primary' : ''}`}>
+              <Card key={coterie.id} data-entity-id={coterie.id} className={`hover:shadow-lg transition-shadow overflow-hidden ${coterie.is_primary ? 'ring-2 ring-primary' : ''}`}>
                 <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="flex items-center gap-2">
-                        <UsersRound className="h-5 w-5" />
-                        <TextHighlight text={coterie.name} highlight={highlightQuery} />
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="flex items-center gap-2 flex-wrap">
+                        <UsersRound className="h-5 w-5 shrink-0" />
+                        <span className="break-words"><TextHighlight text={coterie.name} highlight={highlightQuery} /></span>
                         {coterie.is_primary && (
-                          <Badge variant="default" className="text-xs gap-1">
+                          <Badge variant="default" className="text-xs gap-1 shrink-0">
                             <Star className="h-3 w-3" />
                             Primary
                           </Badge>
                         )}
                       </CardTitle>
                       {coterie.description && (
-                        <CardDescription className="mt-2 break-words whitespace-pre-wrap">
+                        <p className="mt-2 text-sm text-muted-foreground break-words whitespace-pre-wrap overflow-hidden">
                           <MentionText text={coterie.description} />
-                        </CardDescription>
+                        </p>
                       )}
                     </div>
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 shrink-0">
                       {!coterie.is_primary && (
                         <Button
                           size="sm"
@@ -851,9 +851,9 @@ export default function Relationships() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {coterie.domain && (
-                    <div className="flex items-start gap-2 text-sm text-muted-foreground break-words">
+                    <div className="flex items-start gap-2 text-sm text-muted-foreground">
                       <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
-                      <span className="break-words"><MentionText text={coterie.domain} /></span>
+                      <span className="min-w-0 break-words"><MentionText text={coterie.domain} /></span>
                     </div>
                   )}
                   <div className="flex items-center gap-2">
