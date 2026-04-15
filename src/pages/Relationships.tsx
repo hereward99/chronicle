@@ -29,6 +29,7 @@ import { EditFactionDialog } from '@/components/dialogs/EditFactionDialog';
 import { ManageFactionMembersDialog } from '@/components/dialogs/ManageFactionMembersDialog';
 import { EmptyState } from '@/components/onboarding/EmptyState';
 import type { Coterie } from '@/hooks/useCoteries';
+import { MentionText } from '@/components/mentions/MentionText';
 
 const relationshipIcons: Record<string, any> = {
   'Ally': Handshake,
@@ -822,8 +823,8 @@ export default function Relationships() {
                         )}
                       </CardTitle>
                       {coterie.description && (
-                        <CardDescription className="mt-2">
-                          {coterie.description}
+                        <CardDescription className="mt-2 break-words whitespace-pre-wrap">
+                          <MentionText text={coterie.description} />
                         </CardDescription>
                       )}
                     </div>
@@ -850,9 +851,9 @@ export default function Relationships() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {coterie.domain && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4" />
-                      {coterie.domain}
+                    <div className="flex items-start gap-2 text-sm text-muted-foreground break-words">
+                      <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
+                      <span className="break-words"><MentionText text={coterie.domain} /></span>
                     </div>
                   )}
                   <div className="flex items-center gap-2">
