@@ -225,7 +225,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
       let willpowerMax: number;
       
       if (isMortalTemplate) {
-        const tmpl = MORTAL_TEMPLATES[characterData.mortalTemplate];
+        const tmpl = MORTAL_TEMPLATES[characterData.mortalTemplate] || MORTAL_TEMPLATES.none;
         healthMax = tmpl.health;
         willpowerMax = tmpl.willpower;
       } else if (useDicePools && skipAttributes) {
@@ -255,7 +255,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
       // Determine dice pool configuration
       let dicePoolConfig: DicePoolConfig | null = null;
       if (isMortalTemplate) {
-        const tmpl = MORTAL_TEMPLATES[characterData.mortalTemplate];
+        const tmpl = MORTAL_TEMPLATES[characterData.mortalTemplate] || MORTAL_TEMPLATES.none;
         dicePoolConfig = { type: "simple", difficulty: Math.ceil(tmpl.pool / 2) } as SimpleDicePool;
       } else if (useDicePools) {
         switch (characterData.creationMethod) {
@@ -460,7 +460,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
                     ))}
                   </SelectContent>
                 </Select>
-                {characterData.mortalTemplate !== "none" && (
+                {characterData.mortalTemplate !== "none" && MORTAL_TEMPLATES[characterData.mortalTemplate] && (
                   <div className="text-xs text-muted-foreground">
                     <strong>{MORTAL_TEMPLATES[characterData.mortalTemplate].pool} dice</strong> pool · 
                     Health <strong>{MORTAL_TEMPLATES[characterData.mortalTemplate].health}</strong> · 
@@ -696,7 +696,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
                           Add Exceptional
                         </Button>
                       </div>
-                      {characterData.exceptionalPools.map((exc, idx) => (
+                      {characterData.exceptionalPools.filter(Boolean).map((exc, idx) => (
                         <div key={idx} className="flex gap-2 items-center">
                           <Input
                             placeholder="Skill or Discipline name"
@@ -1222,7 +1222,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
                       Add Exceptional
                     </Button>
                   </div>
-                  {characterData.exceptionalPools.map((exc, idx) => (
+                  {characterData.exceptionalPools.filter(Boolean).map((exc, idx) => (
                     <div key={idx} className="flex gap-2 items-center">
                       <Input
                         placeholder="Skill or Discipline name"
