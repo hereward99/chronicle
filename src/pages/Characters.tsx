@@ -274,7 +274,6 @@ export default function Characters() {
               <UsersRound className="w-4 h-4 mr-2" /> Generate Group
             </Button>
           </div>
-          </div>
 
           {/* Search */}
           <div className="relative">
