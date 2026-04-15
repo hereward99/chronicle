@@ -204,35 +204,37 @@ export default function Characters() {
     if (toolbar.groupBy === "__none__") return null;
 
     const groups = new Map<string, Character[]>();
-    const getKey = (c: Character): string => {
+    const getKeys = (c: Character): string[] => {
       switch (toolbar.groupBy) {
-        case "clan": return c.clan;
-        case "status": return c.status;
-        case "type": return c.type;
+        case "clan": return [c.clan];
+        case "status": return [c.status];
+        case "type": return [c.type];
         case "coterie": {
           const coterieIds = characterCoterieMap.get(c.id) || [];
-          if (coterieIds.length === 0) return "No Coterie";
-          return coteries.find(ct => ct.id === coterieIds[0])?.name || "Unknown Coterie";
+          if (coterieIds.length === 0) return ["No Coterie"];
+          return coterieIds.map(id => coteries.find(ct => ct.id === id)?.name || "Unknown Coterie");
         }
         case "faction": {
           const factionIds = characterFactionMap.get(c.id) || [];
-          if (factionIds.length === 0) return "No Faction";
-          return factions.find(f => f.id === factionIds[0])?.name || "Unknown Faction";
+          if (factionIds.length === 0) return ["No Faction"];
+          return factionIds.map(id => factions.find(f => f.id === id)?.name || "Unknown Faction");
         }
-        case "sire": return c.sire || "Unknown Sire";
+        case "sire": return [c.sire || "Unknown Sire"];
         case "generation": {
-          if (c.clan === "Human" || c.clan === "Ghoul") return "Mortal";
-          return c.generation ? `${c.generation}th Generation` : "Unknown Generation";
+          if (c.clan === "Human" || c.clan === "Ghoul") return ["Mortal"];
+          return [c.generation ? `${c.generation}th Generation` : "Unknown Generation"];
         }
-        default: return "Other";
+        default: return ["Other"];
       }
     };
 
     sortedCharacters.forEach(c => {
-      const key = getKey(c);
-      const arr = groups.get(key) || [];
-      arr.push(c);
-      groups.set(key, arr);
+      const keys = getKeys(c);
+      keys.forEach(key => {
+        const arr = groups.get(key) || [];
+        arr.push(c);
+        groups.set(key, arr);
+      });
     });
 
     return new Map([...groups.entries()].sort(([a], [b]) => a.localeCompare(b)));
