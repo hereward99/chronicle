@@ -262,9 +262,6 @@ export default function Characters() {
         <TabsContent value="characters" className="space-y-6">
           {/* Actions */}
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setShowBulkNPCDialog(true)} className="border-primary/50 hover:bg-primary/10">
-              <UsersRound className="w-4 h-4 mr-2" /> Generate Group
-            </Button>
             <Button variant="outline" onClick={() => setWizardOpen(true)} className="border-primary/50 hover:bg-primary/10">
               <Wand2 className="w-4 h-4 mr-2" /> Wizard
             </Button>
@@ -273,6 +270,9 @@ export default function Characters() {
                 <Plus className="w-4 h-4 mr-2" /> Quick Create
               </Button>
             </CreateCharacterDialog>
+            <Button onClick={() => setShowBulkNPCDialog(true)} className="bg-destructive/30 hover:bg-destructive/50 border border-destructive/50 text-foreground">
+              <UsersRound className="w-4 h-4 mr-2" /> Generate Group
+            </Button>
           </div>
 
           {/* Search */}
@@ -457,9 +457,6 @@ export default function Characters() {
                 tip="Start with 1-2 Player Characters, then add NPCs as your story unfolds. Use the Wizard for guided creation."
                 action={
                   <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => setShowBulkNPCDialog(true)} className="border-primary/50">
-                      <UsersRound className="w-4 h-4 mr-2" /> Generate Group
-                    </Button>
                     <Button variant="outline" onClick={() => setWizardOpen(true)} className="border-primary/50">
                       <Wand2 className="w-4 h-4 mr-2" /> Character Wizard
                     </Button>
@@ -468,6 +465,9 @@ export default function Characters() {
                         <Plus className="w-4 h-4 mr-2" /> Quick Create
                       </Button>
                     </CreateCharacterDialog>
+                    <Button onClick={() => setShowBulkNPCDialog(true)} className="bg-destructive/30 hover:bg-destructive/50 border border-destructive/50 text-foreground">
+                      <UsersRound className="w-4 h-4 mr-2" /> Generate Group
+                    </Button>
                   </div>
                 }
               />
