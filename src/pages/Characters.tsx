@@ -7,7 +7,8 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Search, Users, Wand2, X, ChevronDown } from "lucide-react";
+import { Plus, Search, Users, Wand2, X, ChevronDown, UsersRound } from "lucide-react";
+import { BulkNPCDialog } from "@/components/dialogs/BulkNPCDialog";
 import { useCharacters, Character } from "@/hooks/useCharacters";
 import { useFactions } from "@/hooks/useFactions";
 import { useChronicles } from "@/hooks/useChronicles";
@@ -74,6 +75,7 @@ export default function Characters() {
   const [activeTab, setActiveTab] = useState("characters");
   const [showCreateCoterie, setShowCreateCoterie] = useState(false);
   const [selectedCoterie, setSelectedCoterie] = useState<Coterie | null>(null);
+  const [showBulkNPCDialog, setShowBulkNPCDialog] = useState(false);
 
   const { characters, loading, updateCharacter, deleteCharacter } = useCharacters();
   const { currentChronicle } = useChronicles();
@@ -260,6 +262,9 @@ export default function Characters() {
         <TabsContent value="characters" className="space-y-6">
           {/* Actions */}
           <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowBulkNPCDialog(true)} className="border-primary/50 hover:bg-primary/10">
+              <UsersRound className="w-4 h-4 mr-2" /> Generate Group
+            </Button>
             <Button variant="outline" onClick={() => setWizardOpen(true)} className="border-primary/50 hover:bg-primary/10">
               <Wand2 className="w-4 h-4 mr-2" /> Wizard
             </Button>
@@ -452,6 +457,9 @@ export default function Characters() {
                 tip="Start with 1-2 Player Characters, then add NPCs as your story unfolds. Use the Wizard for guided creation."
                 action={
                   <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => setShowBulkNPCDialog(true)} className="border-primary/50">
+                      <UsersRound className="w-4 h-4 mr-2" /> Generate Group
+                    </Button>
                     <Button variant="outline" onClick={() => setWizardOpen(true)} className="border-primary/50">
                       <Wand2 className="w-4 h-4 mr-2" /> Character Wizard
                     </Button>
@@ -515,6 +523,7 @@ export default function Characters() {
       <CharacterWizard open={wizardOpen} onOpenChange={setWizardOpen} />
       <CreateCoterieDialog open={showCreateCoterie} onOpenChange={setShowCreateCoterie} />
       <ManageCoterieDialog open={!!selectedCoterie} onOpenChange={open => !open && setSelectedCoterie(null)} coterie={selectedCoterie} />
+      <BulkNPCDialog open={showBulkNPCDialog} onOpenChange={setShowBulkNPCDialog} />
     </div>
   );
 }
