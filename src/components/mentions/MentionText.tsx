@@ -52,17 +52,20 @@ export function MentionText({ text, className }: MentionTextProps) {
         if (segment.type === 'mention' && segment.mention) {
           const { mention } = segment;
           return (
-            <button
+            <span
               key={index}
+              role="link"
+              tabIndex={0}
               onClick={() => handleMentionClick(mention)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleMentionClick(mention); }}
               className={cn(
-                'font-medium cursor-pointer underline underline-offset-2 transition-colors',
+                'inline font-medium cursor-pointer underline underline-offset-2 transition-colors text-left',
                 typeColors[mention.type]
               )}
               title={`${mention.type}: ${mention.name}`}
             >
               @{mention.name}
-            </button>
+            </span>
           );
         }
 
