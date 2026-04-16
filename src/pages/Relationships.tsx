@@ -810,18 +810,20 @@ export default function Relationships() {
             {coteries.map((coterie) => (
               <Card key={coterie.id} data-entity-id={coterie.id} className={`hover:shadow-lg transition-shadow overflow-hidden text-left ${coterie.is_primary ? 'ring-2 ring-primary' : ''}`}>
                 <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-2 w-full">
-                    <div className="flex-1 min-w-0 text-left">
-                      <CardTitle className="flex items-center gap-2 flex-wrap text-lg">
-                        <UsersRound className="h-5 w-5 shrink-0" />
-                        <span className="break-words"><TextHighlight text={coterie.name} highlight={highlightQuery} /></span>
+                  <div className="flex items-start justify-between gap-3 w-full">
+                    <div className="flex items-start gap-2 min-w-0 flex-1">
+                      <UsersRound className="h-5 w-5 shrink-0 mt-0.5" />
+                      <div className="min-w-0 flex-1 text-left">
+                        <CardTitle className="text-lg leading-snug break-words text-left">
+                          <TextHighlight text={coterie.name} highlight={highlightQuery} className="break-words" />
+                        </CardTitle>
                         {coterie.is_primary && (
-                          <Badge variant="default" className="text-xs gap-1 shrink-0">
+                          <Badge variant="default" className="mt-2 inline-flex text-xs gap-1 align-middle">
                             <Star className="h-3 w-3" />
                             Primary
                           </Badge>
                         )}
-                      </CardTitle>
+                      </div>
                     </div>
                     <div className="flex gap-1 shrink-0">
                       {!coterie.is_primary && (
@@ -844,16 +846,20 @@ export default function Relationships() {
                     </div>
                   </div>
                   {coterie.description && (
-                    <p className="text-sm text-muted-foreground break-words whitespace-pre-wrap w-full text-left mt-1">
-                      <MentionText text={coterie.description} />
-                    </p>
+                    <MentionText
+                      text={coterie.description}
+                      className="mt-2 block w-full text-left text-sm text-muted-foreground break-words whitespace-pre-wrap"
+                    />
                   )}
                 </CardHeader>
                 <CardContent className="space-y-3 pt-0">
                   {coterie.domain && (
                     <div className="flex items-start gap-2 text-sm text-muted-foreground w-full text-left">
                       <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
-                      <span className="min-w-0 break-words flex-1"><MentionText text={coterie.domain} /></span>
+                      <MentionText
+                        text={coterie.domain}
+                        className="block min-w-0 flex-1 text-left break-words whitespace-pre-wrap"
+                      />
                     </div>
                   )}
                   <div className="flex items-center gap-2">
