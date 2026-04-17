@@ -83,7 +83,7 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
       setChronicleTenets(coterie.chronicle_tenets || "");
       setCoterieGoals(coterie.coterie_goals || "");
       setAttachments(Array.isArray(coterie.attachments) ? coterie.attachments : []);
-      getCoterieMembers(coterie.id).then(ids => setMemberIds(new Set(ids)));
+      
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coterie?.id]);
@@ -112,18 +112,6 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
         coterie_goals: coterieGoals.trim() || null,
         attachments,
       });
-
-      const currentMembers = await getCoterieMembers(coterie.id);
-      const currentSet = new Set(currentMembers);
-
-      for (const charId of memberIds) {
-        if (!currentSet.has(charId)) await addMember(coterie.id, charId);
-      }
-
-      for (const charId of currentSet) {
-        if (!memberIds.has(charId)) await removeMember(coterie.id, charId);
-      }
-
       onOpenChange(false);
     } catch (error) {
       console.error("Error updating coterie:", error);
@@ -141,19 +129,6 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
       console.error("Error deleting coterie:", error);
     }
   };
-
-  const toggleMember = (characterId: string) => {
-    setMemberIds(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(characterId)) {
-        newSet.delete(characterId);
-      } else {
-        newSet.add(characterId);
-      }
-      return newSet;
-    });
-  };
-
   if (!coterie) return null;
 
   return (
