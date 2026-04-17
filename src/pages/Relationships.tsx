@@ -814,8 +814,8 @@ export default function Relationships() {
                     <div className="flex items-start gap-2 min-w-0 flex-1">
                       <UsersRound className="h-5 w-5 shrink-0 mt-0.5" />
                       <div className="min-w-0 flex-1 text-left">
-                        <CardTitle className="text-lg leading-snug break-words text-left">
-                          <TextHighlight text={coterie.name} highlight={highlightQuery} className="break-words" />
+                        <CardTitle className="text-lg leading-snug text-left [overflow-wrap:normal] [word-break:normal] hyphens-none">
+                          <TextHighlight text={coterie.name} highlight={highlightQuery} />
                         </CardTitle>
                         {coterie.is_primary && (
                           <Badge variant="default" className="mt-2 inline-flex text-xs gap-1 align-middle">
