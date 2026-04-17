@@ -47,11 +47,22 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
   const [chronicleTenets, setChronicleTenets] = useState("");
   const [coterieGoals, setCoterieGoals] = useState("");
   const [attachments, setAttachments] = useState<any[]>([]);
-  const [memberIds, setMemberIds] = useState<Set<string>>(new Set());
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
-  const { updateCoterie, deleteCoterie, addMember, removeMember, getCoterieMembers } = useCoteries();
+  const { updateCoterie, deleteCoterie, addMember, removeMember, allCoterieMembers } = useCoteries();
   const { characters } = useCharacters();
+
+  const coterieMembers = useMemo<GroupMember[]>(() => {
+    if (!coterie) return [];
+    return allCoterieMembers
+      .filter(m => m.coterie_id === coterie.id)
+      .map(m => ({ characterId: m.character_id, role: m.role }));
+  }, [coterie, allCoterieMembers]);
+
+  const chronicleCharacters = useMemo(
+    () => (coterie ? characters.filter(c => c.chronicle_id === coterie.chronicle_id) : []),
+    [coterie, characters],
+  );
 
   useEffect(() => {
     if (coterie) {
