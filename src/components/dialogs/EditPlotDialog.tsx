@@ -98,31 +98,6 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
     }
   }, [open, plot.id]);
 
-  // Load currently assigned characters when dialog opens or plot characters load
-  useEffect(() => {
-    if (open && !loading) {
-      const assigned = getCharactersForPlot(plot.id);
-      setSelectedCharacters(assigned);
-    }
-  }, [open, plotCharacters, plot.id]);
-
-  const handleCharacterToggle = async (characterId: string, checked: boolean) => {
-    try {
-      if (checked) {
-        await assignCharacter(plot.id, characterId);
-      } else {
-        await unassignCharacter(plot.id, characterId);
-      }
-      
-      setSelectedCharacters(prev => 
-        checked 
-          ? [...prev, characterId]
-          : prev.filter(id => id !== characterId)
-      );
-    } catch (error) {
-      // Error already handled by assignCharacter/unassignCharacter
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -264,27 +239,18 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
 
           <div className="space-y-2">
             <Label>Assigned Characters</Label>
-            <div className="border border-border rounded-md p-3 max-h-48 overflow-y-auto space-y-2 bg-input">
-              {characters.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No characters available</p>
-              ) : (
-                characters.map((character) => (
-                  <div key={character.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`char-${character.id}`}
-                      checked={selectedCharacters.includes(character.id)}
-                      onCheckedChange={(checked) => handleCharacterToggle(character.id, checked as boolean)}
-                    />
-                    <Label
-                      htmlFor={`char-${character.id}`}
-                      className="text-sm font-normal cursor-pointer flex-1"
-                    >
-                      {character.name} ({character.clan})
-                    </Label>
-                  </div>
-                ))
-              )}
-            </div>
+            <GroupMembersPanel
+              characters={chronicleCharacters}
+              members={plotMembers}
+              emptyCopy="No characters assigned to this story yet"
+              listHeight="h-[200px]"
+              onAdd={async (characterId) => {
+                await assignCharacter(plot.id, characterId);
+              }}
+              onRemove={async (characterId) => {
+                await unassignCharacter(plot.id, characterId);
+              }}
+            />
           </div>
 
           <div className="flex justify-between items-center pt-4 border-t border-border">
