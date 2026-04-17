@@ -140,6 +140,7 @@ export function useCoteries(chronicleId?: string) {
       if (error) throw error;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coterie_members'] });
       toast({ title: "Member added", description: "Character has been added to the coterie." });
     },
     onError: (error: any) => {
@@ -158,6 +159,7 @@ export function useCoteries(chronicleId?: string) {
       if (error) throw error;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coterie_members'] });
       toast({ title: "Member removed", description: "Character has been removed from the coterie." });
     },
     onError: (error: any) => {
