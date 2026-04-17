@@ -33,7 +33,6 @@ interface EditPlotDialogProps {
 
 export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlotDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [selectedCharacters, setSelectedCharacters] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     title: plot.title,
     summary: plot.summary || "",
@@ -47,8 +46,21 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
 
   const { updatePlot, deletePlot } = usePlots();
   const { characters } = useCharacters();
-  const { plotCharacters, assignCharacter, unassignCharacter, getCharactersForPlot, refetch: refetchPlotCharacters } = usePlotCharacters(plot.id);
+  const { plotCharacters, assignCharacter, unassignCharacter } = usePlotCharacters(plot.id);
   const { toast } = useToast();
+
+  const chronicleCharacters = useMemo(
+    () => characters.filter(c => c.chronicle_id === plot.chronicle_id),
+    [characters, plot.chronicle_id],
+  );
+
+  const plotMembers = useMemo<GroupMember[]>(
+    () =>
+      plotCharacters
+        .filter(pc => pc.plot_id === plot.id)
+        .map(pc => ({ characterId: pc.character_id })),
+    [plotCharacters, plot.id],
+  );
 
   const handleDelete = async () => {
     try {
