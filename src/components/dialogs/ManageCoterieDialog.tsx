@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { MentionInput } from "@/components/mentions/MentionInput";
 import { DotRating } from "@/components/characters/DotRating";
 import { DotRatedList, DotRatedItem, parseDotRatedItems, serializeDotRatedItems } from "@/components/characters/DotRatedList";
@@ -12,6 +11,7 @@ import { FileUpload } from "@/components/ui/file-upload";
 import { useCoteries, Coterie } from "@/hooks/useCoteries";
 import { useCharacters } from "@/hooks/useCharacters";
 import { Users, Trash2 } from "lucide-react";
+import { GroupMembersPanel, type GroupMember } from "@/components/groups/GroupMembersPanel";
 import {
   AlertDialog,
   AlertDialogAction,
