@@ -15,7 +15,6 @@ import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { FileUpload } from "@/components/ui/file-upload";
 import { GroupMembersPanel, type GroupMember } from "@/components/groups/GroupMembersPanel";
-import { Label } from "@/components/ui/label";
 
 const plotSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
