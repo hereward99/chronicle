@@ -8,13 +8,10 @@ import { MentionInput } from "@/components/mentions/MentionInput";
 import { InGameDateInput } from "@/components/InGameDateInput";
 import { usePlots } from "@/hooks/usePlots";
 import { useChronicles } from "@/hooks/useChronicles";
-import { useCharacters } from "@/hooks/useCharacters";
-import { usePlotCharacters } from "@/hooks/usePlotCharacters";
 import { BookOpen } from "lucide-react";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { FileUpload } from "@/components/ui/file-upload";
-import { GroupMembersPanel, type GroupMember } from "@/components/groups/GroupMembersPanel";
 
 const plotSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
