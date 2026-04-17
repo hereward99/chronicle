@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
@@ -13,8 +13,8 @@ import { usePlotCharacters } from "@/hooks/usePlotCharacters";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { FileUpload } from "@/components/ui/file-upload";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2 } from "lucide-react";
+import { GroupMembersPanel, type GroupMember } from "@/components/groups/GroupMembersPanel";
 
 const plotSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
@@ -33,7 +33,6 @@ interface EditPlotDialogProps {
 
 export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlotDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [selectedCharacters, setSelectedCharacters] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     title: plot.title,
     summary: plot.summary || "",
@@ -47,8 +46,21 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
 
   const { updatePlot, deletePlot } = usePlots();
   const { characters } = useCharacters();
-  const { plotCharacters, assignCharacter, unassignCharacter, getCharactersForPlot, refetch: refetchPlotCharacters } = usePlotCharacters(plot.id);
+  const { plotCharacters, assignCharacter, unassignCharacter } = usePlotCharacters(plot.id);
   const { toast } = useToast();
+
+  const chronicleCharacters = useMemo(
+    () => characters.filter(c => c.chronicle_id === plot.chronicle_id),
+    [characters, plot.chronicle_id],
+  );
+
+  const plotMembers = useMemo<GroupMember[]>(
+    () =>
+      plotCharacters
+        .filter(pc => pc.plot_id === plot.id)
+        .map(pc => ({ characterId: pc.character_id })),
+    [plotCharacters, plot.id],
+  );
 
   const handleDelete = async () => {
     try {
@@ -86,31 +98,6 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
     }
   }, [open, plot.id]);
 
-  // Load currently assigned characters when dialog opens or plot characters load
-  useEffect(() => {
-    if (open && !loading) {
-      const assigned = getCharactersForPlot(plot.id);
-      setSelectedCharacters(assigned);
-    }
-  }, [open, plotCharacters, plot.id]);
-
-  const handleCharacterToggle = async (characterId: string, checked: boolean) => {
-    try {
-      if (checked) {
-        await assignCharacter(plot.id, characterId);
-      } else {
-        await unassignCharacter(plot.id, characterId);
-      }
-      
-      setSelectedCharacters(prev => 
-        checked 
-          ? [...prev, characterId]
-          : prev.filter(id => id !== characterId)
-      );
-    } catch (error) {
-      // Error already handled by assignCharacter/unassignCharacter
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -252,27 +239,18 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
 
           <div className="space-y-2">
             <Label>Assigned Characters</Label>
-            <div className="border border-border rounded-md p-3 max-h-48 overflow-y-auto space-y-2 bg-input">
-              {characters.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No characters available</p>
-              ) : (
-                characters.map((character) => (
-                  <div key={character.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`char-${character.id}`}
-                      checked={selectedCharacters.includes(character.id)}
-                      onCheckedChange={(checked) => handleCharacterToggle(character.id, checked as boolean)}
-                    />
-                    <Label
-                      htmlFor={`char-${character.id}`}
-                      className="text-sm font-normal cursor-pointer flex-1"
-                    >
-                      {character.name} ({character.clan})
-                    </Label>
-                  </div>
-                ))
-              )}
-            </div>
+            <GroupMembersPanel
+              characters={chronicleCharacters}
+              members={plotMembers}
+              emptyCopy="No characters assigned to this story yet"
+              listHeight="h-[200px]"
+              onAdd={async (characterId) => {
+                await assignCharacter(plot.id, characterId);
+              }}
+              onRemove={async (characterId) => {
+                await unassignCharacter(plot.id, characterId);
+              }}
+            />
           </div>
 
           <div className="flex justify-between items-center pt-4 border-t border-border">

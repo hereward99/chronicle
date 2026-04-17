@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { MentionInput } from "@/components/mentions/MentionInput";
 import { DotRating } from "@/components/characters/DotRating";
 import { DotRatedList, DotRatedItem, parseDotRatedItems, serializeDotRatedItems } from "@/components/characters/DotRatedList";
@@ -12,6 +11,7 @@ import { FileUpload } from "@/components/ui/file-upload";
 import { useCoteries, Coterie } from "@/hooks/useCoteries";
 import { useCharacters } from "@/hooks/useCharacters";
 import { Users, Trash2 } from "lucide-react";
+import { GroupMembersPanel, type GroupMember } from "@/components/groups/GroupMembersPanel";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,11 +47,22 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
   const [chronicleTenets, setChronicleTenets] = useState("");
   const [coterieGoals, setCoterieGoals] = useState("");
   const [attachments, setAttachments] = useState<any[]>([]);
-  const [memberIds, setMemberIds] = useState<Set<string>>(new Set());
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
-  const { updateCoterie, deleteCoterie, addMember, removeMember, getCoterieMembers } = useCoteries();
+  const { updateCoterie, deleteCoterie, addMember, removeMember, allCoterieMembers } = useCoteries();
   const { characters } = useCharacters();
+
+  const coterieMembers = useMemo<GroupMember[]>(() => {
+    if (!coterie) return [];
+    return allCoterieMembers
+      .filter(m => m.coterie_id === coterie.id)
+      .map(m => ({ characterId: m.character_id, role: m.role }));
+  }, [coterie, allCoterieMembers]);
+
+  const chronicleCharacters = useMemo(
+    () => (coterie ? characters.filter(c => c.chronicle_id === coterie.chronicle_id) : []),
+    [coterie, characters],
+  );
 
   useEffect(() => {
     if (coterie) {
@@ -72,7 +83,7 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
       setChronicleTenets(coterie.chronicle_tenets || "");
       setCoterieGoals(coterie.coterie_goals || "");
       setAttachments(Array.isArray(coterie.attachments) ? coterie.attachments : []);
-      getCoterieMembers(coterie.id).then(ids => setMemberIds(new Set(ids)));
+      
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coterie?.id]);
@@ -101,18 +112,6 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
         coterie_goals: coterieGoals.trim() || null,
         attachments,
       });
-
-      const currentMembers = await getCoterieMembers(coterie.id);
-      const currentSet = new Set(currentMembers);
-
-      for (const charId of memberIds) {
-        if (!currentSet.has(charId)) await addMember(coterie.id, charId);
-      }
-
-      for (const charId of currentSet) {
-        if (!memberIds.has(charId)) await removeMember(coterie.id, charId);
-      }
-
       onOpenChange(false);
     } catch (error) {
       console.error("Error updating coterie:", error);
@@ -130,19 +129,6 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
       console.error("Error deleting coterie:", error);
     }
   };
-
-  const toggleMember = (characterId: string) => {
-    setMemberIds(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(characterId)) {
-        newSet.delete(characterId);
-      } else {
-        newSet.add(characterId);
-      }
-      return newSet;
-    });
-  };
-
   if (!coterie) return null;
 
   return (
@@ -230,26 +216,19 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <Users className="h-4 w-4" /> Members
               </h3>
-              <div className="h-[200px] overflow-y-auto rounded-md border">
-                <div className="space-y-3 p-4">
-                  {characters.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No characters available</p>
-                  ) : (
-                    characters.map(character => (
-                      <div key={character.id} className="flex items-center gap-2">
-                        <Checkbox
-                          id={`char-${character.id}`}
-                          checked={memberIds.has(character.id)}
-                          onCheckedChange={() => toggleMember(character.id)}
-                        />
-                        <Label htmlFor={`char-${character.id}`} className="flex-1 cursor-pointer">
-                          {character.name} ({character.clan})
-                        </Label>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
+              <GroupMembersPanel
+                characters={chronicleCharacters}
+                members={coterieMembers}
+                showRole
+                emptyCopy="No characters in this coterie yet"
+                listHeight="h-[220px]"
+                onAdd={async (characterId, role) => {
+                  await addMember(coterie.id, characterId, role);
+                }}
+                onRemove={async (characterId) => {
+                  await removeMember(coterie.id, characterId);
+                }}
+              />
             </div>
 
             <FileUpload
