@@ -216,26 +216,19 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <Users className="h-4 w-4" /> Members
               </h3>
-              <div className="h-[200px] overflow-y-auto rounded-md border">
-                <div className="space-y-3 p-4">
-                  {characters.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No characters available</p>
-                  ) : (
-                    characters.map(character => (
-                      <div key={character.id} className="flex items-center gap-2">
-                        <Checkbox
-                          id={`char-${character.id}`}
-                          checked={memberIds.has(character.id)}
-                          onCheckedChange={() => toggleMember(character.id)}
-                        />
-                        <Label htmlFor={`char-${character.id}`} className="flex-1 cursor-pointer">
-                          {character.name} ({character.clan})
-                        </Label>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
+              <GroupMembersPanel
+                characters={chronicleCharacters}
+                members={coterieMembers}
+                showRole
+                emptyCopy="No characters in this coterie yet"
+                listHeight="h-[220px]"
+                onAdd={async (characterId, role) => {
+                  await addMember(coterie.id, characterId, role);
+                }}
+                onRemove={async (characterId) => {
+                  await removeMember(coterie.id, characterId);
+                }}
+              />
             </div>
 
             <FileUpload
