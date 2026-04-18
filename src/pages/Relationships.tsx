@@ -65,6 +65,7 @@ export default function Relationships() {
   
   const [selectedCharacter, setSelectedCharacter] = useState<string>('all');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [createDialogDefaults, setCreateDialogDefaults] = useState<{ from?: string; to?: string }>({});
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedRelationship, setSelectedRelationship] = useState<Relationship | null>(null);
   const [viewCharacterDialogOpen, setViewCharacterDialogOpen] = useState(false);
@@ -76,6 +77,16 @@ export default function Relationships() {
   const [showCreateCoterieDialog, setShowCreateCoterieDialog] = useState(false);
   const [selectedCoterie, setSelectedCoterie] = useState<Coterie | null>(null);
   const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
+
+  const openCreateDialog = (from?: string, to?: string) => {
+    setCreateDialogDefaults({ from, to });
+    setCreateDialogOpen(true);
+  };
+
+  const handleCreateDialogChange = (open: boolean) => {
+    setCreateDialogOpen(open);
+    if (!open) setCreateDialogDefaults({});
+  };
 
   useEffect(() => {
     const fetchMemberCounts = async () => {
@@ -132,8 +143,7 @@ export default function Relationships() {
   };
 
   const handleCreateRelationshipFromGraph = (sourceId: string, targetId: string) => {
-    // Pre-populate the create dialog with the selected characters
-    setCreateDialogOpen(true);
+    openCreateDialog(sourceId, targetId);
   };
 
   const getCharacterName = (id: string) => {
@@ -293,7 +303,10 @@ export default function Relationships() {
             Track connections, alliances, and rivalries between characters
           </p>
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)} className="shrink-0 self-start">
+        <Button
+          onClick={() => openCreateDialog(selectedCharacter !== 'all' ? selectedCharacter : undefined)}
+          className="shrink-0 self-start"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Add Relationship
         </Button>
@@ -626,13 +639,24 @@ export default function Relationships() {
                             )}
                           </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEdit(relationship)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Add another relationship from this character"
+                            onClick={() => openCreateDialog(relationship.character_id)}
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Edit relationship"
+                            onClick={() => handleEdit(relationship)}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     </CardHeader>
                     {relationship.description && (
@@ -876,9 +900,11 @@ export default function Relationships() {
 
       <CreateRelationshipDialog
         open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
+        onOpenChange={handleCreateDialogChange}
         characters={characters}
         onCreate={createRelationship}
+        defaultCharacterId={createDialogDefaults.from}
+        defaultRelatedCharacterId={createDialogDefaults.to}
       />
 
       <EditRelationshipDialog

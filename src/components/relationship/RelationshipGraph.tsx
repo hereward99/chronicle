@@ -206,8 +206,27 @@ export function RelationshipGraph({
   onCreateRelationship 
 }: RelationshipGraphProps) {
   const [connectionMode, setConnectionMode] = useState(false);
+  const [pendingSourceId, setPendingSourceId] = useState<string | null>(null);
   const [layout, setLayout] = useState<LayoutType>('force');
   const { fitView, zoomIn, zoomOut } = useReactFlow();
+
+  // Cancel connection mode with Escape
+  useEffect(() => {
+    if (!connectionMode) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setConnectionMode(false);
+        setPendingSourceId(null);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [connectionMode]);
+
+  // Reset pending source when leaving connection mode
+  useEffect(() => {
+    if (!connectionMode) setPendingSourceId(null);
+  }, [connectionMode]);
 
   // Group characters by faction
   const charactersByFaction = useMemo(() => {
@@ -368,6 +387,35 @@ export function RelationshipGraph({
     setEdges(initialEdges);
   }, [layoutedNodes, initialEdges, setNodes, setEdges]);
 
+  // Apply visual feedback for connection mode (highlight pending source, dim others)
+  useEffect(() => {
+    setNodes((current) =>
+      current.map((n) => {
+        const baseStyle = (n.data as any)?.character
+          ? buildNodeStyle((n.data as any).character, (n.data as any).faction)
+          : n.style || {};
+        if (!connectionMode) {
+          return { ...n, style: baseStyle };
+        }
+        if (pendingSourceId === n.id) {
+          return {
+            ...n,
+            style: {
+              ...baseStyle,
+              outline: '3px solid hsl(var(--primary))',
+              outlineOffset: '2px',
+              boxShadow: '0 0 0 6px hsl(var(--primary) / 0.25)',
+            },
+          };
+        }
+        if (pendingSourceId) {
+          return { ...n, style: { ...baseStyle, opacity: 0.5 } };
+        }
+        return { ...n, style: baseStyle };
+      })
+    );
+  }, [connectionMode, pendingSourceId, setNodes, buildNodeStyle]);
+
   // Fit view after layout change
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -377,10 +425,26 @@ export function RelationshipGraph({
   }, [layout, fitView]);
 
   const onNodeClickHandler = useCallback((event: React.MouseEvent, node: Node) => {
+    if (connectionMode) {
+      if (!pendingSourceId) {
+        setPendingSourceId(node.id);
+        return;
+      }
+      if (pendingSourceId === node.id) {
+        setPendingSourceId(null);
+        return;
+      }
+      if (onCreateRelationship) {
+        onCreateRelationship(pendingSourceId, node.id);
+      }
+      setPendingSourceId(null);
+      setConnectionMode(false);
+      return;
+    }
     if (onNodeClick) {
       onNodeClick(node.id);
     }
-  }, [onNodeClick]);
+  }, [connectionMode, pendingSourceId, onCreateRelationship, onNodeClick]);
 
   const onEdgeClickHandler = useCallback((event: React.MouseEvent, edge: Edge) => {
     if (onEdgeClick && edge.data?.relationship) {
@@ -389,16 +453,18 @@ export function RelationshipGraph({
   }, [onEdgeClick]);
 
   const onConnect = useCallback((connection: Connection) => {
-    if (connectionMode && onCreateRelationship && connection.source && connection.target) {
+    if (onCreateRelationship && connection.source && connection.target) {
       onCreateRelationship(connection.source, connection.target);
       setConnectionMode(false);
+      setPendingSourceId(null);
     }
-  }, [connectionMode, onCreateRelationship]);
+  }, [onCreateRelationship]);
 
   const onNodeDoubleClick = useCallback((event: React.MouseEvent, node: Node) => {
     event.preventDefault();
     if (!connectionMode) {
       setConnectionMode(true);
+      setPendingSourceId(node.id);
     }
   }, [connectionMode]);
 
@@ -421,20 +487,32 @@ export function RelationshipGraph({
 
   return (
     <div className="w-full h-[600px] border rounded-lg bg-background relative">
-      {connectionMode && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg flex items-center gap-2 animate-pulse">
-          <Link2 className="w-4 h-4" />
-          <span className="text-sm font-medium">Connection Mode Active - Click two nodes to connect</span>
-          <Button 
-            size="sm" 
-            variant="secondary" 
-            onClick={() => setConnectionMode(false)}
-            className="ml-2"
-          >
-            Cancel
-          </Button>
-        </div>
-      )}
+      {connectionMode && (() => {
+        const sourceName = pendingSourceId
+          ? characters.find((c) => c.id === pendingSourceId)?.name
+          : null;
+        return (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+            <Link2 className="w-4 h-4" />
+            <span className="text-sm font-medium">
+              {sourceName
+                ? `Connecting from "${sourceName}" — click target node`
+                : 'Connection mode — click the source node'}
+            </span>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                setConnectionMode(false);
+                setPendingSourceId(null);
+              }}
+              className="ml-2"
+            >
+              Cancel
+            </Button>
+          </div>
+        );
+      })()}
       
       <ContextMenu>
         <ContextMenuTrigger className="w-full h-full">
@@ -571,8 +649,8 @@ export function RelationshipGraph({
               <div className="text-xs text-muted-foreground mt-3 space-y-1">
                 <div>• Drag nodes to rearrange</div>
                 <div>• Click to view details</div>
-                <div>• Double-click to connect</div>
-                <div>• Right-click for menu</div>
+                <div>• Double-click a node to connect from it</div>
+                <div>• Press Esc to cancel connection</div>
               </div>
             </Panel>
           </ReactFlow>
