@@ -886,9 +886,11 @@ export default function Relationships() {
 
       <CreateRelationshipDialog
         open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
+        onOpenChange={handleCreateDialogChange}
         characters={characters}
         onCreate={createRelationship}
+        defaultCharacterId={createDialogDefaults.from}
+        defaultRelatedCharacterId={createDialogDefaults.to}
       />
 
       <EditRelationshipDialog
