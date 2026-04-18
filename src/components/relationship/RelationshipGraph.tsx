@@ -487,20 +487,32 @@ export function RelationshipGraph({
 
   return (
     <div className="w-full h-[600px] border rounded-lg bg-background relative">
-      {connectionMode && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg flex items-center gap-2 animate-pulse">
-          <Link2 className="w-4 h-4" />
-          <span className="text-sm font-medium">Connection Mode Active - Click two nodes to connect</span>
-          <Button 
-            size="sm" 
-            variant="secondary" 
-            onClick={() => setConnectionMode(false)}
-            className="ml-2"
-          >
-            Cancel
-          </Button>
-        </div>
-      )}
+      {connectionMode && (() => {
+        const sourceName = pendingSourceId
+          ? characters.find((c) => c.id === pendingSourceId)?.name
+          : null;
+        return (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+            <Link2 className="w-4 h-4" />
+            <span className="text-sm font-medium">
+              {sourceName
+                ? `Connecting from "${sourceName}" — click target node`
+                : 'Connection mode — click the source node'}
+            </span>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                setConnectionMode(false);
+                setPendingSourceId(null);
+              }}
+              className="ml-2"
+            >
+              Cancel
+            </Button>
+          </div>
+        );
+      })()}
       
       <ContextMenu>
         <ContextMenuTrigger className="w-full h-full">
