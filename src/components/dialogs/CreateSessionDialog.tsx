@@ -5,8 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MentionInput } from "@/components/mentions/MentionInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { GroupMembersPanel } from "@/components/groups/GroupMembersPanel";
 import { InGameDateInput } from "@/components/InGameDateInput";
 import { useSessions } from "@/hooks/useSessions";
 import { useChronicles } from "@/hooks/useChronicles";
@@ -219,24 +218,21 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
           <div className="space-y-2">
             <Label>Characters in Session</Label>
             {chronicleCharacters.length > 0 ? (
-              <ScrollArea className="h-32 border border-border rounded-md p-2">
-                <div className="space-y-1">
-                  {chronicleCharacters.map((char) => (
-                    <label key={char.id} className="flex items-center gap-2 py-1 px-1 rounded hover:bg-muted/50 cursor-pointer text-sm">
-                      <Checkbox
-                        checked={selectedCharacterIds.includes(char.id)}
-                        onCheckedChange={(checked) => {
-                          setSelectedCharacterIds(prev =>
-                            checked ? [...prev, char.id] : prev.filter(id => id !== char.id)
-                          );
-                        }}
-                      />
-                      <span>{char.name}</span>
-                      <span className="text-xs text-muted-foreground ml-auto">{char.clan}</span>
-                    </label>
-                  ))}
-                </div>
-              </ScrollArea>
+              <GroupMembersPanel
+                characters={chronicleCharacters}
+                members={selectedCharacterIds.map(id => ({ characterId: id }))}
+                onAdd={(characterId) => {
+                  setSelectedCharacterIds(prev =>
+                    prev.includes(characterId) ? prev : [...prev, characterId]
+                  );
+                }}
+                onRemove={(characterId) => {
+                  setSelectedCharacterIds(prev => prev.filter(id => id !== characterId));
+                }}
+                addLabel="Add Character"
+                emptyCopy="No characters added yet"
+                listHeight="h-[180px]"
+              />
             ) : (
               <p className="text-xs text-muted-foreground">No characters in this chronicle yet.</p>
             )}

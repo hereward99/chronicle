@@ -6,8 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MentionInput } from "@/components/mentions/MentionInput";
 import { InGameDateInput } from "@/components/InGameDateInput";
+import { GroupMembersPanel } from "@/components/groups/GroupMembersPanel";
 import { usePlots } from "@/hooks/usePlots";
 import { useChronicles } from "@/hooks/useChronicles";
+import { useCharacters } from "@/hooks/useCharacters";
+import { usePlotCharacters } from "@/hooks/usePlotCharacters";
 import { BookOpen } from "lucide-react";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
@@ -40,10 +43,15 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
     in_game_date_start: "",
     in_game_date_end: "",
   });
+  const [selectedCharacterIds, setSelectedCharacterIds] = useState<string[]>([]);
   
   const { createPlot } = usePlots();
   const { currentChronicle, createDefaultChronicle } = useChronicles();
+  const { characters } = useCharacters();
+  const { assignCharacter } = usePlotCharacters();
   const { toast } = useToast();
+
+  const chronicleCharacters = characters.filter(c => c.chronicle_id === currentChronicle?.id);
 
   const clearFieldError = (field: string) => {
     setErrors(prev => {
@@ -72,7 +80,7 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
         chronicleId = defaultChronicle.id;
       }
 
-      await createPlot({
+      const newPlot = await createPlot({
         title: validated.title,
         summary: validated.summary || null,
         description: validated.description || null,
@@ -84,6 +92,15 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
         in_game_date_end: formData.in_game_date_end || null,
       });
 
+      // Assign selected characters to the new plot
+      if (newPlot?.id && selectedCharacterIds.length > 0) {
+        await Promise.all(
+          selectedCharacterIds.map(characterId =>
+            assignCharacter(newPlot.id, characterId)
+          )
+        );
+      }
+
       setFormData({
         title: "",
         summary: "",
@@ -94,6 +111,7 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
         in_game_date_start: "",
         in_game_date_end: "",
       });
+      setSelectedCharacterIds([]);
       
       setOpen(false);
       onCreated?.();
@@ -205,6 +223,30 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
               maxLength={10000}
             />
             <p className="text-xs text-muted-foreground">Type @ to mention characters, sessions, etc.</p>
+          </div>
+
+          {/* Character Picker */}
+          <div className="space-y-2">
+            <Label>Characters Involved</Label>
+            {chronicleCharacters.length > 0 ? (
+              <GroupMembersPanel
+                characters={chronicleCharacters}
+                members={selectedCharacterIds.map(id => ({ characterId: id }))}
+                onAdd={(characterId) => {
+                  setSelectedCharacterIds(prev =>
+                    prev.includes(characterId) ? prev : [...prev, characterId]
+                  );
+                }}
+                onRemove={(characterId) => {
+                  setSelectedCharacterIds(prev => prev.filter(id => id !== characterId));
+                }}
+                addLabel="Add Character"
+                emptyCopy="No characters added yet"
+                listHeight="h-[180px]"
+              />
+            ) : (
+              <p className="text-xs text-muted-foreground">No characters in this chronicle yet.</p>
+            )}
           </div>
 
           <FileUpload
