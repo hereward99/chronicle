@@ -225,6 +225,30 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
             <p className="text-xs text-muted-foreground">Type @ to mention characters, sessions, etc.</p>
           </div>
 
+          {/* Character Picker */}
+          <div className="space-y-2">
+            <Label>Characters Involved</Label>
+            {chronicleCharacters.length > 0 ? (
+              <GroupMembersPanel
+                characters={chronicleCharacters}
+                members={selectedCharacterIds.map(id => ({ characterId: id }))}
+                onAdd={(characterId) => {
+                  setSelectedCharacterIds(prev =>
+                    prev.includes(characterId) ? prev : [...prev, characterId]
+                  );
+                }}
+                onRemove={(characterId) => {
+                  setSelectedCharacterIds(prev => prev.filter(id => id !== characterId));
+                }}
+                addLabel="Add Character"
+                emptyCopy="No characters added yet"
+                listHeight="h-[180px]"
+              />
+            ) : (
+              <p className="text-xs text-muted-foreground">No characters in this chronicle yet.</p>
+            )}
+          </div>
+
           <FileUpload
             bucket="story-files"
             entityId="new"
