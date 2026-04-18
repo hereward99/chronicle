@@ -649,8 +649,8 @@ export function RelationshipGraph({
               <div className="text-xs text-muted-foreground mt-3 space-y-1">
                 <div>• Drag nodes to rearrange</div>
                 <div>• Click to view details</div>
-                <div>• Double-click to connect</div>
-                <div>• Right-click for menu</div>
+                <div>• Double-click a node to connect from it</div>
+                <div>• Press Esc to cancel connection</div>
               </div>
             </Panel>
           </ReactFlow>
