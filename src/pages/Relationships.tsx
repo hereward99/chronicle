@@ -303,7 +303,10 @@ export default function Relationships() {
             Track connections, alliances, and rivalries between characters
           </p>
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)} className="shrink-0 self-start">
+        <Button
+          onClick={() => openCreateDialog(selectedCharacter !== 'all' ? selectedCharacter : undefined)}
+          className="shrink-0 self-start"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Add Relationship
         </Button>
