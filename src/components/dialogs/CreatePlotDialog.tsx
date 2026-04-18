@@ -43,10 +43,15 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
     in_game_date_start: "",
     in_game_date_end: "",
   });
+  const [selectedCharacterIds, setSelectedCharacterIds] = useState<string[]>([]);
   
   const { createPlot } = usePlots();
   const { currentChronicle, createDefaultChronicle } = useChronicles();
+  const { characters } = useCharacters();
+  const { assignCharacter } = usePlotCharacters();
   const { toast } = useToast();
+
+  const chronicleCharacters = characters.filter(c => c.chronicle_id === currentChronicle?.id);
 
   const clearFieldError = (field: string) => {
     setErrors(prev => {
@@ -75,7 +80,7 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
         chronicleId = defaultChronicle.id;
       }
 
-      await createPlot({
+      const newPlot = await createPlot({
         title: validated.title,
         summary: validated.summary || null,
         description: validated.description || null,
@@ -87,6 +92,15 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
         in_game_date_end: formData.in_game_date_end || null,
       });
 
+      // Assign selected characters to the new plot
+      if (newPlot?.id && selectedCharacterIds.length > 0) {
+        await Promise.all(
+          selectedCharacterIds.map(characterId =>
+            assignCharacter(newPlot.id, characterId)
+          )
+        );
+      }
+
       setFormData({
         title: "",
         summary: "",
@@ -97,6 +111,7 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
         in_game_date_start: "",
         in_game_date_end: "",
       });
+      setSelectedCharacterIds([]);
       
       setOpen(false);
       onCreated?.();
