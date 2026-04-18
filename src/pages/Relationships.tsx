@@ -143,8 +143,7 @@ export default function Relationships() {
   };
 
   const handleCreateRelationshipFromGraph = (sourceId: string, targetId: string) => {
-    // Pre-populate the create dialog with the selected characters
-    setCreateDialogOpen(true);
+    openCreateDialog(sourceId, targetId);
   };
 
   const getCharacterName = (id: string) => {
