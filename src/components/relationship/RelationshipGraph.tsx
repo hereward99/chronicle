@@ -387,6 +387,35 @@ export function RelationshipGraph({
     setEdges(initialEdges);
   }, [layoutedNodes, initialEdges, setNodes, setEdges]);
 
+  // Apply visual feedback for connection mode (highlight pending source, dim others)
+  useEffect(() => {
+    setNodes((current) =>
+      current.map((n) => {
+        const baseStyle = (n.data as any)?.character
+          ? buildNodeStyle((n.data as any).character, (n.data as any).faction)
+          : n.style || {};
+        if (!connectionMode) {
+          return { ...n, style: baseStyle };
+        }
+        if (pendingSourceId === n.id) {
+          return {
+            ...n,
+            style: {
+              ...baseStyle,
+              outline: '3px solid hsl(var(--primary))',
+              outlineOffset: '2px',
+              boxShadow: '0 0 0 6px hsl(var(--primary) / 0.25)',
+            },
+          };
+        }
+        if (pendingSourceId) {
+          return { ...n, style: { ...baseStyle, opacity: 0.5 } };
+        }
+        return { ...n, style: baseStyle };
+      })
+    );
+  }, [connectionMode, pendingSourceId, setNodes, buildNodeStyle]);
+
   // Fit view after layout change
   useEffect(() => {
     const timeout = setTimeout(() => {
