@@ -1,28 +1,99 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { MentionInput } from "@/components/mentions/MentionInput";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { Relationship } from "@/hooks/useRelationships";
 import { Character } from "@/hooks/useCharacters";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+
 interface CreateRelationshipDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   characters: Character[];
   onCreate: (relationship: Omit<Relationship, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<any>;
+  defaultCharacterId?: string;
+  defaultRelatedCharacterId?: string;
 }
 
 const relationshipTypes = ['Ally', 'Rival', 'Contact', 'Friend', 'Enemy'];
+const symmetricTypes = new Set(['Ally', 'Friend', 'Enemy', 'Rival']);
+
+interface CharacterPickerProps {
+  characters: Character[];
+  value: string;
+  onChange: (id: string) => void;
+  placeholder: string;
+  excludeId?: string;
+}
+
+function CharacterPicker({ characters, value, onChange, placeholder, excludeId }: CharacterPickerProps) {
+  const [open, setOpen] = useState(false);
+  const selected = characters.find((c) => c.id === value);
+  const options = characters.filter((c) => c.id !== excludeId);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between font-normal"
+        >
+          {selected ? (
+            <span className="truncate">
+              {selected.name} <span className="text-muted-foreground">({selected.clan})</span>
+            </span>
+          ) : (
+            <span className="text-muted-foreground">{placeholder}</span>
+          )}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Search characters..." />
+          <CommandList>
+            <CommandEmpty>No characters found.</CommandEmpty>
+            <CommandGroup>
+              {options.map((char) => (
+                <CommandItem
+                  key={char.id}
+                  value={`${char.name} ${char.clan}`}
+                  onSelect={() => {
+                    onChange(char.id);
+                    setOpen(false);
+                  }}
+                >
+                  <Check className={cn("mr-2 h-4 w-4", value === char.id ? "opacity-100" : "opacity-0")} />
+                  <span className="truncate">
+                    {char.name} <span className="text-muted-foreground">({char.clan})</span>
+                  </span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 export function CreateRelationshipDialog({ 
   open, 
   onOpenChange, 
   characters,
-  onCreate 
+  onCreate,
+  defaultCharacterId,
+  defaultRelatedCharacterId,
 }: CreateRelationshipDialogProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -36,6 +107,28 @@ export function CreateRelationshipDialog({
     is_mutual: false,
     notes: "",
   });
+
+  // Apply pre-filled defaults each time the dialog opens
+  useEffect(() => {
+    if (open) {
+      setFormData((prev) => ({
+        ...prev,
+        character_id: defaultCharacterId ?? prev.character_id,
+        related_character_id: defaultRelatedCharacterId ?? prev.related_character_id,
+        // Default mutual on for symmetric types
+        is_mutual: symmetricTypes.has(prev.relationship_type),
+      }));
+    }
+  }, [open, defaultCharacterId, defaultRelatedCharacterId]);
+
+  const handleTypeChange = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      relationship_type: value,
+      // Auto-toggle mutual based on symmetry, but only if user hasn't diverged
+      is_mutual: symmetricTypes.has(value),
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,48 +193,32 @@ export function CreateRelationshipDialog({
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="character_id">From Character *</Label>
-            <Select 
-              value={formData.character_id} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, character_id: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select character" />
-              </SelectTrigger>
-              <SelectContent>
-                {characters.map((char) => (
-                  <SelectItem key={char.id} value={char.id}>
-                    {char.name} ({char.clan})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>From Character *</Label>
+            <CharacterPicker
+              characters={characters}
+              value={formData.character_id}
+              onChange={(id) => setFormData((prev) => ({ ...prev, character_id: id }))}
+              placeholder="Select character"
+              excludeId={formData.related_character_id}
+            />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="related_character_id">To Character *</Label>
-            <Select 
-              value={formData.related_character_id} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, related_character_id: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select character" />
-              </SelectTrigger>
-              <SelectContent>
-                {characters.map((char) => (
-                  <SelectItem key={char.id} value={char.id}>
-                    {char.name} ({char.clan})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>To Character *</Label>
+            <CharacterPicker
+              characters={characters}
+              value={formData.related_character_id}
+              onChange={(id) => setFormData((prev) => ({ ...prev, related_character_id: id }))}
+              placeholder="Select character"
+              excludeId={formData.character_id}
+            />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="relationship_type">Relationship Type *</Label>
             <Select 
               value={formData.relationship_type} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, relationship_type: value }))}
+              onValueChange={handleTypeChange}
             >
               <SelectTrigger>
                 <SelectValue />
