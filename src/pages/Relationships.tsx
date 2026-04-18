@@ -65,6 +65,7 @@ export default function Relationships() {
   
   const [selectedCharacter, setSelectedCharacter] = useState<string>('all');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [createDialogDefaults, setCreateDialogDefaults] = useState<{ from?: string; to?: string }>({});
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedRelationship, setSelectedRelationship] = useState<Relationship | null>(null);
   const [viewCharacterDialogOpen, setViewCharacterDialogOpen] = useState(false);
@@ -76,6 +77,16 @@ export default function Relationships() {
   const [showCreateCoterieDialog, setShowCreateCoterieDialog] = useState(false);
   const [selectedCoterie, setSelectedCoterie] = useState<Coterie | null>(null);
   const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
+
+  const openCreateDialog = (from?: string, to?: string) => {
+    setCreateDialogDefaults({ from, to });
+    setCreateDialogOpen(true);
+  };
+
+  const handleCreateDialogChange = (open: boolean) => {
+    setCreateDialogOpen(open);
+    if (!open) setCreateDialogDefaults({});
+  };
 
   useEffect(() => {
     const fetchMemberCounts = async () => {
