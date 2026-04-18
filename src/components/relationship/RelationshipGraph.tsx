@@ -206,8 +206,27 @@ export function RelationshipGraph({
   onCreateRelationship 
 }: RelationshipGraphProps) {
   const [connectionMode, setConnectionMode] = useState(false);
+  const [pendingSourceId, setPendingSourceId] = useState<string | null>(null);
   const [layout, setLayout] = useState<LayoutType>('force');
   const { fitView, zoomIn, zoomOut } = useReactFlow();
+
+  // Cancel connection mode with Escape
+  useEffect(() => {
+    if (!connectionMode) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setConnectionMode(false);
+        setPendingSourceId(null);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [connectionMode]);
+
+  // Reset pending source when leaving connection mode
+  useEffect(() => {
+    if (!connectionMode) setPendingSourceId(null);
+  }, [connectionMode]);
 
   // Group characters by faction
   const charactersByFaction = useMemo(() => {
