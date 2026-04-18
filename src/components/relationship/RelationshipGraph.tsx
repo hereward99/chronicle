@@ -396,10 +396,26 @@ export function RelationshipGraph({
   }, [layout, fitView]);
 
   const onNodeClickHandler = useCallback((event: React.MouseEvent, node: Node) => {
+    if (connectionMode) {
+      if (!pendingSourceId) {
+        setPendingSourceId(node.id);
+        return;
+      }
+      if (pendingSourceId === node.id) {
+        setPendingSourceId(null);
+        return;
+      }
+      if (onCreateRelationship) {
+        onCreateRelationship(pendingSourceId, node.id);
+      }
+      setPendingSourceId(null);
+      setConnectionMode(false);
+      return;
+    }
     if (onNodeClick) {
       onNodeClick(node.id);
     }
-  }, [onNodeClick]);
+  }, [connectionMode, pendingSourceId, onCreateRelationship, onNodeClick]);
 
   const onEdgeClickHandler = useCallback((event: React.MouseEvent, edge: Edge) => {
     if (onEdgeClick && edge.data?.relationship) {
@@ -408,16 +424,18 @@ export function RelationshipGraph({
   }, [onEdgeClick]);
 
   const onConnect = useCallback((connection: Connection) => {
-    if (connectionMode && onCreateRelationship && connection.source && connection.target) {
+    if (onCreateRelationship && connection.source && connection.target) {
       onCreateRelationship(connection.source, connection.target);
       setConnectionMode(false);
+      setPendingSourceId(null);
     }
-  }, [connectionMode, onCreateRelationship]);
+  }, [onCreateRelationship]);
 
   const onNodeDoubleClick = useCallback((event: React.MouseEvent, node: Node) => {
     event.preventDefault();
     if (!connectionMode) {
       setConnectionMode(true);
+      setPendingSourceId(node.id);
     }
   }, [connectionMode]);
 
