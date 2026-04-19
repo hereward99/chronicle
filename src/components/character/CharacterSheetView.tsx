@@ -24,6 +24,7 @@ import { useSessions } from "@/hooks/useSessions";
 import { usePlots } from "@/hooks/usePlots";
 import { usePlotCharacters } from "@/hooks/usePlotCharacters";
 import { useRelationships } from "@/hooks/useRelationships";
+import { useCoteries } from "@/hooks/useCoteries";
 
 interface CharacterSheetViewProps {
   character: Character;
