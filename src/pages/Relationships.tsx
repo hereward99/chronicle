@@ -30,6 +30,7 @@ import { ManageFactionMembersDialog } from '@/components/dialogs/ManageFactionMe
 import { EmptyState } from '@/components/onboarding/EmptyState';
 import type { Coterie } from '@/hooks/useCoteries';
 import { MentionText } from '@/components/mentions/MentionText';
+import { SuggestedRelationships } from '@/components/relationship/SuggestedRelationships';
 
 const relationshipIcons: Record<string, any> = {
   'Ally': Handshake,
@@ -526,6 +527,17 @@ export default function Relationships() {
           </Collapsible>
         </CardContent>
       </Card>
+
+      <SuggestedRelationships
+        characters={characters}
+        relationships={relationships}
+        factions={factions}
+        characterFactions={characterFactions}
+        coteries={coteries}
+        allCoterieMembers={allCoterieMembers}
+        chronicleId={currentChronicle?.id}
+        onAccept={createRelationship}
+      />
 
       <Tabs defaultValue="graph" className="space-y-4">
         <TabsList className="w-full flex-wrap h-auto gap-1">
