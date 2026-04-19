@@ -414,9 +414,12 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                   <span className="text-muted-foreground">Sire:</span> {character.sire}
                 </div>
               )}
-              {character.coterie && (
+              {memberCoteries.length > 0 && (
                 <div>
-                  <span className="text-muted-foreground">Coterie:</span> {character.coterie}
+                  <span className="text-muted-foreground">
+                    {memberCoteries.length === 1 ? 'Coterie:' : 'Coteries:'}
+                  </span>{' '}
+                  {memberCoteries.map(c => c.name).join(', ')}
                 </div>
               )}
             </div>
