@@ -63,7 +63,7 @@ const handleLogin = async (e: React.FormEvent) => {
   } catch (error: any) {
     console.error("Login error:", error.message);
   } finally {
-    setLoading(true);
+    setLoading(false);
   }
 };
 
