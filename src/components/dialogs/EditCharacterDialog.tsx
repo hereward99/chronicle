@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileUpload } from "@/components/ui/file-upload";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Trash2, X, Plus, Wand2, AlertTriangle } from "lucide-react";
+import { Loader2, Trash2, X, Plus, Wand2, AlertTriangle, Check, ChevronsUpDown } from "lucide-react";
 import { getMaxBloodPotency } from "@/lib/v5/bloodPotencyData";
 import { Character, DicePoolConfig, SimpleDicePool, GeneralDicePool, StandardDicePool, CombinedDicePool, ExceptionalPool, useCharacters } from "@/hooks/useCharacters";
 import { useFiles } from "@/hooks/useFiles";
@@ -30,6 +30,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { DISCIPLINES, DISCIPLINE_POWERS, getPowersForDiscipline, type PowerInfo } from "@/lib/v5/disciplineData";
 import { useToast } from "@/hooks/use-toast";
 import { BoonsSection } from "@/components/boons/BoonsSection";
+import { useCoteries } from "@/hooks/useCoteries";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/components/ui/command";
+import { CreateCoterieDialog } from "@/components/dialogs/CreateCoterieDialog";
+import { cn } from "@/lib/utils";
 
 interface EditCharacterDialogProps {
   character: Character | null;
@@ -91,8 +96,12 @@ export function EditCharacterDialog({
   const [overrideWillpowerMax, setOverrideWillpowerMax] = useState(false);
   const [customDisciplineFlags, setCustomDisciplineFlags] = useState<Record<number, boolean>>({});
   const [customPowerFlags, setCustomPowerFlags] = useState<Record<number, boolean>>({});
+  const [selectedCoterieIds, setSelectedCoterieIds] = useState<string[]>([]);
+  const [coteriePopoverOpen, setCoteriePopoverOpen] = useState(false);
+  const [createCoterieOpen, setCreateCoterieOpen] = useState(false);
   const { uploadFile } = useFiles();
   const { toast } = useToast();
+  const { coteries, allCoterieMembers, addMember, removeMember } = useCoteries(character?.chronicle_id);
   
   const [formData, setFormData] = useState<Partial<Character>>({
     name: "",
@@ -197,7 +206,13 @@ export function EditCharacterDialog({
       setOverrideWillpowerMax(hasWillpowerOverride);
       setCustomDisciplineFlags({});
       setCustomPowerFlags({});
-      
+
+      // Initialize selected coteries from junction table
+      const memberIds = allCoterieMembers
+        .filter(m => m.character_id === character.id)
+        .map(m => m.coterie_id);
+      setSelectedCoterieIds(memberIds);
+
       setFormData({
         name: character.name,
         clan: character.clan,
@@ -251,14 +266,33 @@ export function EditCharacterDialog({
         dice_pools: character.dice_pools || null,
       });
     }
-  }, [character]);
+  }, [character, allCoterieMembers]);
 
   const handleSubmit = async () => {
     if (!character) return;
-    
+
     setLoading(true);
     try {
-      await onUpdate(character.id, formData);
+      // Build legacy coterie text from selected coteries (comma-separated names)
+      const selectedNames = selectedCoterieIds
+        .map(id => coteries.find(c => c.id === id)?.name)
+        .filter(Boolean) as string[];
+      const coterieText = selectedNames.join(", ");
+
+      await onUpdate(character.id, { ...formData, coterie: coterieText || null });
+
+      // Diff memberships against current state and sync junction table
+      const currentMemberCoterieIds = allCoterieMembers
+        .filter(m => m.character_id === character.id)
+        .map(m => m.coterie_id);
+      const toAdd = selectedCoterieIds.filter(id => !currentMemberCoterieIds.includes(id));
+      const toRemove = currentMemberCoterieIds.filter(id => !selectedCoterieIds.includes(id));
+
+      await Promise.all([
+        ...toAdd.map(coterieId => addMember(coterieId, character.id)),
+        ...toRemove.map(coterieId => removeMember(coterieId, character.id)),
+      ]);
+
       onOpenChange(false);
     } catch (error) {
       console.error('Error updating character:', error);
@@ -581,13 +615,96 @@ export function EditCharacterDialog({
                   </div>
 
                   <div>
-                    <Label>Coterie</Label>
-                    <Input
-                      value={formData.coterie}
-                      onChange={(e) => setFormData(prev => ({ ...prev, coterie: e.target.value }))}
-                      placeholder="Name of the coterie"
-                    />
+                    <Label>Coteries</Label>
+                    <Popover open={coteriePopoverOpen} onOpenChange={setCoteriePopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={coteriePopoverOpen}
+                          className="w-full justify-between font-normal"
+                        >
+                          <span className="truncate text-left">
+                            {selectedCoterieIds.length === 0
+                              ? "Select coteries…"
+                              : selectedCoterieIds
+                                  .map(id => coteries.find(c => c.id === id)?.name)
+                                  .filter(Boolean)
+                                  .join(", ")}
+                          </span>
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search coteries…" />
+                          <CommandList>
+                            <CommandEmpty>No coteries found.</CommandEmpty>
+                            <CommandGroup>
+                              {coteries.map(c => {
+                                const checked = selectedCoterieIds.includes(c.id);
+                                return (
+                                  <CommandItem
+                                    key={c.id}
+                                    value={c.name}
+                                    onSelect={() => {
+                                      setSelectedCoterieIds(prev =>
+                                        checked ? prev.filter(id => id !== c.id) : [...prev, c.id]
+                                      );
+                                    }}
+                                  >
+                                    <Check className={cn("mr-2 h-4 w-4", checked ? "opacity-100" : "opacity-0")} />
+                                    <span className="flex-1">{c.name}</span>
+                                    {c.is_primary && (
+                                      <Badge variant="outline" className="ml-2 text-xs">Primary</Badge>
+                                    )}
+                                  </CommandItem>
+                                );
+                              })}
+                            </CommandGroup>
+                            <CommandSeparator />
+                            <CommandGroup>
+                              <CommandItem
+                                onSelect={() => {
+                                  setCoteriePopoverOpen(false);
+                                  setCreateCoterieOpen(true);
+                                }}
+                              >
+                                <Plus className="mr-2 h-4 w-4" />
+                                Add new coterie…
+                              </CommandItem>
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    {selectedCoterieIds.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {selectedCoterieIds.map(id => {
+                          const c = coteries.find(co => co.id === id);
+                          if (!c) return null;
+                          return (
+                            <Badge key={id} variant="secondary" className="gap-1">
+                              {c.name}
+                              <button
+                                type="button"
+                                onClick={() => setSelectedCoterieIds(prev => prev.filter(x => x !== id))}
+                                className="ml-1 rounded-sm hover:bg-destructive/20 hover:text-destructive transition-colors"
+                                aria-label={`Remove from ${c.name}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    )}
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Characters can belong to multiple coteries. Membership saves when you save the character.
+                    </p>
                   </div>
+
 
                   <div className="col-span-2">
                     <Label>Character Portrait</Label>
@@ -1835,6 +1952,8 @@ export function EditCharacterDialog({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+
+    <CreateCoterieDialog open={createCoterieOpen} onOpenChange={setCreateCoterieOpen} />
   </>
   );
 }
