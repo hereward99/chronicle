@@ -24,6 +24,7 @@ import { useSessions } from "@/hooks/useSessions";
 import { usePlots } from "@/hooks/usePlots";
 import { usePlotCharacters } from "@/hooks/usePlotCharacters";
 import { useRelationships } from "@/hooks/useRelationships";
+import { useCoteries } from "@/hooks/useCoteries";
 
 interface CharacterSheetViewProps {
   character: Character;
@@ -316,6 +317,13 @@ export function CharacterSheetView({ character }: CharacterSheetViewProps) {
 
 function CharacterSheetContent({ character }: CharacterSheetViewProps) {
   const [lightboxImage, setLightboxImage] = useState<{ url: string; name: string } | null>(null);
+  const { coteries, allCoterieMembers } = useCoteries(character.chronicle_id);
+
+  // Derive live coterie membership from the junction table (source of truth)
+  const memberCoteries = allCoterieMembers
+    .filter(m => m.character_id === character.id)
+    .map(m => coteries.find(c => c.id === m.coterie_id))
+    .filter(Boolean) as typeof coteries;
 
   const imageAttachments = (character.attachments || []).filter((a) =>
     a.type?.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(a.name || '')
@@ -406,9 +414,12 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                   <span className="text-muted-foreground">Sire:</span> {character.sire}
                 </div>
               )}
-              {character.coterie && (
+              {memberCoteries.length > 0 && (
                 <div>
-                  <span className="text-muted-foreground">Coterie:</span> {character.coterie}
+                  <span className="text-muted-foreground">
+                    {memberCoteries.length === 1 ? 'Coterie:' : 'Coteries:'}
+                  </span>{' '}
+                  {memberCoteries.map(c => c.name).join(', ')}
                 </div>
               )}
             </div>
