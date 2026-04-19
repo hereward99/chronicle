@@ -34,53 +34,38 @@ export default function Auth() {
     checkAuth();
   }, [navigate]);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      const validated = authSchema.parse({ email, password });
-      setLoading(true);
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  try {
+    const validated = authSchema.parse({ email, password });
+    setLoading(true);
 
+    if (import.meta.env.DEV) {
+      // LOVABLE/DEVELOPMENT: Use Magic Link
+      const { error } = await supabase.auth.signInWithOtp({
+        email: validated.email,
+        options: {
+          emailRedirectTo: window.location.origin + window.location.pathname,
+        },
+      });
+      if (error) throw error;
+      alert("Magic link sent! Check your email.");
+    } else {
+      // GITHUB PAGES/PRODUCTION: Use Password
       const { error } = await supabase.auth.signInWithPassword({
         email: validated.email,
         password: validated.password,
       });
-
-      if (error) {
-        if (error.message.includes("Invalid login credentials")) {
-          toast({
-            title: "Login failed",
-            description: "Invalid email or password. Please check your credentials.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Login failed",
-            description: error.message,
-            variant: "destructive",
-          });
-        }
-        return;
-      }
-
-      toast({
-        title: "Welcome back!",
-        description: "You have been successfully logged in.",
-      });
-      
-      navigate("/");
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast({
-          title: "Validation error",
-          description: error.issues[0].message,
-          variant: "destructive",
-        });
-      }
-    } finally {
-      setLoading(false);
+      if (error) throw error;
+      // Success! The router will naturally pick up the session.
     }
-  };
+  } catch (error: any) {
+    console.error("Login error:", error.message);
+  } finally {
+    setLoading(true);
+  }
+};
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
