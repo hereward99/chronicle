@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileUpload } from "@/components/ui/file-upload";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Trash2, X, Plus, Wand2, AlertTriangle } from "lucide-react";
+import { Loader2, Trash2, X, Plus, Wand2, AlertTriangle, Check, ChevronsUpDown } from "lucide-react";
 import { getMaxBloodPotency } from "@/lib/v5/bloodPotencyData";
 import { Character, DicePoolConfig, SimpleDicePool, GeneralDicePool, StandardDicePool, CombinedDicePool, ExceptionalPool, useCharacters } from "@/hooks/useCharacters";
 import { useFiles } from "@/hooks/useFiles";
@@ -30,6 +30,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { DISCIPLINES, DISCIPLINE_POWERS, getPowersForDiscipline, type PowerInfo } from "@/lib/v5/disciplineData";
 import { useToast } from "@/hooks/use-toast";
 import { BoonsSection } from "@/components/boons/BoonsSection";
+import { useCoteries } from "@/hooks/useCoteries";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/components/ui/command";
+import { CreateCoterieDialog } from "@/components/dialogs/CreateCoterieDialog";
+import { cn } from "@/lib/utils";
 
 interface EditCharacterDialogProps {
   character: Character | null;
