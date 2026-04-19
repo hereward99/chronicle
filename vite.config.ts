@@ -8,11 +8,7 @@ import { VitePWA } from "vite-plugin-pwa";
 export default defineConfig({
   base: '/chronicle/', // Change this to your actual repo name
   // ... rest of your config
-}) => ({
-  server: {
-    host: "::",
-    port: 8080,
-  },
+}),
   plugins: [
     react(),
     mode === "development" && componentTagger(),
