@@ -6,7 +6,10 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: mode === "production" ? "/chronicle/" : "/",
+  server: {
+    host: "::",
+    port: 8080,
+  },
   plugins: [
     react(),
     mode === "development" && componentTagger(),
@@ -44,9 +47,11 @@ export default defineConfig(({ mode }) => ({
         theme_color: "#141519",
         background_color: "#141519",
         display: "standalone",
-        scope: "/chronicle/",
-        start_url: "/chronicle/",
-        icons: [{ src: "favicon.ico", sizes: "64x64", type: "image/x-icon" }],
+        scope: "/",
+        start_url: "/",
+        icons: [
+          { src: "/favicon.ico", sizes: "64x64", type: "image/x-icon" },
+        ],
       },
     }),
   ].filter(Boolean),
