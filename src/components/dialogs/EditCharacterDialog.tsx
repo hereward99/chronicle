@@ -266,7 +266,7 @@ export function EditCharacterDialog({
         dice_pools: character.dice_pools || null,
       });
     }
-  }, [character]);
+  }, [character, allCoterieMembers]);
 
   const handleSubmit = async () => {
     if (!character) return;
