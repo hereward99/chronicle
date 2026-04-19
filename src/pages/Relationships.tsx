@@ -528,6 +528,17 @@ export default function Relationships() {
         </CardContent>
       </Card>
 
+      <SuggestedRelationships
+        characters={characters}
+        relationships={relationships}
+        factions={factions}
+        characterFactions={characterFactions}
+        coteries={coteries}
+        allCoterieMembers={allCoterieMembers}
+        chronicleId={currentChronicle?.id}
+        onAccept={createRelationship}
+      />
+
       <Tabs defaultValue="graph" className="space-y-4">
         <TabsList className="w-full flex-wrap h-auto gap-1">
           <TabsTrigger value="graph" className="gap-2 flex-1 min-w-0">
