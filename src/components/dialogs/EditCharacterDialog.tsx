@@ -615,13 +615,96 @@ export function EditCharacterDialog({
                   </div>
 
                   <div>
-                    <Label>Coterie</Label>
-                    <Input
-                      value={formData.coterie}
-                      onChange={(e) => setFormData(prev => ({ ...prev, coterie: e.target.value }))}
-                      placeholder="Name of the coterie"
-                    />
+                    <Label>Coteries</Label>
+                    <Popover open={coteriePopoverOpen} onOpenChange={setCoteriePopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={coteriePopoverOpen}
+                          className="w-full justify-between font-normal"
+                        >
+                          <span className="truncate text-left">
+                            {selectedCoterieIds.length === 0
+                              ? "Select coteries…"
+                              : selectedCoterieIds
+                                  .map(id => coteries.find(c => c.id === id)?.name)
+                                  .filter(Boolean)
+                                  .join(", ")}
+                          </span>
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search coteries…" />
+                          <CommandList>
+                            <CommandEmpty>No coteries found.</CommandEmpty>
+                            <CommandGroup>
+                              {coteries.map(c => {
+                                const checked = selectedCoterieIds.includes(c.id);
+                                return (
+                                  <CommandItem
+                                    key={c.id}
+                                    value={c.name}
+                                    onSelect={() => {
+                                      setSelectedCoterieIds(prev =>
+                                        checked ? prev.filter(id => id !== c.id) : [...prev, c.id]
+                                      );
+                                    }}
+                                  >
+                                    <Check className={cn("mr-2 h-4 w-4", checked ? "opacity-100" : "opacity-0")} />
+                                    <span className="flex-1">{c.name}</span>
+                                    {c.is_primary && (
+                                      <Badge variant="outline" className="ml-2 text-xs">Primary</Badge>
+                                    )}
+                                  </CommandItem>
+                                );
+                              })}
+                            </CommandGroup>
+                            <CommandSeparator />
+                            <CommandGroup>
+                              <CommandItem
+                                onSelect={() => {
+                                  setCoteriePopoverOpen(false);
+                                  setCreateCoterieOpen(true);
+                                }}
+                              >
+                                <Plus className="mr-2 h-4 w-4" />
+                                Add new coterie…
+                              </CommandItem>
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    {selectedCoterieIds.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {selectedCoterieIds.map(id => {
+                          const c = coteries.find(co => co.id === id);
+                          if (!c) return null;
+                          return (
+                            <Badge key={id} variant="secondary" className="gap-1">
+                              {c.name}
+                              <button
+                                type="button"
+                                onClick={() => setSelectedCoterieIds(prev => prev.filter(x => x !== id))}
+                                className="ml-1 rounded-sm hover:bg-destructive/20 hover:text-destructive transition-colors"
+                                aria-label={`Remove from ${c.name}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    )}
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Characters can belong to multiple coteries. Membership saves when you save the character.
+                    </p>
                   </div>
+
 
                   <div className="col-span-2">
                     <Label>Character Portrait</Label>
