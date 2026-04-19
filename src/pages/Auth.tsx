@@ -91,13 +91,13 @@ export default function Auth() {
 
       const redirectUrl = `${window.location.origin}/`;
 
-      const { error } = await supabase.auth.signUp({
-        email: validated.email,
-        password: validated.password,
-        options: {
-          emailRedirectTo: redirectUrl
-        }
-      });
+      const { data, error } = await supabase.auth.signInWithOtp({
+  email: email,
+  options: {
+    // This tells Supabase to redirect back to exactly where the user is right now
+    redirectTo: window.location.origin + (import.meta.env.PROD ? '/chronicle/' : '/')
+  }
+});
 
       if (error) {
         if (error.message.includes("User already registered")) {
