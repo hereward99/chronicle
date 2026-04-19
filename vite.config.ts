@@ -5,10 +5,8 @@ import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  base: '/chronicle/', // Change this to your actual repo name
-  // ... rest of your config
-}),
+export default defineConfig(({ mode }) => ({
+  base: '/chronicle/', 
   plugins: [
     react(),
     mode === "development" && componentTagger(),
@@ -46,10 +44,10 @@ export default defineConfig({
         theme_color: "#141519",
         background_color: "#141519",
         display: "standalone",
-        scope: "/",
-        start_url: "/",
+        scope: "/chronicle/",
+        start_url: "/chronicle/",
         icons: [
-          { src: "/favicon.ico", sizes: "64x64", type: "image/x-icon" },
+          { src: "favicon.ico", sizes: "64x64", type: "image/x-icon" },
         ],
       },
     }),
