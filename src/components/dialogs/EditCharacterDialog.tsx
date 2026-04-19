@@ -1952,6 +1952,8 @@ export function EditCharacterDialog({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+
+    <CreateCoterieDialog open={createCoterieOpen} onOpenChange={setCreateCoterieOpen} />
   </>
   );
 }
