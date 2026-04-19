@@ -30,6 +30,7 @@ import { ManageFactionMembersDialog } from '@/components/dialogs/ManageFactionMe
 import { EmptyState } from '@/components/onboarding/EmptyState';
 import type { Coterie } from '@/hooks/useCoteries';
 import { MentionText } from '@/components/mentions/MentionText';
+import { SuggestedRelationships } from '@/components/relationship/SuggestedRelationships';
 
 const relationshipIcons: Record<string, any> = {
   'Ally': Handshake,
