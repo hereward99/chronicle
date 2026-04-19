@@ -270,10 +270,29 @@ export function EditCharacterDialog({
 
   const handleSubmit = async () => {
     if (!character) return;
-    
+
     setLoading(true);
     try {
-      await onUpdate(character.id, formData);
+      // Build legacy coterie text from selected coteries (comma-separated names)
+      const selectedNames = selectedCoterieIds
+        .map(id => coteries.find(c => c.id === id)?.name)
+        .filter(Boolean) as string[];
+      const coterieText = selectedNames.join(", ");
+
+      await onUpdate(character.id, { ...formData, coterie: coterieText || null });
+
+      // Diff memberships against current state and sync junction table
+      const currentMemberCoterieIds = allCoterieMembers
+        .filter(m => m.character_id === character.id)
+        .map(m => m.coterie_id);
+      const toAdd = selectedCoterieIds.filter(id => !currentMemberCoterieIds.includes(id));
+      const toRemove = currentMemberCoterieIds.filter(id => !selectedCoterieIds.includes(id));
+
+      await Promise.all([
+        ...toAdd.map(coterieId => addMember(coterieId, character.id)),
+        ...toRemove.map(coterieId => removeMember(coterieId, character.id)),
+      ]);
+
       onOpenChange(false);
     } catch (error) {
       console.error('Error updating character:', error);
