@@ -317,6 +317,13 @@ export function CharacterSheetView({ character }: CharacterSheetViewProps) {
 
 function CharacterSheetContent({ character }: CharacterSheetViewProps) {
   const [lightboxImage, setLightboxImage] = useState<{ url: string; name: string } | null>(null);
+  const { coteries, allCoterieMembers } = useCoteries(character.chronicle_id);
+
+  // Derive live coterie membership from the junction table (source of truth)
+  const memberCoteries = allCoterieMembers
+    .filter(m => m.character_id === character.id)
+    .map(m => coteries.find(c => c.id === m.coterie_id))
+    .filter(Boolean) as typeof coteries;
 
   const imageAttachments = (character.attachments || []).filter((a) =>
     a.type?.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(a.name || '')
