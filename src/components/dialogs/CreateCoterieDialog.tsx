@@ -80,35 +80,28 @@ export function CreateCoterieDialog({ open, onOpenChange }: CreateCoterieDialogP
     }
   };
 
-return (
+  return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0"> {/* p-0 allows the ScrollArea to hit the edges */}
-        
-        <DialogHeader className="p-6 pb-2">
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+        <DialogHeader>
           <DialogTitle>Create Coterie</DialogTitle>
-          <DialogDescription>
-            Create a new coterie using the V5 Coterie Sheet format.
-          </DialogDescription>
+          <DialogDescription>Create a new coterie using the V5 Coterie Sheet format.</DialogDescription>
         </DialogHeader>
-
-        {/* The form starts before the ScrollArea so the submit event still works */}
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-          
-          <ScrollArea className="flex-1 px-6">
-            <div className="space-y-6 py-4">
-              {/* Basic Info */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Details</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label htmlFor="name">Name *</Label>
-                    <Input id="name" value={name} onChange={e => setName(e.target.value)} placeholder="The Midnight Circle" required />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="type">Coterie Type</Label>
-                    <Input id="type" value={coterieType} onChange={e => setCoterieType(e.target.value)} placeholder="Hunting pack, Watchmen..." />
-                  </div>
+        <ScrollArea className="flex-1 pr-4">
+          <form onSubmit={handleSubmit} className="space-y-6 pb-4">
+            {/* Basic Info */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Details</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="name">Name *</Label>
+                  <Input id="name" value={name} onChange={e => setName(e.target.value)} placeholder="The Midnight Circle" required />
                 </div>
+                <div className="space-y-1">
+                  <Label htmlFor="type">Coterie Type</Label>
+                  <Input id="type" value={coterieType} onChange={e => setCoterieType(e.target.value)} placeholder="Hunting pack, Watchmen..." />
+                </div>
+              </div>
               <div className="space-y-1">
                 <Label htmlFor="city">City</Label>
                 <Input id="city" value={city} onChange={e => setCity(e.target.value)} placeholder="Chicago" />
@@ -158,7 +151,7 @@ return (
                 <Textarea value={coterieBoonsAndDebts} onChange={e => setCoterieBoonsAndDebts(e.target.value)} placeholder="Boons owed and debts..." className="min-h-16" />
               </div>
             </div>
-            </div>
+
             {/* Ideology */}
             <div className="space-y-3">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Ideology & Ambition</h3>
@@ -180,18 +173,13 @@ return (
               attachments={attachments}
               onAttachmentsChange={setAttachments}
             />
-           </div>
-          </ScrollArea>
-<div className="flex justify-end gap-2 p-6 border-t bg-muted/20">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit">
-              Create Coterie
-            </Button>
-          </div>
-        </form>
 
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+              <Button type="submit">Create Coterie</Button>
+            </div>
+          </form>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
