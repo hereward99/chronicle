@@ -206,7 +206,13 @@ export function EditCharacterDialog({
       setOverrideWillpowerMax(hasWillpowerOverride);
       setCustomDisciplineFlags({});
       setCustomPowerFlags({});
-      
+
+      // Initialize selected coteries from junction table
+      const memberIds = allCoterieMembers
+        .filter(m => m.character_id === character.id)
+        .map(m => m.coterie_id);
+      setSelectedCoterieIds(memberIds);
+
       setFormData({
         name: character.name,
         clan: character.clan,
