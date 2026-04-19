@@ -96,8 +96,12 @@ export function EditCharacterDialog({
   const [overrideWillpowerMax, setOverrideWillpowerMax] = useState(false);
   const [customDisciplineFlags, setCustomDisciplineFlags] = useState<Record<number, boolean>>({});
   const [customPowerFlags, setCustomPowerFlags] = useState<Record<number, boolean>>({});
+  const [selectedCoterieIds, setSelectedCoterieIds] = useState<string[]>([]);
+  const [coteriePopoverOpen, setCoteriePopoverOpen] = useState(false);
+  const [createCoterieOpen, setCreateCoterieOpen] = useState(false);
   const { uploadFile } = useFiles();
   const { toast } = useToast();
+  const { coteries, allCoterieMembers, addMember, removeMember } = useCoteries(character?.chronicle_id);
   
   const [formData, setFormData] = useState<Partial<Character>>({
     name: "",
