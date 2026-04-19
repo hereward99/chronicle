@@ -91,12 +91,12 @@ export default function Auth() {
 
       const redirectUrl = `${window.location.origin}/`;
 
-      const { data, error } = await supabase.auth.signInWithOtp({
+      const { error } = await supabase.auth.signInWithOtp({
   email: email,
   options: {
-    // This tells Supabase to redirect back to exactly where the user is right now
-    redirectTo: window.location.origin + (import.meta.env.PROD ? '/chronicle/' : '/')
-  }
+    // Try using 'emailRedirectTo' specifically for Magic Links
+    emailRedirectTo: window.location.origin + window.location.pathname,
+  },
 });
 
       if (error) {
