@@ -82,12 +82,12 @@ export function CreateCoterieDialog({ open, onOpenChange }: CreateCoterieDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6">
+      <DialogContent className="max-w-2xl max-h-[90vh]">
+        <DialogHeader>
           <DialogTitle>Create Coterie</DialogTitle>
           <DialogDescription>Create a new coterie using the V5 Coterie Sheet format.</DialogDescription>
         </DialogHeader>
-        <ScrollArea className="flex-1 min-h-0 px-6">
+        <ScrollArea className="h-[calc(90vh-100px)] pr-4">
           <form onSubmit={handleSubmit} className="space-y-6 pb-4">
             {/* Basic Info */}
             <div className="space-y-3">
