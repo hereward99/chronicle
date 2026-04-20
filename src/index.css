@@ -184,3 +184,84 @@
   animation: search-pulse 1.5s ease-in-out 2;
   border-color: hsl(var(--primary)) !important;
 }
+
+/* ============================================
+   Custom Scrollbars — Gothic Theme
+   ============================================ */
+
+/* Webkit browsers (Chrome, Safari, Edge) — Global scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 4px;
+  border: 2px solid hsl(var(--muted));
+  min-height: 40px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.6);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: hsl(var(--primary) / 0.7);
+}
+
+/* Firefox — Global scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) hsl(var(--muted));
+}
+
+/* ScrollArea component — Enhanced gothic styling */
+[data-radix-scroll-area-viewport]::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-radix-scroll-area-viewport]::-webkit-scrollbar-track {
+  background: hsl(var(--muted) / 0.5);
+  border-radius: 4px;
+}
+
+[data-radix-scroll-area-viewport]::-webkit-scrollbar-thumb {
+  background: hsl(var(--border) / 0.8);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  min-height: 40px;
+}
+
+[data-radix-scroll-area-viewport]::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.7);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+[data-radix-scroll-area-viewport]::-webkit-scrollbar-thumb:active {
+  background: hsl(var(--primary) / 0.6);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Corner where scrollbars meet */
+::-webkit-scrollbar-corner {
+  background: hsl(var(--muted));
+}
+
+/* Horizontal scrollbar specific */
+::-webkit-scrollbar:horizontal {
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb:horizontal {
+  min-width: 40px;
+}
