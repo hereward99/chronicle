@@ -1,40 +1,53 @@
 
-## Revised Plan: Fix Password Login Hang + Add Hybrid Auth
+## Plan: Fix password login + add hybrid auth & recovery
 
-### Direct answer to your question
-The original plan (magic links + password recovery) does **not** fix password login. So I'm folding a real fix for the hang into the same pass.
+### Diagnosis update
+You clarified: the Sign In button does nothing — no spinner, no error, no network call. That changes the diagnosis. It's not a service-worker hang; it's that `handleLogin` is silently exiting before reaching `signInWithPassword`. Most likely cause: the Zod schema in `Auth.tsx` rejects the input but the `catch` only toasts on `ZodError` — and a stray whitespace, a non-`ZodError` throw, or a state issue causes a silent no-op. We'll fix this by:
+- Trimming inputs before validation
+- Adding explicit error logging and a fallback toast for any non-Zod error
+- Keeping the existing Supabase call path intact
 
-### Diagnosis of the hang
-- `Auth.tsx` calls `supabase.auth.signInWithPassword` and awaits the promise. The button stays in `loading` state until the promise resolves or rejects.
-- Supabase auth analytics shows **no recent auth requests** for this project — meaning the POST to `/auth/v1/token` either never leaves the browser or never gets a response back.
-- This project is a PWA (`vite-plugin-pwa`, mentioned in memory). The most common cause of a "spinner that never resolves" on a PWA + Supabase app is the **service worker intercepting the auth request** — either caching it, returning a stale offline response, or stalling the fetch.
-- `useAuth.tsx` and `ProtectedRoute.tsx` are correct (listener set up before `getSession`, no deadlocks), so the bug is in the network layer, not state management.
+This means **no `vite.config.ts` change is needed**. PWA service worker stays as-is. You keep magic-link login on Lovable.
 
-### Fix strategy (two layers)
+### What gets built (single file: `src/pages/Auth.tsx`)
 
-**Layer 1 — Unblock the auth network call (the actual bug)**
-1. Add a Workbox `navigateFallbackDenylist` / runtime route in `vite.config.ts` PWA config that **explicitly excludes** `https://*.supabase.co/auth/v1/*` and `/rest/v1/*` from any service-worker caching or interception. This is the single most likely fix.
-2. Add a client-side **timeout wrapper** around `signInWithPassword` (e.g. `Promise.race` with a 15s timeout). If the call hangs, we surface a clear toast ("Login is taking too long — check your connection or try the magic link") instead of an infinite spinner. This is defensive insurance even after fix #1.
-3. Add temporary `console.debug` traces around the sign-in call so the next attempt produces actionable logs in `code--read_console_logs` if the issue persists.
+**1. Hybrid Sign In tab**
+- Primary button: **Sign In** (existing `signInWithPassword`, with the fixes above)
+- Secondary link-style button below it: **Send magic link instead** → `signInWithOtp({ email, options: { emailRedirectTo: getRedirectUrl() } })`
+- Small **Forgot password?** link next to the password label → `resetPasswordForEmail(email, { redirectTo: getRedirectUrl() })`
 
-You said don't modify `vite.config.ts` — but **the fix lives there** because the service worker is configured there. I will make the *minimum* possible change: add one Workbox option, no behavioral changes to dev server, base path, plugins order, etc. If you want me to leave `vite.config.ts` untouched, the alternative is to unregister the service worker entirely on `/auth`, which is uglier and breaks offline mode.
+**2. Smart redirect helper**
+```ts
+const getRedirectUrl = () => `${window.location.origin}${window.location.pathname}`;
+```
+Returns user to whichever host they started from — Lovable preview, GitHub Pages subpath, or future custom domain. No hardcoded URLs, no env vars needed.
 
-**Layer 2 — Hybrid auth & recovery (original plan, unchanged)**
-Same as before, applied to `src/pages/Auth.tsx` only:
-- Magic-link button calling `signInWithOtp` with `emailRedirectTo: ${origin}${pathname}`
-- "Forgot password?" link calling `resetPasswordForEmail` with same redirect pattern
-- `onAuthStateChange` listener detects `PASSWORD_RECOVERY` event → swaps the form to a "Set New Password" view (`updateUser({ password })`)
-- No new routes, no router changes, no `useAuth` changes
+**3. Password recovery in-place**
+- Subscribe to `supabase.auth.onAuthStateChange`; when event is `PASSWORD_RECOVERY`, swap the Tabs UI for a "Set a new password" form (two password inputs + submit → `supabase.auth.updateUser({ password })`).
+- Existing "redirect if logged in" check skips when in recovery mode.
+- After successful update: toast + navigate to `/`.
+
+**4. Robustness fixes for the silent-fail bug**
+- `email.trim()` and `password` passed through validation
+- `try/catch` always toasts on unknown errors (not just ZodError)
+- `console.error` traces around the sign-in call so the next attempt produces actionable logs if anything else is wrong
+
+### What stays untouched
+- `vite.config.ts` (PWA + service worker)
+- `App.tsx` routing, no new routes, no `basename` change
+- `useAuth.tsx`, `ProtectedRoute.tsx`
+- `src/integrations/supabase/client.ts`
+
+### GitHub Pages compatibility
+- Magic link & password reset emails will redirect to `window.location.origin + pathname`, so a GitHub Pages deployment at `https://you.github.io/chronicle-keeper/auth` returns users to that exact URL.
+- Each hosted instance has its own Supabase auth session (separate origin = separate localStorage), so testers on GitHub Pages get a "clean" environment isolated from your Lovable session.
+- **One config step you'll do in Supabase dashboard** (not code): add your GitHub Pages URL to **Authentication → URL Configuration → Redirect URLs**. I'll remind you with a link after the change.
+
+### Verification checklist (after switch to default mode)
+1. Sign In with email + password — works or shows a clear error toast (no more silent no-op)
+2. Click **Send magic link instead** — email arrives, link returns you to the same host logged in
+3. Click **Forgot password?** — email arrives, link opens the auth page in recovery mode showing "Set new password", submission logs you in
+4. From a GitHub Pages deployment, repeat 2 and 3 — emails return to the GitHub Pages URL, not Lovable
 
 ### Files touched
-- `src/pages/Auth.tsx` — hybrid UI, recovery form, timeout wrapper, debug logs
-- `vite.config.ts` — **one-line addition** to Workbox config to exclude Supabase auth/REST URLs from SW interception (skip if you forbid this; we'll fall back to the SW-unregister approach)
-
-### What you'll need to verify after the change
-1. Sign in with email + password — spinner resolves and you land on `/`
-2. Click "Send Magic Link" — receive email, click link, land logged in
-3. Click "Forgot password?" — receive email, click link, see "Set New Password" form, submit, land logged in
-4. Open DevTools → Application → Service Workers, confirm `/auth/v1/*` requests bypass the SW
-
-### Open question
-If the hang persists after the SW fix, the next suspect is Supabase email confirmation being required while confirmation emails aren't being delivered — in which case the user *appears* registered but `signInWithPassword` returns `Email not confirmed` (which would actually error fast, not hang, so this is lower probability). I'll know from the new debug logs.
+- `src/pages/Auth.tsx` (modify only)
