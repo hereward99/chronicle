@@ -6,10 +6,16 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  server: {
-    host: "::",
-    port: 8080,
-  },
+//  server: {
+//    host: "::",
+//    port: 8080,
+// This ensures assets load from /chronicle/ instead of /
+      base: "/chronicle/", 
+      plugins: [react()],
+      resolve: {
+      alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
   plugins: [
     react(),
     mode === "development" && componentTagger(),
