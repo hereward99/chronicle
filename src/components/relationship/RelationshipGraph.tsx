@@ -509,10 +509,15 @@ export function RelationshipGraph({
       setConnectionMode(false);
       return;
     }
+    if (focusMode) {
+      setFocusNodeId(node.id);
+      setFocusDepth(1);
+      return;
+    }
     if (onNodeClick) {
       onNodeClick(node.id);
     }
-  }, [connectionMode, pendingSourceId, onCreateRelationship, onNodeClick]);
+  }, [connectionMode, pendingSourceId, onCreateRelationship, onNodeClick, focusMode]);
 
   const onEdgeClickHandler = useCallback((event: React.MouseEvent, edge: Edge) => {
     if (onEdgeClick && edge.data?.relationship) {
@@ -530,11 +535,28 @@ export function RelationshipGraph({
 
   const onNodeDoubleClick = useCallback((event: React.MouseEvent, node: Node) => {
     event.preventDefault();
+    if (focusMode) {
+      setFocusNodeId(node.id);
+      setFocusDepth(2);
+      return;
+    }
     if (!connectionMode) {
       setConnectionMode(true);
       setPendingSourceId(node.id);
     }
-  }, [connectionMode]);
+  }, [connectionMode, focusMode]);
+
+  const onPaneClick = useCallback(() => {
+    if (focusMode && focusNodeId) {
+      setFocusNodeId(null);
+    }
+  }, [focusMode, focusNodeId]);
+
+  const exitFocusMode = useCallback(() => {
+    setFocusMode(false);
+    setFocusNodeId(null);
+    setFocusDepth(1);
+  }, []);
 
   const handleFitView = useCallback(() => {
     fitView({ padding: 0.2, duration: 400 });
