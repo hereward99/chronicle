@@ -208,6 +208,9 @@ export function RelationshipGraph({
   const [connectionMode, setConnectionMode] = useState(false);
   const [pendingSourceId, setPendingSourceId] = useState<string | null>(null);
   const [layout, setLayout] = useState<LayoutType>('force');
+  const [focusMode, setFocusMode] = useState(false);
+  const [focusNodeId, setFocusNodeId] = useState<string | null>(null);
+  const [focusDepth, setFocusDepth] = useState<1 | 2>(1);
   const { fitView, zoomIn, zoomOut } = useReactFlow();
 
   // Cancel connection mode with Escape
