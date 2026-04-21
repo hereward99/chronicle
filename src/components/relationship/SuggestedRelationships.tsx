@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sparkles, Check, X, ChevronDown, ChevronUp, UsersRound, Flag, GitBranch } from 'lucide-react';
 import type { Character } from '@/hooks/useCharacters';
 import type { Relationship } from '@/hooks/useRelationships';
@@ -35,6 +36,8 @@ interface Suggestion {
 }
 
 const DISMISS_KEY = 'relationship-suggestions-dismissed';
+const ALLY_TYPE_OPTIONS = ['Ally', 'Friend', 'Rival', 'Enemy', 'Contact'];
+const SYMMETRIC_TYPES = new Set(['Ally', 'Friend', 'Enemy', 'Rival']);
 
 function loadDismissed(): Set<string> {
   try {
@@ -75,6 +78,7 @@ export function SuggestedRelationships({
   const [dismissed, setDismissed] = useState<Set<string>>(() => loadDismissed());
   const [open, setOpen] = useState(true);
   const [acceptingKey, setAcceptingKey] = useState<string | null>(null);
+  const [typeOverrides, setTypeOverrides] = useState<Record<string, string>>({});
 
   // Re-load dismissed when chronicle changes (defensive)
   useEffect(() => {
@@ -215,13 +219,15 @@ export function SuggestedRelationships({
           return `sire link (${r.label})`;
         })
         .join('; ');
+      const chosenType = s.type === 'Sire' ? 'Sire' : (typeOverrides[s.key] ?? s.type);
+      const isMutual = s.type === 'Sire' ? s.isMutual : SYMMETRIC_TYPES.has(chosenType);
       await onAccept({
         character_id: s.fromId,
         related_character_id: s.toId,
-        relationship_type: s.type,
+        relationship_type: chosenType,
         intensity: 3,
         description: `Auto-suggested from ${reasonText}.`,
-        is_mutual: s.isMutual,
+        is_mutual: isMutual,
         notes: null,
       });
       // After accept, mark dismissed so it doesn't reappear briefly before refetch.
@@ -286,62 +292,84 @@ export function SuggestedRelationships({
         </CardHeader>
         <CollapsibleContent>
           <CardContent className="space-y-2">
-            {suggestions.map(s => (
-              <div
-                key={s.key}
-                className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-md border border-border bg-muted/20"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium truncate">{charName(s.fromId)}</span>
-                    <span className="text-muted-foreground">
-                      {s.type === 'Sire' ? 'sired' : '↔'}
-                    </span>
-                    <span className="font-medium truncate">{charName(s.toId)}</span>
-                    <Badge variant="outline" className="text-xs">
-                      {s.type}
-                      {s.isMutual ? ' · mutual' : ''}
-                    </Badge>
-                  </div>
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {s.reasons.map((r, idx) => (
-                      <Badge
-                        key={`${r.kind}-${r.label}-${idx}`}
-                        variant="secondary"
-                        className="text-xs gap-1"
-                        style={
-                          r.kind === 'faction'
-                            ? { borderLeft: `3px solid ${(r as { color: string }).color}` }
-                            : undefined
-                        }
-                      >
-                        {reasonIcon(r.kind)}
-                        {r.kind === 'sire' ? 'Sire link' : r.label}
+            {suggestions.map(s => {
+              const chosenType = s.type === 'Sire' ? 'Sire' : (typeOverrides[s.key] ?? s.type);
+              const chosenMutual = s.type === 'Sire' ? s.isMutual : SYMMETRIC_TYPES.has(chosenType);
+              return (
+                <div
+                  key={s.key}
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-md border border-border bg-muted/20"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium truncate">{charName(s.fromId)}</span>
+                      <span className="text-muted-foreground">
+                        {s.type === 'Sire' ? 'sired' : '↔'}
+                      </span>
+                      <span className="font-medium truncate">{charName(s.toId)}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {chosenType}
+                        {chosenMutual ? ' · mutual' : ''}
                       </Badge>
-                    ))}
+                    </div>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {s.reasons.map((r, idx) => (
+                        <Badge
+                          key={`${r.kind}-${r.label}-${idx}`}
+                          variant="secondary"
+                          className="text-xs gap-1"
+                          style={
+                            r.kind === 'faction'
+                              ? { borderLeft: `3px solid ${(r as { color: string }).color}` }
+                              : undefined
+                          }
+                        >
+                          {reasonIcon(r.kind)}
+                          {r.kind === 'sire' ? 'Sire link' : r.label}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {s.type !== 'Sire' && (
+                      <Select
+                        value={chosenType}
+                        onValueChange={(value) =>
+                          setTypeOverrides(prev => ({ ...prev, [s.key]: value }))
+                        }
+                        disabled={acceptingKey === s.key}
+                      >
+                        <SelectTrigger className="h-9 w-[120px]" aria-label="Relationship type">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ALLY_TYPE_OPTIONS.map((type) => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                    <Button
+                      size="sm"
+                      onClick={() => handleAccept(s)}
+                      disabled={acceptingKey === s.key}
+                    >
+                      <Check className="w-4 h-4 mr-1" />
+                      Accept
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDismiss(s)}
+                      disabled={acceptingKey === s.key}
+                    >
+                      <X className="w-4 h-4 mr-1" />
+                      Dismiss
+                    </Button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Button
-                    size="sm"
-                    onClick={() => handleAccept(s)}
-                    disabled={acceptingKey === s.key}
-                  >
-                    <Check className="w-4 h-4 mr-1" />
-                    Accept
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleDismiss(s)}
-                    disabled={acceptingKey === s.key}
-                  >
-                    <X className="w-4 h-4 mr-1" />
-                    Dismiss
-                  </Button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </CardContent>
         </CollapsibleContent>
       </Collapsible>
