@@ -603,6 +603,40 @@ export function RelationshipGraph({
           </div>
         );
       })()}
+
+      {focusMode && !connectionMode && (() => {
+        const focusName = focusNodeId
+          ? characters.find((c) => c.id === focusNodeId)?.name
+          : null;
+        return (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+            <Focus className="w-4 h-4" />
+            <span className="text-sm font-medium">
+              {focusName
+                ? `Focused on "${focusName}" — ${focusDepth}-hop neighbors`
+                : 'Focus mode — click a node to isolate it'}
+            </span>
+            {focusNodeId && (
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setFocusNodeId(null)}
+                className="ml-1"
+              >
+                Clear
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={exitFocusMode}
+              className="ml-1"
+            >
+              <X className="w-3 h-3 mr-1" /> Exit
+            </Button>
+          </div>
+        );
+      })()}
       
       <ContextMenu>
         <ContextMenuTrigger className="w-full h-full">
