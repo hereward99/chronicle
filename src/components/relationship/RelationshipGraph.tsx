@@ -213,18 +213,27 @@ export function RelationshipGraph({
   const [focusDepth, setFocusDepth] = useState<1 | 2>(1);
   const { fitView, zoomIn, zoomOut } = useReactFlow();
 
-  // Cancel connection mode with Escape
+  // Cancel connection / focus mode with Escape
   useEffect(() => {
-    if (!connectionMode) return;
+    if (!connectionMode && !focusMode) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setConnectionMode(false);
-        setPendingSourceId(null);
+        if (connectionMode) {
+          setConnectionMode(false);
+          setPendingSourceId(null);
+        }
+        if (focusMode) {
+          if (focusNodeId) {
+            setFocusNodeId(null);
+          } else {
+            setFocusMode(false);
+          }
+        }
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [connectionMode]);
+  }, [connectionMode, focusMode, focusNodeId]);
 
   // Reset pending source when leaving connection mode
   useEffect(() => {
