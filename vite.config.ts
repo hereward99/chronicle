@@ -9,11 +9,11 @@ export default defineConfig(({ mode }) => ({
 //  server: {
 //    host: "::",
 //    port: 8080,
-// This ensures assets load from /chronicle/ instead of /
-      base: "/chronicle/", 
-      plugins: [react()],
-      resolve: {
-      alias: {
+// Use the subfolder for production (GitHub Pages), but root for development/preview
+  base: mode === 'production' ? '/chronicle/' : '/',
+  plugins: [react()],
+  resolve: {
+    alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   plugins: [
