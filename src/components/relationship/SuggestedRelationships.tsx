@@ -219,13 +219,15 @@ export function SuggestedRelationships({
           return `sire link (${r.label})`;
         })
         .join('; ');
+      const chosenType = s.type === 'Sire' ? 'Sire' : (typeOverrides[s.key] ?? s.type);
+      const isMutual = s.type === 'Sire' ? s.isMutual : SYMMETRIC_TYPES.has(chosenType);
       await onAccept({
         character_id: s.fromId,
         related_character_id: s.toId,
-        relationship_type: s.type,
+        relationship_type: chosenType,
         intensity: 3,
         description: `Auto-suggested from ${reasonText}.`,
-        is_mutual: s.isMutual,
+        is_mutual: isMutual,
         notes: null,
       });
       // After accept, mark dismissed so it doesn't reappear briefly before refetch.
