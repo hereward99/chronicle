@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sparkles, Check, X, ChevronDown, ChevronUp, UsersRound, Flag, GitBranch } from 'lucide-react';
 import type { Character } from '@/hooks/useCharacters';
 import type { Relationship } from '@/hooks/useRelationships';
