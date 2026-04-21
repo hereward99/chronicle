@@ -78,6 +78,7 @@ export function SuggestedRelationships({
   const [dismissed, setDismissed] = useState<Set<string>>(() => loadDismissed());
   const [open, setOpen] = useState(true);
   const [acceptingKey, setAcceptingKey] = useState<string | null>(null);
+  const [typeOverrides, setTypeOverrides] = useState<Record<string, string>>({});
 
   // Re-load dismissed when chronicle changes (defensive)
   useEffect(() => {
