@@ -22,7 +22,7 @@ import { Faction, CharacterFaction } from '@/hooks/useFactions';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Link2, Info, Maximize2, ZoomIn, ZoomOut, LayoutGrid, GitBranch, Circle, Shuffle } from 'lucide-react';
+import { Link2, Info, Maximize2, ZoomIn, ZoomOut, LayoutGrid, GitBranch, Circle, Shuffle, Focus, X } from 'lucide-react';
 import {
   ContextMenu,
   ContextMenuContent,
