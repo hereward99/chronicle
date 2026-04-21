@@ -614,6 +614,7 @@ export function RelationshipGraph({
             onNodeClick={onNodeClickHandler}
             onNodeDoubleClick={onNodeDoubleClick}
             onEdgeClick={onEdgeClickHandler}
+            onPaneClick={onPaneClick}
             onConnect={onConnect}
             connectionLineType={ConnectionLineType.SmoothStep}
             connectionLineStyle={{ stroke: 'hsl(var(--primary))', strokeWidth: 2 }}
