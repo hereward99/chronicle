@@ -292,62 +292,84 @@ export function SuggestedRelationships({
         </CardHeader>
         <CollapsibleContent>
           <CardContent className="space-y-2">
-            {suggestions.map(s => (
-              <div
-                key={s.key}
-                className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-md border border-border bg-muted/20"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium truncate">{charName(s.fromId)}</span>
-                    <span className="text-muted-foreground">
-                      {s.type === 'Sire' ? 'sired' : '↔'}
-                    </span>
-                    <span className="font-medium truncate">{charName(s.toId)}</span>
-                    <Badge variant="outline" className="text-xs">
-                      {s.type}
-                      {s.isMutual ? ' · mutual' : ''}
-                    </Badge>
-                  </div>
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {s.reasons.map((r, idx) => (
-                      <Badge
-                        key={`${r.kind}-${r.label}-${idx}`}
-                        variant="secondary"
-                        className="text-xs gap-1"
-                        style={
-                          r.kind === 'faction'
-                            ? { borderLeft: `3px solid ${(r as { color: string }).color}` }
-                            : undefined
-                        }
-                      >
-                        {reasonIcon(r.kind)}
-                        {r.kind === 'sire' ? 'Sire link' : r.label}
+            {suggestions.map(s => {
+              const chosenType = s.type === 'Sire' ? 'Sire' : (typeOverrides[s.key] ?? s.type);
+              const chosenMutual = s.type === 'Sire' ? s.isMutual : SYMMETRIC_TYPES.has(chosenType);
+              return (
+                <div
+                  key={s.key}
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-md border border-border bg-muted/20"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium truncate">{charName(s.fromId)}</span>
+                      <span className="text-muted-foreground">
+                        {s.type === 'Sire' ? 'sired' : '↔'}
+                      </span>
+                      <span className="font-medium truncate">{charName(s.toId)}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {chosenType}
+                        {chosenMutual ? ' · mutual' : ''}
                       </Badge>
-                    ))}
+                    </div>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {s.reasons.map((r, idx) => (
+                        <Badge
+                          key={`${r.kind}-${r.label}-${idx}`}
+                          variant="secondary"
+                          className="text-xs gap-1"
+                          style={
+                            r.kind === 'faction'
+                              ? { borderLeft: `3px solid ${(r as { color: string }).color}` }
+                              : undefined
+                          }
+                        >
+                          {reasonIcon(r.kind)}
+                          {r.kind === 'sire' ? 'Sire link' : r.label}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {s.type !== 'Sire' && (
+                      <Select
+                        value={chosenType}
+                        onValueChange={(value) =>
+                          setTypeOverrides(prev => ({ ...prev, [s.key]: value }))
+                        }
+                        disabled={acceptingKey === s.key}
+                      >
+                        <SelectTrigger className="h-9 w-[120px]" aria-label="Relationship type">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ALLY_TYPE_OPTIONS.map((type) => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                    <Button
+                      size="sm"
+                      onClick={() => handleAccept(s)}
+                      disabled={acceptingKey === s.key}
+                    >
+                      <Check className="w-4 h-4 mr-1" />
+                      Accept
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDismiss(s)}
+                      disabled={acceptingKey === s.key}
+                    >
+                      <X className="w-4 h-4 mr-1" />
+                      Dismiss
+                    </Button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Button
-                    size="sm"
-                    onClick={() => handleAccept(s)}
-                    disabled={acceptingKey === s.key}
-                  >
-                    <Check className="w-4 h-4 mr-1" />
-                    Accept
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleDismiss(s)}
-                    disabled={acceptingKey === s.key}
-                  >
-                    <X className="w-4 h-4 mr-1" />
-                    Dismiss
-                  </Button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </CardContent>
         </CollapsibleContent>
       </Collapsible>
