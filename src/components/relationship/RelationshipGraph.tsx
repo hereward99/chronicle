@@ -22,7 +22,7 @@ import { Faction, CharacterFaction } from '@/hooks/useFactions';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Link2, Info, Maximize2, ZoomIn, ZoomOut, LayoutGrid, GitBranch, Circle, Shuffle } from 'lucide-react';
+import { Link2, Info, Maximize2, ZoomIn, ZoomOut, LayoutGrid, GitBranch, Circle, Shuffle, Focus, X } from 'lucide-react';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -208,20 +208,32 @@ export function RelationshipGraph({
   const [connectionMode, setConnectionMode] = useState(false);
   const [pendingSourceId, setPendingSourceId] = useState<string | null>(null);
   const [layout, setLayout] = useState<LayoutType>('force');
+  const [focusMode, setFocusMode] = useState(false);
+  const [focusNodeId, setFocusNodeId] = useState<string | null>(null);
+  const [focusDepth, setFocusDepth] = useState<1 | 2>(1);
   const { fitView, zoomIn, zoomOut } = useReactFlow();
 
-  // Cancel connection mode with Escape
+  // Cancel connection / focus mode with Escape
   useEffect(() => {
-    if (!connectionMode) return;
+    if (!connectionMode && !focusMode) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setConnectionMode(false);
-        setPendingSourceId(null);
+        if (connectionMode) {
+          setConnectionMode(false);
+          setPendingSourceId(null);
+        }
+        if (focusMode) {
+          if (focusNodeId) {
+            setFocusNodeId(null);
+          } else {
+            setFocusMode(false);
+          }
+        }
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [connectionMode]);
+  }, [connectionMode, focusMode, focusNodeId]);
 
   // Reset pending source when leaving connection mode
   useEffect(() => {
@@ -387,13 +399,61 @@ export function RelationshipGraph({
     setEdges(initialEdges);
   }, [layoutedNodes, initialEdges, setNodes, setEdges]);
 
-  // Apply visual feedback for connection mode (highlight pending source, dim others)
+  // Compute neighbor set for focus mode (BFS up to focusDepth)
+  const focusedNodeIds = useMemo(() => {
+    if (!focusMode || !focusNodeId) return null;
+    const adjacency = new Map<string, Set<string>>();
+    relationships.forEach((rel) => {
+      if (!adjacency.has(rel.character_id)) adjacency.set(rel.character_id, new Set());
+      if (!adjacency.has(rel.related_character_id)) adjacency.set(rel.related_character_id, new Set());
+      adjacency.get(rel.character_id)!.add(rel.related_character_id);
+      adjacency.get(rel.related_character_id)!.add(rel.character_id);
+    });
+    const visible = new Set<string>([focusNodeId]);
+    let frontier = new Set<string>([focusNodeId]);
+    for (let depth = 0; depth < focusDepth; depth++) {
+      const next = new Set<string>();
+      frontier.forEach((id) => {
+        adjacency.get(id)?.forEach((n) => {
+          if (!visible.has(n)) {
+            visible.add(n);
+            next.add(n);
+          }
+        });
+      });
+      frontier = next;
+      if (frontier.size === 0) break;
+    }
+    return visible;
+  }, [focusMode, focusNodeId, focusDepth, relationships]);
+
+  // Apply visual feedback for connection mode + focus mode
   useEffect(() => {
     setNodes((current) =>
       current.map((n) => {
         const baseStyle = (n.data as any)?.character
           ? buildNodeStyle((n.data as any).character, (n.data as any).faction)
           : n.style || {};
+
+        // Focus mode dimming takes precedence visually
+        if (focusedNodeIds) {
+          if (focusedNodeIds.has(n.id)) {
+            const isCenter = n.id === focusNodeId;
+            return {
+              ...n,
+              style: {
+                ...baseStyle,
+                ...(isCenter && {
+                  outline: '3px solid hsl(var(--primary))',
+                  outlineOffset: '2px',
+                  boxShadow: '0 0 0 6px hsl(var(--primary) / 0.25)',
+                }),
+              },
+            };
+          }
+          return { ...n, style: { ...baseStyle, opacity: 0.15 } };
+        }
+
         if (!connectionMode) {
           return { ...n, style: baseStyle };
         }
@@ -414,7 +474,24 @@ export function RelationshipGraph({
         return { ...n, style: baseStyle };
       })
     );
-  }, [connectionMode, pendingSourceId, setNodes, buildNodeStyle]);
+  }, [connectionMode, pendingSourceId, focusedNodeIds, focusNodeId, setNodes, buildNodeStyle]);
+
+  // Dim edges that are not between two focused nodes
+  useEffect(() => {
+    setEdges((current) =>
+      current.map((e) => {
+        if (!focusedNodeIds) {
+          return { ...e, style: { ...e.style, opacity: 1 } };
+        }
+        const inFocus = focusedNodeIds.has(e.source) && focusedNodeIds.has(e.target);
+        return {
+          ...e,
+          style: { ...e.style, opacity: inFocus ? 1 : 0.1 },
+          labelStyle: { ...(e.labelStyle as any), opacity: inFocus ? 1 : 0.1 },
+        };
+      })
+    );
+  }, [focusedNodeIds, setEdges]);
 
   // Fit view after layout change
   useEffect(() => {
@@ -441,10 +518,15 @@ export function RelationshipGraph({
       setConnectionMode(false);
       return;
     }
+    if (focusMode) {
+      setFocusNodeId(node.id);
+      setFocusDepth(1);
+      return;
+    }
     if (onNodeClick) {
       onNodeClick(node.id);
     }
-  }, [connectionMode, pendingSourceId, onCreateRelationship, onNodeClick]);
+  }, [connectionMode, pendingSourceId, onCreateRelationship, onNodeClick, focusMode]);
 
   const onEdgeClickHandler = useCallback((event: React.MouseEvent, edge: Edge) => {
     if (onEdgeClick && edge.data?.relationship) {
@@ -462,11 +544,28 @@ export function RelationshipGraph({
 
   const onNodeDoubleClick = useCallback((event: React.MouseEvent, node: Node) => {
     event.preventDefault();
+    if (focusMode) {
+      setFocusNodeId(node.id);
+      setFocusDepth(2);
+      return;
+    }
     if (!connectionMode) {
       setConnectionMode(true);
       setPendingSourceId(node.id);
     }
-  }, [connectionMode]);
+  }, [connectionMode, focusMode]);
+
+  const onPaneClick = useCallback(() => {
+    if (focusMode && focusNodeId) {
+      setFocusNodeId(null);
+    }
+  }, [focusMode, focusNodeId]);
+
+  const exitFocusMode = useCallback(() => {
+    setFocusMode(false);
+    setFocusNodeId(null);
+    setFocusDepth(1);
+  }, []);
 
   const handleFitView = useCallback(() => {
     fitView({ padding: 0.2, duration: 400 });
@@ -513,6 +612,40 @@ export function RelationshipGraph({
           </div>
         );
       })()}
+
+      {focusMode && !connectionMode && (() => {
+        const focusName = focusNodeId
+          ? characters.find((c) => c.id === focusNodeId)?.name
+          : null;
+        return (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+            <Focus className="w-4 h-4" />
+            <span className="text-sm font-medium">
+              {focusName
+                ? `Focused on "${focusName}" — ${focusDepth}-hop neighbors`
+                : 'Focus mode — click a node to isolate it'}
+            </span>
+            {focusNodeId && (
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setFocusNodeId(null)}
+                className="ml-1"
+              >
+                Clear
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={exitFocusMode}
+              className="ml-1"
+            >
+              <X className="w-3 h-3 mr-1" /> Exit
+            </Button>
+          </div>
+        );
+      })()}
       
       <ContextMenu>
         <ContextMenuTrigger className="w-full h-full">
@@ -524,6 +657,7 @@ export function RelationshipGraph({
             onNodeClick={onNodeClickHandler}
             onNodeDoubleClick={onNodeDoubleClick}
             onEdgeClick={onEdgeClickHandler}
+            onPaneClick={onPaneClick}
             onConnect={onConnect}
             connectionLineType={ConnectionLineType.SmoothStep}
             connectionLineStyle={{ stroke: 'hsl(var(--primary))', strokeWidth: 2 }}
@@ -565,6 +699,33 @@ export function RelationshipGraph({
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Create relationships by connecting nodes</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant={focusMode ? "default" : "outline"}
+                        onClick={() => {
+                          if (focusMode) {
+                            exitFocusMode();
+                          } else {
+                            setFocusMode(true);
+                            setConnectionMode(false);
+                            setPendingSourceId(null);
+                          }
+                        }}
+                        className="gap-2"
+                      >
+                        <Focus className="w-4 h-4" />
+                        Focus
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Click a node to dim everything except its neighbors. Double-click for 2-hop.</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -651,6 +812,7 @@ export function RelationshipGraph({
                 <div>• Click to view details</div>
                 <div>• Double-click a node to connect from it</div>
                 <div>• Press Esc to cancel connection</div>
+                <div>• Focus: click = 1-hop, double-click = 2-hop</div>
               </div>
             </Panel>
           </ReactFlow>
