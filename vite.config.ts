@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
- Use the subfolder for production (GitHub Pages), but root for development/preview
+// Use the subfolder for production (GitHub Pages), but root for development/preview
 
     },
   plugins: [
