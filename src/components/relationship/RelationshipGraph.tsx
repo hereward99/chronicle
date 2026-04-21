@@ -803,6 +803,7 @@ export function RelationshipGraph({
                 <div>• Click to view details</div>
                 <div>• Double-click a node to connect from it</div>
                 <div>• Press Esc to cancel connection</div>
+                <div>• Focus: click = 1-hop, double-click = 2-hop</div>
               </div>
             </Panel>
           </ReactFlow>
