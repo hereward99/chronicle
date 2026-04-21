@@ -6,15 +6,11 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-//  server: {
-//    host: "::",
-//    port: 8080,
-// Use the subfolder for production (GitHub Pages), but root for development/preview
-  base: mode === 'production' ? '/chronicle/' : '/',
-  plugins: [react()],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+  server: {
+    host: "::",
+    port: 8080,
+ Use the subfolder for production (GitHub Pages), but root for development/preview
+
     },
   plugins: [
     react(),
@@ -67,4 +63,4 @@ export default defineConfig(({ mode }) => ({
     },
     dedupe: ["react", "react-dom"],
   },
-}}));
+}));
