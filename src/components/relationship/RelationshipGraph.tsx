@@ -660,6 +660,33 @@ export function RelationshipGraph({
                   </Tooltip>
                 </TooltipProvider>
 
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant={focusMode ? "default" : "outline"}
+                        onClick={() => {
+                          if (focusMode) {
+                            exitFocusMode();
+                          } else {
+                            setFocusMode(true);
+                            setConnectionMode(false);
+                            setPendingSourceId(null);
+                          }
+                        }}
+                        className="gap-2"
+                      >
+                        <Focus className="w-4 h-4" />
+                        Focus
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Click a node to dim everything except its neighbors. Double-click for 2-hop.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
                 <div className="border-t border-border my-1" />
 
                 <TooltipProvider>
