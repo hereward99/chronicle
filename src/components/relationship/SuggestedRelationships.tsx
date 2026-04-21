@@ -36,6 +36,8 @@ interface Suggestion {
 }
 
 const DISMISS_KEY = 'relationship-suggestions-dismissed';
+const ALLY_TYPE_OPTIONS = ['Ally', 'Friend', 'Rival', 'Enemy', 'Contact'];
+const SYMMETRIC_TYPES = new Set(['Ally', 'Friend', 'Enemy', 'Rival']);
 
 function loadDismissed(): Set<string> {
   try {
