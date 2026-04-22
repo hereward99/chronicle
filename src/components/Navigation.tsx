@@ -127,6 +127,14 @@ export function Navigation() {
 
           {/* Footer */}
           <div className="p-4 border-t border-border space-y-3">
+            {/* Signed in as */}
+            <div className="px-2 py-1.5 rounded-md bg-secondary/30">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-label mb-0.5">Signed in as</p>
+              <p className="text-xs text-foreground truncate" title={user?.email || 'Unknown'}>
+                {user?.email || 'Unknown'}
+              </p>
+            </div>
+
             <Button 
               variant="ghost" 
               size="sm" 
@@ -139,9 +147,6 @@ export function Navigation() {
             <div className="text-xs text-muted-foreground text-center">
               <p className="font-label text-[10px] uppercase tracking-wider">Vampire: The Masquerade</p>
               <p className="text-gold font-label text-[10px] uppercase tracking-wider">5th Edition Assistant</p>
-              {user?.email && (
-                <p className="mt-1 truncate">{user.email}</p>
-              )}
             </div>
           </div>
         </div>
