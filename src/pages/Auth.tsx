@@ -224,7 +224,7 @@ export default function Auth() {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: cleanEmail,
         password: cleanPassword,
         options: { emailRedirectTo: getRedirectUrl() },
@@ -248,9 +248,22 @@ export default function Auth() {
         return;
       }
 
+      const isExistingAccount = !data.user?.identities || data.user.identities.length === 0;
+
+      if (isExistingAccount) {
+        toast({
+          title: "Account already exists",
+          description: "Use Sign In, send a magic link, or reset your password instead of creating a new account.",
+          variant: "destructive",
+        });
+        setActiveTab("login");
+        setPassword("");
+        return;
+      }
+
       toast({
         title: "Account created!",
-        description: "Please check your email to confirm your account, then sign in.",
+        description: "Check your email for the confirmation link. If it doesn't arrive, use the magic link option from Sign In.",
       });
       setActiveTab("login");
       setPassword("");
