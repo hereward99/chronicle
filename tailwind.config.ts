@@ -54,6 +54,13 @@ export default {
         'shadow-black': 'hsl(var(--shadow-black))',
         'parchment': 'hsl(var(--parchment))',
         'gold': 'hsl(var(--gold))',
+        relationship: {
+          ally: 'hsl(var(--relationship-ally))',
+          enemy: 'hsl(var(--relationship-enemy))',
+          rival: 'hsl(var(--relationship-rival))',
+          friend: 'hsl(var(--relationship-friend))',
+          contact: 'hsl(var(--relationship-contact))',
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
