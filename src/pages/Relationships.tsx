@@ -31,6 +31,7 @@ import { EmptyState } from '@/components/onboarding/EmptyState';
 import type { Coterie } from '@/hooks/useCoteries';
 import { MentionText } from '@/components/mentions/MentionText';
 import { SuggestedRelationships } from '@/components/relationship/SuggestedRelationships';
+import { getRelationshipBadgeClassName } from '@/lib/relationshipStyles';
 
 const relationshipIcons: Record<string, any> = {
   'Ally': Handshake,
@@ -38,14 +39,6 @@ const relationshipIcons: Record<string, any> = {
   'Contact': UserCircle,
   'Friend': Heart,
   'Enemy': Swords,
-};
-
-const relationshipColors: Record<string, string> = {
-  'Ally': 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-  'Rival': 'bg-orange-500/10 text-orange-500 border-orange-500/20',
-  'Contact': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-  'Friend': 'bg-pink-500/10 text-pink-500 border-pink-500/20',
-  'Enemy': 'bg-red-500/10 text-red-500 border-red-500/20',
 };
 
 export default function Relationships() {
@@ -626,7 +619,7 @@ export default function Relationships() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredRelationships.map(relationship => {
                 const Icon = relationshipIcons[relationship.relationship_type] || UserCircle;
-                const colorClass = relationshipColors[relationship.relationship_type] || 'bg-muted/50 text-muted-foreground border-border';
+                const colorClass = getRelationshipBadgeClassName(relationship.relationship_type);
                 
                 return (
                   <Card key={relationship.id} className="hover:shadow-lg transition-shadow">
