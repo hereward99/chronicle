@@ -22,13 +22,20 @@ import { Faction, CharacterFaction } from '@/hooks/useFactions';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Link2, Info, Maximize2, ZoomIn, ZoomOut, LayoutGrid, GitBranch, Circle, Shuffle, Focus, X } from 'lucide-react';
+import { Link2, Info, Maximize2, ZoomIn, ZoomOut, LayoutGrid, GitBranch, Circle, Shuffle, Focus, X, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
+import {
+  getRelationshipColor,
+  getRelationshipDashArray,
+  getRelationshipEdgeStyle,
+  getRelationshipStrokeWidth,
+  relationshipLegendItems,
+} from '@/lib/relationshipStyles';
 
 interface RelationshipGraphProps {
   relationships: Relationship[];
@@ -42,14 +49,6 @@ interface RelationshipGraphProps {
 }
 
 type LayoutType = 'force' | 'hierarchical' | 'circular';
-
-const relationshipColors: Record<string, string> = {
-  'Ally': '#10b981',
-  'Rival': '#f97316',
-  'Contact': '#3b82f6',
-  'Friend': '#ec4899',
-  'Enemy': '#ef4444',
-};
 
 const getNodeColor = (clan: string): string => {
   const clanColors: Record<string, string> = {
@@ -211,6 +210,7 @@ export function RelationshipGraph({
   const [focusMode, setFocusMode] = useState(false);
   const [focusNodeId, setFocusNodeId] = useState<string | null>(null);
   const [focusDepth, setFocusDepth] = useState<1 | 2>(1);
+  const [showLegend, setShowLegend] = useState(true);
   const { fitView, zoomIn, zoomOut } = useReactFlow();
 
   // Cancel connection / focus mode with Escape
@@ -365,23 +365,20 @@ export function RelationshipGraph({
       target: rel.related_character_id,
       type: 'smoothstep',
       animated: rel.intensity >= 4,
-      style: { 
-        stroke: relationshipColors[rel.relationship_type] || '#64748b',
-        strokeWidth: rel.intensity,
-      },
+      style: getRelationshipEdgeStyle(rel),
       markerEnd: {
         type: MarkerType.ArrowClosed,
-        color: relationshipColors[rel.relationship_type] || '#64748b',
+        color: getRelationshipColor(rel.relationship_type),
       },
       label: rel.relationship_type,
       labelStyle: { 
-        fill: relationshipColors[rel.relationship_type] || '#64748b',
+        fill: getRelationshipColor(rel.relationship_type),
         fontWeight: 600,
         fontSize: 12,
       },
       labelBgStyle: { 
-        fill: '#fff',
-        fillOpacity: 0.9,
+        fill: 'hsl(var(--card))',
+        fillOpacity: 0.92,
       },
       data: { relationship: rel },
     }));
@@ -570,13 +567,6 @@ export function RelationshipGraph({
   const handleFitView = useCallback(() => {
     fitView({ padding: 0.2, duration: 400 });
   }, [fitView]);
-
-  const getLegendItems = () => {
-    return Object.entries(relationshipColors).map(([type, color]) => ({
-      type,
-      color,
-    }));
-  };
 
   const layoutOptions: { value: LayoutType; label: string; icon: React.ReactNode }[] = [
     { value: 'force', label: 'Grouped', icon: <Shuffle className="w-4 h-4" /> },
