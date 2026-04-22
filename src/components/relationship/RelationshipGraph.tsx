@@ -22,13 +22,18 @@ import { Faction, CharacterFaction } from '@/hooks/useFactions';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Link2, Info, Maximize2, ZoomIn, ZoomOut, LayoutGrid, GitBranch, Circle, Shuffle, Focus, X } from 'lucide-react';
+import { Link2, Info, Maximize2, ZoomIn, ZoomOut, LayoutGrid, GitBranch, Circle, Shuffle, Focus, X, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
+import {
+  getRelationshipColor,
+  getRelationshipEdgeStyle,
+  relationshipLegendItems,
+} from '@/lib/relationshipStyles';
 
 interface RelationshipGraphProps {
   relationships: Relationship[];
@@ -42,14 +47,6 @@ interface RelationshipGraphProps {
 }
 
 type LayoutType = 'force' | 'hierarchical' | 'circular';
-
-const relationshipColors: Record<string, string> = {
-  'Ally': '#10b981',
-  'Rival': '#f97316',
-  'Contact': '#3b82f6',
-  'Friend': '#ec4899',
-  'Enemy': '#ef4444',
-};
 
 const getNodeColor = (clan: string): string => {
   const clanColors: Record<string, string> = {
@@ -211,6 +208,7 @@ export function RelationshipGraph({
   const [focusMode, setFocusMode] = useState(false);
   const [focusNodeId, setFocusNodeId] = useState<string | null>(null);
   const [focusDepth, setFocusDepth] = useState<1 | 2>(1);
+  const [showLegend, setShowLegend] = useState(true);
   const { fitView, zoomIn, zoomOut } = useReactFlow();
 
   // Cancel connection / focus mode with Escape
@@ -365,23 +363,20 @@ export function RelationshipGraph({
       target: rel.related_character_id,
       type: 'smoothstep',
       animated: rel.intensity >= 4,
-      style: { 
-        stroke: relationshipColors[rel.relationship_type] || '#64748b',
-        strokeWidth: rel.intensity,
-      },
+      style: getRelationshipEdgeStyle(rel),
       markerEnd: {
         type: MarkerType.ArrowClosed,
-        color: relationshipColors[rel.relationship_type] || '#64748b',
+        color: getRelationshipColor(rel.relationship_type),
       },
       label: rel.relationship_type,
       labelStyle: { 
-        fill: relationshipColors[rel.relationship_type] || '#64748b',
+        fill: getRelationshipColor(rel.relationship_type),
         fontWeight: 600,
         fontSize: 12,
       },
       labelBgStyle: { 
-        fill: '#fff',
-        fillOpacity: 0.9,
+        fill: 'hsl(var(--card))',
+        fillOpacity: 0.92,
       },
       data: { relationship: rel },
     }));
@@ -570,13 +565,6 @@ export function RelationshipGraph({
   const handleFitView = useCallback(() => {
     fitView({ padding: 0.2, duration: 400 });
   }, [fitView]);
-
-  const getLegendItems = () => {
-    return Object.entries(relationshipColors).map(([type, color]) => ({
-      type,
-      color,
-    }));
-  };
 
   const layoutOptions: { value: LayoutType; label: string; icon: React.ReactNode }[] = [
     { value: 'force', label: 'Grouped', icon: <Shuffle className="w-4 h-4" /> },
@@ -767,6 +755,25 @@ export function RelationshipGraph({
 
                 <div className="border-t border-border my-1" />
 
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant={showLegend ? "secondary" : "outline"}
+                        onClick={() => setShowLegend((current) => !current)}
+                        className="gap-2"
+                      >
+                        {showLegend ? <PanelRightClose className="w-4 h-4" /> : <PanelRightOpen className="w-4 h-4" />}
+                        Legend
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{showLegend ? 'Hide legend' : 'Show legend'}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
                 {/* Layout switcher */}
                 <div className="text-xs font-medium text-muted-foreground px-1 mb-0.5">Layout</div>
                 {layoutOptions.map((opt) => (
@@ -790,31 +797,61 @@ export function RelationshipGraph({
               </div>
             </Panel>
             
-            {/* Right panel: Legend */}
-            <Panel position="top-right" className="bg-card border rounded-lg p-3 shadow-lg">
-              <div className="text-sm font-semibold mb-2 flex items-center gap-2">
-                <Info className="w-4 h-4" />
-                Legend
-              </div>
-              <div className="space-y-1">
-                {getLegendItems().map(({ type, color }) => (
-                  <div key={type} className="flex items-center gap-2">
-                    <div 
-                      className="w-8 h-0.5" 
-                      style={{ backgroundColor: color }}
-                    />
-                    <span className="text-xs">{type}</span>
+            {showLegend && (
+              <Panel position="top-right" className="w-72 bg-card/95 border rounded-lg p-3 shadow-lg backdrop-blur-sm">
+                <div className="text-sm font-semibold mb-3 flex items-center gap-2">
+                  <Info className="w-4 h-4" />
+                  Relationship Legend
+                </div>
+                <div className="space-y-2.5">
+                  {relationshipLegendItems.map(({ type, color, hint }) => {
+                    const sampleWidth = type === 'Enemy' ? 5.5 : type === 'Rival' ? 4.5 : 3.5;
+                    return (
+                      <div key={type} className="grid grid-cols-[44px_1fr] items-center gap-3">
+                        <div className="flex items-center justify-center h-6">
+                          <div
+                            className="w-10 rounded-full"
+                            style={{
+                              borderTop: `${sampleWidth}px ${type === 'Contact' ? 'dashed' : 'solid'} ${color}`,
+                            }}
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs font-medium text-foreground">{type}</div>
+                          <div className="text-[11px] text-muted-foreground">{hint}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-4 rounded-md border border-border/80 bg-secondary/30 p-2.5 space-y-2">
+                  <div className="text-xs font-medium text-foreground">Encoding</div>
+                  <div className="space-y-1.5 text-[11px] text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 border-t-2 border-foreground/70 rounded-full" />
+                      <span>Thin = weak intensity</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 border-t-4 border-foreground/70 rounded-full" />
+                      <span>Thick = strong intensity</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 border-t-2 border-dashed border-foreground/70 rounded-full" />
+                      <span>Dashed = non-mutual</span>
+                    </div>
                   </div>
-                ))}
-              </div>
-              <div className="text-xs text-muted-foreground mt-3 space-y-1">
-                <div>• Drag nodes to rearrange</div>
-                <div>• Click to view details</div>
-                <div>• Double-click a node to connect from it</div>
-                <div>• Press Esc to cancel connection</div>
-                <div>• Focus: click = 1-hop, double-click = 2-hop</div>
-              </div>
-            </Panel>
+                </div>
+
+                <div className="text-xs text-muted-foreground mt-3 space-y-1">
+                  <div>• Drag nodes to rearrange</div>
+                  <div>• Click to view details</div>
+                  <div>• Double-click a node to connect from it</div>
+                  <div>• Press Esc to cancel connection</div>
+                  <div>• Focus: click = 1-hop, double-click = 2-hop</div>
+                </div>
+              </Panel>
+            )}
           </ReactFlow>
         </ContextMenuTrigger>
         <ContextMenuContent>
