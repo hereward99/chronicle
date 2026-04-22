@@ -5,13 +5,15 @@ import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode }) => {
+  const base = mode === "production" ? "/chronicle/" : "/";
+
+  return {
+    base,
   server: {
     host: "::",
     port: 8080,
-// Use the subfolder for production (GitHub Pages), but root for development/preview
-
-    },
+  },
   plugins: [
     react(),
     mode === "development" && componentTagger(),
@@ -49,10 +51,10 @@ export default defineConfig(({ mode }) => ({
         theme_color: "#141519",
         background_color: "#141519",
         display: "standalone",
-        scope: "/",
-        start_url: "/",
+        scope: base,
+        start_url: base,
         icons: [
-          { src: "/favicon.ico", sizes: "64x64", type: "image/x-icon" },
+          { src: `${base}favicon.ico`, sizes: "64x64", type: "image/x-icon" },
         ],
       },
     }),
@@ -63,4 +65,5 @@ export default defineConfig(({ mode }) => ({
     },
     dedupe: ["react", "react-dom"],
   },
-}));
+  };
+});
