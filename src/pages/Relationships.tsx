@@ -364,6 +364,18 @@ export default function Relationships() {
     (minimumIntensity > 1 ? 1 : 0) +
     selectedStatuses.length +
     selectedClans.length;
+  const graphRefreshKey = [
+    selectedCharacter,
+    searchQuery,
+    selectedRelTypes.slice().sort().join(','),
+    selectedFactions.slice().sort().join(','),
+    selectedCoteries.slice().sort().join(','),
+    selectedCharTypes.slice().sort().join(','),
+    selectedStatuses.slice().sort().join(','),
+    selectedClans.slice().sort().join(','),
+    String(minimumIntensity),
+    filteredRelationships.map((relationship) => relationship.id).join(','),
+  ].join('|');
 
   const getIntensityLabel = (intensity: number) => {
     const labels = ['Very Weak', 'Weak', 'Moderate', 'Strong', 'Very Strong'];
@@ -784,7 +796,7 @@ export default function Relationships() {
               </CardContent>
             </Card>
           ) : (
-            <ReactFlowProvider>
+            <ReactFlowProvider key={graphRefreshKey}>
               <RelationshipGraph
                 relationships={filteredRelationships}
                 characters={characters}
