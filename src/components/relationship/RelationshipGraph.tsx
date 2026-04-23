@@ -2,7 +2,6 @@ import { useCallback, useMemo, useEffect, useState } from 'react';
 import ReactFlow, {
   Node,
   Edge,
-  Controls,
   Background,
   useNodesState,
   useEdgesState,
@@ -11,7 +10,7 @@ import ReactFlow, {
   Panel,
   MiniMap,
   Connection,
-  addEdge,
+  getNodesBounds,
   useReactFlow,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
@@ -48,6 +47,129 @@ interface RelationshipGraphProps {
 
 type LayoutType = 'force' | 'hierarchical' | 'circular';
 
+const NODE_WIDTH = 180;
+const NODE_HEIGHT = 80;
+const NODE_HORIZONTAL_GAP = 220;
+const NODE_VERTICAL_GAP = 120;
+
+const getPrimaryNeighborhoodIds = (edges: Edge[], primaryCharacterIds: string[]) => {
+  const visibleIds = new Set(primaryCharacterIds);
+
+  edges.forEach((edge) => {
+    if (primaryCharacterIds.includes(edge.source) || primaryCharacterIds.includes(edge.target)) {
+      visibleIds.add(edge.source);
+      visibleIds.add(edge.target);
+    }
+  });
+
+  return visibleIds;
+};
+
+const recenterOnPrimary = (nodes: Node[], primaryCharacterIds: string[]) => {
+  if (primaryCharacterIds.length === 0) return nodes;
+
+  const primaryNodes = nodes.filter((node) => primaryCharacterIds.includes(node.id));
+  if (primaryNodes.length === 0) return nodes;
+
+  const avgX = primaryNodes.reduce((sum, node) => sum + node.position.x, 0) / primaryNodes.length;
+  const avgY = primaryNodes.reduce((sum, node) => sum + node.position.y, 0) / primaryNodes.length;
+
+  return nodes.map((node) => ({
+    ...node,
+    position: {
+      x: node.position.x - avgX,
+      y: node.position.y - avgY,
+    },
+  }));
+};
+
+const resolveNodeCollisions = (nodes: Node[], primaryCharacterIds: string[]) => {
+  const adjustedNodes = nodes.map((node) => ({
+    ...node,
+    position: { ...node.position },
+  }));
+
+  for (let iteration = 0; iteration < 80; iteration++) {
+    let moved = false;
+
+    for (let i = 0; i < adjustedNodes.length; i++) {
+      for (let j = i + 1; j < adjustedNodes.length; j++) {
+        const a = adjustedNodes[i];
+        const b = adjustedNodes[j];
+        const dx = b.position.x - a.position.x;
+        const dy = b.position.y - a.position.y;
+        const overlapX = NODE_HORIZONTAL_GAP - Math.abs(dx);
+        const overlapY = NODE_VERTICAL_GAP - Math.abs(dy);
+
+        if (overlapX <= 0 || overlapY <= 0) continue;
+
+        moved = true;
+        const moveHorizontally = overlapX < overlapY;
+        const push = (moveHorizontally ? overlapX : overlapY) / 2 + 6;
+        const direction = moveHorizontally
+          ? (dx === 0 ? (i % 2 === 0 ? -1 : 1) : Math.sign(dx))
+          : (dy === 0 ? (j % 2 === 0 ? -1 : 1) : Math.sign(dy));
+
+        const isPrimaryA = primaryCharacterIds.includes(a.id);
+        const isPrimaryB = primaryCharacterIds.includes(b.id);
+        const multiplierA = isPrimaryA && !isPrimaryB ? 0.35 : 1;
+        const multiplierB = isPrimaryB && !isPrimaryA ? 0.35 : 1;
+
+        if (moveHorizontally) {
+          a.position.x -= push * direction * multiplierA;
+          b.position.x += push * direction * multiplierB;
+        } else {
+          a.position.y -= push * direction * multiplierA;
+          b.position.y += push * direction * multiplierB;
+        }
+      }
+    }
+
+    if (!moved) break;
+  }
+
+  return recenterOnPrimary(adjustedNodes, primaryCharacterIds);
+};
+
+const placeNodesInRing = (nodes: Node[], radius: number, angleOffset = -Math.PI / 2) => {
+  if (nodes.length === 0) return [];
+
+  if (nodes.length === 1) {
+    return [{ ...nodes[0], position: { x: 0, y: radius === 0 ? 0 : -radius } }];
+  }
+
+  return nodes.map((node, index) => ({
+    ...node,
+    position: {
+      x: radius * Math.cos((index / nodes.length) * 2 * Math.PI + angleOffset),
+      y: radius * Math.sin((index / nodes.length) * 2 * Math.PI + angleOffset),
+    },
+  }));
+};
+
+const buildPrimaryAnchoredGroupedLayout = (nodes: Node[], edges: Edge[], primaryCharacterIds: string[]) => {
+  if (primaryCharacterIds.length === 0) return nodes;
+
+  const primaryIdSet = new Set(primaryCharacterIds);
+  const firstRingIds = getPrimaryNeighborhoodIds(edges, primaryCharacterIds);
+  const primaryNodes = nodes.filter((node) => primaryIdSet.has(node.id));
+  const firstRingNodes = nodes.filter((node) => firstRingIds.has(node.id) && !primaryIdSet.has(node.id));
+  const remainingNodes = nodes.filter((node) => !firstRingIds.has(node.id));
+
+  const positionedPrimary = placeNodesInRing(primaryNodes, primaryNodes.length > 1 ? 90 : 0);
+  const positionedFirstRing = placeNodesInRing(
+    firstRingNodes,
+    Math.max(250, firstRingNodes.length * 36 + 140)
+  );
+  const positionedOuterRing = placeNodesInRing(
+    remainingNodes,
+    Math.max(520, remainingNodes.length * 34 + 300),
+    -Math.PI / 3
+  );
+
+  return [...positionedPrimary, ...positionedFirstRing, ...positionedOuterRing];
+};
+
 const getNodeColor = (clan: string): string => {
   const clanColors: Record<string, string> = {
     'Brujah': '#ef4444',
@@ -79,41 +201,17 @@ function getLayoutedNodes(
 ): Node[] {
   if (nodes.length === 0) return nodes;
 
-  const centerX = 0;
-  const centerY = 0;
-
   if (layout === 'circular') {
-    const primaryNodes = nodes.filter(n => primaryCharacterIds.includes(n.id));
-    const otherNodes = nodes.filter(n => !primaryCharacterIds.includes(n.id));
-    
-    const innerRadius = primaryNodes.length > 1 ? Math.max(100, primaryNodes.length * 30) : 0;
-    const outerRadius = Math.max(250, (primaryNodes.length + otherNodes.length) * 35);
-
-    return [
-      ...primaryNodes.map((node, index) => ({
-        ...node,
-        position: {
-          x: centerX + innerRadius * Math.cos((index / Math.max(primaryNodes.length, 1)) * 2 * Math.PI - Math.PI / 2),
-          y: centerY + innerRadius * Math.sin((index / Math.max(primaryNodes.length, 1)) * 2 * Math.PI - Math.PI / 2),
-        },
-      })),
-      ...otherNodes.map((node, index) => ({
-        ...node,
-        position: {
-          x: centerX + outerRadius * Math.cos((index / Math.max(otherNodes.length, 1)) * 2 * Math.PI - Math.PI / 2),
-          y: centerY + outerRadius * Math.sin((index / Math.max(otherNodes.length, 1)) * 2 * Math.PI - Math.PI / 2),
-        },
-      })),
-    ];
+    return resolveNodeCollisions(buildPrimaryAnchoredGroupedLayout(nodes, edges, primaryCharacterIds), primaryCharacterIds);
   }
 
   if (layout === 'hierarchical') {
     const g = new dagre.graphlib.Graph();
     g.setDefaultEdgeLabel(() => ({}));
-    g.setGraph({ rankdir: 'TB', nodesep: 80, ranksep: 120 });
+    g.setGraph({ rankdir: 'TB', nodesep: 120, ranksep: 170 });
 
     nodes.forEach((node) => {
-      g.setNode(node.id, { width: 180, height: 80 });
+      g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
     });
 
     edges.forEach((edge) => {
@@ -140,56 +238,16 @@ function getLayoutedNodes(
       return {
         ...node,
         position: {
-          x: nodeWithPosition.x - 90,
-          y: nodeWithPosition.y - 40,
+          x: nodeWithPosition.x - NODE_WIDTH / 2,
+          y: nodeWithPosition.y - NODE_HEIGHT / 2,
         },
       };
     });
 
-    // Center the graph so primary nodes are at the middle horizontally
-    if (primaryCharacterIds.length > 0) {
-      const primaryPositioned = layoutedResult.filter(n => primaryCharacterIds.includes(n.id));
-      if (primaryPositioned.length > 0) {
-        const avgX = primaryPositioned.reduce((sum, n) => sum + n.position.x, 0) / primaryPositioned.length;
-        const offsetX = centerX - avgX;
-        const minY = Math.min(...layoutedResult.map(n => n.position.y));
-        const offsetY = centerY - minY;
-        return layoutedResult.map(n => ({
-          ...n,
-          position: {
-            x: n.position.x + offsetX,
-            y: n.position.y + offsetY,
-          },
-        }));
-      }
-    }
-
-    return layoutedResult;
+    return resolveNodeCollisions(recenterOnPrimary(layoutedResult, primaryCharacterIds), primaryCharacterIds);
   }
 
-  // 'force' (Grouped) layout — keep faction-based clustering, but shift so primary coterie is central
-  if (primaryCharacterIds.length > 0) {
-    // Use the original faction-grouped positions from rawNodes, then shift so primary is centered
-    const primaryNodes = nodes.filter(n => primaryCharacterIds.includes(n.id));
-
-    if (primaryNodes.length > 0) {
-      const avgX = primaryNodes.reduce((sum, n) => sum + n.position.x, 0) / primaryNodes.length;
-      const avgY = primaryNodes.reduce((sum, n) => sum + n.position.y, 0) / primaryNodes.length;
-      const offsetX = centerX - avgX;
-      const offsetY = centerY - avgY;
-
-      return nodes.map(n => ({
-        ...n,
-        position: {
-          x: n.position.x + offsetX,
-          y: n.position.y + offsetY,
-        },
-      }));
-    }
-  }
-
-  // No primary coterie — return original faction-grouped positions
-  return nodes;
+  return resolveNodeCollisions(buildPrimaryAnchoredGroupedLayout(nodes, edges, primaryCharacterIds), primaryCharacterIds);
 }
 
 export function RelationshipGraph({ 
@@ -209,7 +267,7 @@ export function RelationshipGraph({
   const [focusNodeId, setFocusNodeId] = useState<string | null>(null);
   const [focusDepth, setFocusDepth] = useState<1 | 2>(1);
   const [showLegend, setShowLegend] = useState(true);
-  const { fitView, zoomIn, zoomOut } = useReactFlow();
+  const { fitView, zoomIn, zoomOut, setViewport } = useReactFlow();
 
   // Cancel connection / focus mode with Escape
   useEffect(() => {
@@ -388,6 +446,10 @@ export function RelationshipGraph({
 
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const initialViewportNodeIds = useMemo(() => {
+    if (primaryCharacterIds.length === 0) return null;
+    return getPrimaryNeighborhoodIds(initialEdges, primaryCharacterIds);
+  }, [initialEdges, primaryCharacterIds]);
 
   useEffect(() => {
     setNodes(layoutedNodes);
@@ -488,13 +550,36 @@ export function RelationshipGraph({
     );
   }, [focusedNodeIds, setEdges]);
 
-  // Fit view after layout change
+  // Fit view after layout change, centered on primary coterie + immediate ring when available
   useEffect(() => {
     const timeout = setTimeout(() => {
+      if (initialViewportNodeIds && initialViewportNodeIds.size > 0) {
+        const nodesToFrame = nodes.filter((node) => initialViewportNodeIds.has(node.id));
+        if (nodesToFrame.length > 0) {
+          const bounds = getNodesBounds(nodesToFrame);
+          const paddingX = 180;
+          const paddingY = 140;
+          fitView({
+            nodes: nodesToFrame.map((node) => ({ id: node.id })),
+            padding: 0.25,
+            duration: 450,
+          });
+          setViewport(
+            {
+              x: -(bounds.x + bounds.width / 2) + paddingX,
+              y: -(bounds.y + bounds.height / 2) + paddingY,
+              zoom: Math.min(1, bounds.width > 0 || bounds.height > 0 ? 0.9 : 1),
+            },
+            { duration: 450 }
+          );
+          return;
+        }
+      }
+
       fitView({ padding: 0.2, duration: 400 });
     }, 50);
     return () => clearTimeout(timeout);
-  }, [layout, fitView]);
+  }, [layout, fitView, initialViewportNodeIds, nodes, setViewport]);
 
   const onNodeClickHandler = useCallback((event: React.MouseEvent, node: Node) => {
     if (connectionMode) {
