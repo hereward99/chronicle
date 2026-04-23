@@ -238,6 +238,14 @@ export default function Relationships() {
     setMinimumIntensity(1);
   };
 
+  const toggleArrayValue = (value: string, selectedValues: string[], setter: (values: string[]) => void) => {
+    setter(
+      selectedValues.includes(value)
+        ? selectedValues.filter((item) => item !== value)
+        : [...selectedValues, value]
+    );
+  };
+
   // Advanced filtering logic
   const filteredRelationships = useMemo(() => {
     let filtered = relationships;
@@ -631,6 +639,122 @@ export default function Relationships() {
         </TabsList>
 
         <TabsContent value="graph" className="space-y-4">
+          <Card>
+            <CardContent className="space-y-4 pt-6">
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-sm font-semibold">Map filters</h2>
+                    {graphFilterCount > 0 && <Badge variant="secondary">{graphFilterCount} active</Badge>}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Refine the relationship graph without leaving the map.</p>
+                </div>
+                {graphFilterCount > 0 && (
+                  <Button variant="ghost" size="sm" onClick={clearGraphFilters} className="self-start">
+                    <X className="w-4 h-4 mr-2" />
+                    Clear map filters
+                  </Button>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">Relationship type</p>
+                  <ToggleGroup type="multiple" value={selectedRelTypes} className="flex flex-wrap justify-start gap-2">
+                    {relationshipTypes.map((type) => (
+                      <ToggleGroupItem
+                        key={type}
+                        value={type}
+                        variant="outline"
+                        size="sm"
+                        onPressedChange={() => toggleArrayValue(type, selectedRelTypes, setSelectedRelTypes)}
+                        className="h-8"
+                      >
+                        {type}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">Minimum intensity</p>
+                  <ToggleGroup
+                    type="single"
+                    value={String(minimumIntensity)}
+                    onValueChange={(value) => {
+                      if (value) setMinimumIntensity(Number(value));
+                    }}
+                    className="flex flex-wrap justify-start gap-2"
+                  >
+                    {[1, 2, 3, 4, 5].map((value) => (
+                      <ToggleGroupItem key={value} value={String(value)} variant="outline" size="sm" className="h-8 min-w-10">
+                        {value}+
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+                </div>
+
+                {factions.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground">Faction</p>
+                    <ToggleGroup type="multiple" value={selectedFactions} className="flex flex-wrap justify-start gap-2">
+                      {factions.map((faction) => (
+                        <ToggleGroupItem
+                          key={faction.id}
+                          value={faction.id}
+                          variant="outline"
+                          size="sm"
+                          onPressedChange={() => toggleArrayValue(faction.id, selectedFactions, setSelectedFactions)}
+                          className="h-8"
+                        >
+                          {faction.name}
+                        </ToggleGroupItem>
+                      ))}
+                    </ToggleGroup>
+                  </div>
+                )}
+
+                {coteries.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground">Coterie</p>
+                    <ToggleGroup type="multiple" value={selectedCoteries} className="flex flex-wrap justify-start gap-2">
+                      {coteries.map((coterie) => (
+                        <ToggleGroupItem
+                          key={coterie.id}
+                          value={coterie.id}
+                          variant="outline"
+                          size="sm"
+                          onPressedChange={() => toggleArrayValue(coterie.id, selectedCoteries, setSelectedCoteries)}
+                          className="h-8"
+                        >
+                          {coterie.name}
+                        </ToggleGroupItem>
+                      ))}
+                    </ToggleGroup>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">Character type</p>
+                  <ToggleGroup type="multiple" value={selectedCharTypes} className="flex flex-wrap justify-start gap-2">
+                    {characterTypes.map((type) => (
+                      <ToggleGroupItem
+                        key={type}
+                        value={type}
+                        variant="outline"
+                        size="sm"
+                        onPressedChange={() => toggleArrayValue(type, selectedCharTypes, setSelectedCharTypes)}
+                        className="h-8"
+                      >
+                        {type}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {loading ? (
             <Card>
               <CardContent className="flex items-center justify-center py-12">
