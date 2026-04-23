@@ -2,7 +2,6 @@ import { useCallback, useMemo, useEffect, useState } from 'react';
 import ReactFlow, {
   Node,
   Edge,
-  Controls,
   Background,
   useNodesState,
   useEdgesState,
@@ -11,7 +10,7 @@ import ReactFlow, {
   Panel,
   MiniMap,
   Connection,
-  addEdge,
+  getNodesBounds,
   useReactFlow,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
@@ -47,6 +46,129 @@ interface RelationshipGraphProps {
 }
 
 type LayoutType = 'force' | 'hierarchical' | 'circular';
+
+const NODE_WIDTH = 180;
+const NODE_HEIGHT = 80;
+const NODE_HORIZONTAL_GAP = 220;
+const NODE_VERTICAL_GAP = 120;
+
+const getPrimaryNeighborhoodIds = (edges: Edge[], primaryCharacterIds: string[]) => {
+  const visibleIds = new Set(primaryCharacterIds);
+
+  edges.forEach((edge) => {
+    if (primaryCharacterIds.includes(edge.source) || primaryCharacterIds.includes(edge.target)) {
+      visibleIds.add(edge.source);
+      visibleIds.add(edge.target);
+    }
+  });
+
+  return visibleIds;
+};
+
+const recenterOnPrimary = (nodes: Node[], primaryCharacterIds: string[]) => {
+  if (primaryCharacterIds.length === 0) return nodes;
+
+  const primaryNodes = nodes.filter((node) => primaryCharacterIds.includes(node.id));
+  if (primaryNodes.length === 0) return nodes;
+
+  const avgX = primaryNodes.reduce((sum, node) => sum + node.position.x, 0) / primaryNodes.length;
+  const avgY = primaryNodes.reduce((sum, node) => sum + node.position.y, 0) / primaryNodes.length;
+
+  return nodes.map((node) => ({
+    ...node,
+    position: {
+      x: node.position.x - avgX,
+      y: node.position.y - avgY,
+    },
+  }));
+};
+
+const resolveNodeCollisions = (nodes: Node[], primaryCharacterIds: string[]) => {
+  const adjustedNodes = nodes.map((node) => ({
+    ...node,
+    position: { ...node.position },
+  }));
+
+  for (let iteration = 0; iteration < 80; iteration++) {
+    let moved = false;
+
+    for (let i = 0; i < adjustedNodes.length; i++) {
+      for (let j = i + 1; j < adjustedNodes.length; j++) {
+        const a = adjustedNodes[i];
+        const b = adjustedNodes[j];
+        const dx = b.position.x - a.position.x;
+        const dy = b.position.y - a.position.y;
+        const overlapX = NODE_HORIZONTAL_GAP - Math.abs(dx);
+        const overlapY = NODE_VERTICAL_GAP - Math.abs(dy);
+
+        if (overlapX <= 0 || overlapY <= 0) continue;
+
+        moved = true;
+        const moveHorizontally = overlapX < overlapY;
+        const push = (moveHorizontally ? overlapX : overlapY) / 2 + 6;
+        const direction = moveHorizontally
+          ? (dx === 0 ? (i % 2 === 0 ? -1 : 1) : Math.sign(dx))
+          : (dy === 0 ? (j % 2 === 0 ? -1 : 1) : Math.sign(dy));
+
+        const isPrimaryA = primaryCharacterIds.includes(a.id);
+        const isPrimaryB = primaryCharacterIds.includes(b.id);
+        const multiplierA = isPrimaryA && !isPrimaryB ? 0.35 : 1;
+        const multiplierB = isPrimaryB && !isPrimaryA ? 0.35 : 1;
+
+        if (moveHorizontally) {
+          a.position.x -= push * direction * multiplierA;
+          b.position.x += push * direction * multiplierB;
+        } else {
+          a.position.y -= push * direction * multiplierA;
+          b.position.y += push * direction * multiplierB;
+        }
+      }
+    }
+
+    if (!moved) break;
+  }
+
+  return recenterOnPrimary(adjustedNodes, primaryCharacterIds);
+};
+
+const placeNodesInRing = (nodes: Node[], radius: number, angleOffset = -Math.PI / 2) => {
+  if (nodes.length === 0) return [];
+
+  if (nodes.length === 1) {
+    return [{ ...nodes[0], position: { x: 0, y: radius === 0 ? 0 : -radius } }];
+  }
+
+  return nodes.map((node, index) => ({
+    ...node,
+    position: {
+      x: radius * Math.cos((index / nodes.length) * 2 * Math.PI + angleOffset),
+      y: radius * Math.sin((index / nodes.length) * 2 * Math.PI + angleOffset),
+    },
+  }));
+};
+
+const buildPrimaryAnchoredGroupedLayout = (nodes: Node[], edges: Edge[], primaryCharacterIds: string[]) => {
+  if (primaryCharacterIds.length === 0) return nodes;
+
+  const primaryIdSet = new Set(primaryCharacterIds);
+  const firstRingIds = getPrimaryNeighborhoodIds(edges, primaryCharacterIds);
+  const primaryNodes = nodes.filter((node) => primaryIdSet.has(node.id));
+  const firstRingNodes = nodes.filter((node) => firstRingIds.has(node.id) && !primaryIdSet.has(node.id));
+  const remainingNodes = nodes.filter((node) => !firstRingIds.has(node.id));
+
+  const positionedPrimary = placeNodesInRing(primaryNodes, primaryNodes.length > 1 ? 90 : 0);
+  const positionedFirstRing = placeNodesInRing(
+    firstRingNodes,
+    Math.max(250, firstRingNodes.length * 36 + 140)
+  );
+  const positionedOuterRing = placeNodesInRing(
+    remainingNodes,
+    Math.max(520, remainingNodes.length * 34 + 300),
+    -Math.PI / 3
+  );
+
+  return [...positionedPrimary, ...positionedFirstRing, ...positionedOuterRing];
+};
 
 const getNodeColor = (clan: string): string => {
   const clanColors: Record<string, string> = {
