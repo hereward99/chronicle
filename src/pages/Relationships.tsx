@@ -32,6 +32,47 @@ import type { Coterie } from '@/hooks/useCoteries';
 import { MentionText } from '@/components/mentions/MentionText';
 import { SuggestedRelationships } from '@/components/relationship/SuggestedRelationships';
 import { getRelationshipBadgeClassName } from '@/lib/relationshipStyles';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+
+const RELATIONSHIP_MAP_FILTERS_KEY = 'relationships-map-filters';
+
+type RelationshipMapFilterState = {
+  selectedRelTypes: string[];
+  selectedFactions: string[];
+  selectedCoteries: string[];
+  selectedCharTypes: string[];
+  minimumIntensity: number;
+};
+
+const defaultRelationshipMapFilters: RelationshipMapFilterState = {
+  selectedRelTypes: [],
+  selectedFactions: [],
+  selectedCoteries: [],
+  selectedCharTypes: [],
+  minimumIntensity: 1,
+};
+
+function loadRelationshipMapFilters(): RelationshipMapFilterState {
+  try {
+    const stored = localStorage.getItem(RELATIONSHIP_MAP_FILTERS_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as Partial<RelationshipMapFilterState>;
+      return {
+        ...defaultRelationshipMapFilters,
+        ...parsed,
+        minimumIntensity: Math.max(1, Math.min(parsed.minimumIntensity ?? 1, 5)),
+      };
+    }
+  } catch {}
+
+  return defaultRelationshipMapFilters;
+}
+
+function saveRelationshipMapFilters(state: RelationshipMapFilterState) {
+  try {
+    localStorage.setItem(RELATIONSHIP_MAP_FILTERS_KEY, JSON.stringify(state));
+  } catch {}
+}
 
 const relationshipIcons: Record<string, any> = {
   'Ally': Handshake,
@@ -42,6 +83,7 @@ const relationshipIcons: Record<string, any> = {
 };
 
 export default function Relationships() {
+  const persistedMapFilters = useMemo(loadRelationshipMapFilters, []);
   const { relationships, loading, createRelationship, updateRelationship, deleteRelationship } = useRelationships();
   const { characters } = useCharacters();
   const { currentChronicle } = useChronicles();
@@ -106,12 +148,23 @@ export default function Relationships() {
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
-  const [selectedRelTypes, setSelectedRelTypes] = useState<string[]>([]);
-  const [selectedFactions, setSelectedFactions] = useState<string[]>([]);
-  const [selectedCoteries, setSelectedCoteries] = useState<string[]>([]);
-  const [selectedCharTypes, setSelectedCharTypes] = useState<string[]>([]);
+  const [selectedRelTypes, setSelectedRelTypes] = useState<string[]>(persistedMapFilters.selectedRelTypes);
+  const [selectedFactions, setSelectedFactions] = useState<string[]>(persistedMapFilters.selectedFactions);
+  const [selectedCoteries, setSelectedCoteries] = useState<string[]>(persistedMapFilters.selectedCoteries);
+  const [selectedCharTypes, setSelectedCharTypes] = useState<string[]>(persistedMapFilters.selectedCharTypes);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedClans, setSelectedClans] = useState<string[]>([]);
+  const [minimumIntensity, setMinimumIntensity] = useState<number>(persistedMapFilters.minimumIntensity);
+
+  useEffect(() => {
+    saveRelationshipMapFilters({
+      selectedRelTypes,
+      selectedFactions,
+      selectedCoteries,
+      selectedCharTypes,
+      minimumIntensity,
+    });
+  }, [selectedRelTypes, selectedFactions, selectedCoteries, selectedCharTypes, minimumIntensity]);
 
   const handleEdit = (relationship: Relationship) => {
     setSelectedRelationship(relationship);
@@ -149,10 +202,41 @@ export default function Relationships() {
     Array.from(new Set(characters.map(c => c.clan))).sort(),
     [characters]
   );
+  const characterMap = useMemo(
+    () => new Map(characters.map((character) => [character.id, character])),
+    [characters]
+  );
+  const characterFactionMap = useMemo(() => {
+    const map = new Map<string, string[]>();
+    characterFactions.forEach((membership) => {
+      const existing = map.get(membership.character_id) ?? [];
+      existing.push(membership.faction_id);
+      map.set(membership.character_id, existing);
+    });
+    return map;
+  }, [characterFactions]);
+  const characterCoterieMap = useMemo(() => {
+    const map = new Map<string, string[]>();
+    allCoterieMembers.forEach((membership) => {
+      const existing = map.get(membership.character_id) ?? [];
+      existing.push(membership.coterie_id);
+      map.set(membership.character_id, existing);
+    });
+    return map;
+  }, [allCoterieMembers]);
   
   const relationshipTypes = ['Ally', 'Rival', 'Contact', 'Friend', 'Enemy'];
   const characterTypes = ['PC', 'NPC'];
   const characterStatuses = ['Active', 'Inactive', 'Retired', 'Dead'];
+  const graphFilterCount = selectedRelTypes.length + selectedFactions.length + selectedCoteries.length + selectedCharTypes.length + (minimumIntensity > 1 ? 1 : 0);
+
+  const clearGraphFilters = () => {
+    setSelectedRelTypes([]);
+    setSelectedFactions([]);
+    setSelectedCoteries([]);
+    setSelectedCharTypes([]);
+    setMinimumIntensity(1);
+  };
 
   // Advanced filtering logic
   const filteredRelationships = useMemo(() => {
@@ -170,12 +254,16 @@ export default function Relationships() {
       filtered = filtered.filter(r => selectedRelTypes.includes(r.relationship_type));
     }
 
+    if (minimumIntensity > 1) {
+      filtered = filtered.filter(r => r.intensity >= minimumIntensity);
+    }
+
     // Filter by character search, faction, type, status, or clan
     if (searchQuery || selectedFactions.length > 0 || selectedCoteries.length > 0 || selectedCharTypes.length > 0 || 
         selectedStatuses.length > 0 || selectedClans.length > 0) {
       filtered = filtered.filter(r => {
-        const char1 = characters.find(c => c.id === r.character_id);
-        const char2 = characters.find(c => c.id === r.related_character_id);
+        const char1 = characterMap.get(r.character_id);
+        const char2 = characterMap.get(r.related_character_id);
         
         if (!char1 || !char2) return false;
 
@@ -190,12 +278,8 @@ export default function Relationships() {
 
         // Faction filter
         if (selectedFactions.length > 0) {
-          const char1Factions = characterFactions
-            .filter(cf => cf.character_id === char1.id)
-            .map(cf => cf.faction_id);
-          const char2Factions = characterFactions
-            .filter(cf => cf.character_id === char2.id)
-            .map(cf => cf.faction_id);
+          const char1Factions = characterFactionMap.get(char1.id) ?? [];
+          const char2Factions = characterFactionMap.get(char2.id) ?? [];
           
           const hasMatchingFaction = 
             char1Factions.some(f => selectedFactions.includes(f)) ||
@@ -206,12 +290,8 @@ export default function Relationships() {
 
         // Coterie filter
         if (selectedCoteries.length > 0) {
-          const char1Coteries = allCoterieMembers
-            .filter(cm => cm.character_id === char1.id)
-            .map(cm => cm.coterie_id);
-          const char2Coteries = allCoterieMembers
-            .filter(cm => cm.character_id === char2.id)
-            .map(cm => cm.coterie_id);
+          const char1Coteries = characterCoterieMap.get(char1.id) ?? [];
+          const char2Coteries = characterCoterieMap.get(char2.id) ?? [];
           
           const hasMatchingCoterie = 
             char1Coteries.some(c => selectedCoteries.includes(c)) ||
@@ -259,9 +339,9 @@ export default function Relationships() {
     selectedCharTypes, 
     selectedStatuses, 
     selectedClans,
-    characters,
-    characterFactions,
-    allCoterieMembers
+    characterMap,
+    characterFactionMap,
+    characterCoterieMap
   ]);
 
   const clearFilters = () => {
@@ -272,6 +352,7 @@ export default function Relationships() {
     setSelectedCharTypes([]);
     setSelectedStatuses([]);
     setSelectedClans([]);
+    setMinimumIntensity(1);
   };
 
   const activeFilterCount = 
@@ -280,6 +361,7 @@ export default function Relationships() {
     selectedFactions.length +
     selectedCoteries.length +
     selectedCharTypes.length +
+    (minimumIntensity > 1 ? 1 : 0) +
     selectedStatuses.length +
     selectedClans.length;
 
@@ -549,6 +631,138 @@ export default function Relationships() {
         </TabsList>
 
         <TabsContent value="graph" className="space-y-4">
+          <Card>
+            <CardContent className="space-y-4 pt-6">
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-sm font-semibold">Map filters</h2>
+                    {graphFilterCount > 0 && <Badge variant="secondary">{graphFilterCount} active</Badge>}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Refine the relationship graph without leaving the map.</p>
+                </div>
+                {graphFilterCount > 0 && (
+                  <Button variant="ghost" size="sm" onClick={clearGraphFilters} className="self-start">
+                    <X className="w-4 h-4 mr-2" />
+                    Clear map filters
+                  </Button>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">Relationship type</p>
+                  <ToggleGroup
+                    type="multiple"
+                    value={selectedRelTypes}
+                    onValueChange={setSelectedRelTypes}
+                    className="flex flex-wrap justify-start gap-2"
+                  >
+                    {relationshipTypes.map((type) => (
+                      <ToggleGroupItem
+                        key={type}
+                        value={type}
+                        variant="outline"
+                        size="sm"
+                        className="h-8"
+                      >
+                        {type}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">Minimum intensity</p>
+                  <ToggleGroup
+                    type="single"
+                    value={String(minimumIntensity)}
+                    onValueChange={(value) => {
+                      if (value) setMinimumIntensity(Number(value));
+                    }}
+                    className="flex flex-wrap justify-start gap-2"
+                  >
+                    {[1, 2, 3, 4, 5].map((value) => (
+                      <ToggleGroupItem key={value} value={String(value)} variant="outline" size="sm" className="h-8 min-w-10">
+                        {value}+
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+                </div>
+
+                {factions.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground">Faction</p>
+                    <ToggleGroup
+                      type="multiple"
+                      value={selectedFactions}
+                      onValueChange={setSelectedFactions}
+                      className="flex flex-wrap justify-start gap-2"
+                    >
+                      {factions.map((faction) => (
+                        <ToggleGroupItem
+                          key={faction.id}
+                          value={faction.id}
+                          variant="outline"
+                          size="sm"
+                          className="h-8"
+                        >
+                          {faction.name}
+                        </ToggleGroupItem>
+                      ))}
+                    </ToggleGroup>
+                  </div>
+                )}
+
+                {coteries.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground">Coterie</p>
+                    <ToggleGroup
+                      type="multiple"
+                      value={selectedCoteries}
+                      onValueChange={setSelectedCoteries}
+                      className="flex flex-wrap justify-start gap-2"
+                    >
+                      {coteries.map((coterie) => (
+                        <ToggleGroupItem
+                          key={coterie.id}
+                          value={coterie.id}
+                          variant="outline"
+                          size="sm"
+                          className="h-8"
+                        >
+                          {coterie.name}
+                        </ToggleGroupItem>
+                      ))}
+                    </ToggleGroup>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">Character type</p>
+                  <ToggleGroup
+                    type="multiple"
+                    value={selectedCharTypes}
+                    onValueChange={setSelectedCharTypes}
+                    className="flex flex-wrap justify-start gap-2"
+                  >
+                    {characterTypes.map((type) => (
+                      <ToggleGroupItem
+                        key={type}
+                        value={type}
+                        variant="outline"
+                        size="sm"
+                        className="h-8"
+                      >
+                        {type}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {loading ? (
             <Card>
               <CardContent className="flex items-center justify-center py-12">
