@@ -33,6 +33,46 @@ import { MentionText } from '@/components/mentions/MentionText';
 import { SuggestedRelationships } from '@/components/relationship/SuggestedRelationships';
 import { getRelationshipBadgeClassName } from '@/lib/relationshipStyles';
 
+const RELATIONSHIP_MAP_FILTERS_KEY = 'relationships-map-filters';
+
+type RelationshipMapFilterState = {
+  selectedRelTypes: string[];
+  selectedFactions: string[];
+  selectedCoteries: string[];
+  selectedCharTypes: string[];
+  minimumIntensity: number;
+};
+
+const defaultRelationshipMapFilters: RelationshipMapFilterState = {
+  selectedRelTypes: [],
+  selectedFactions: [],
+  selectedCoteries: [],
+  selectedCharTypes: [],
+  minimumIntensity: 1,
+};
+
+function loadRelationshipMapFilters(): RelationshipMapFilterState {
+  try {
+    const stored = localStorage.getItem(RELATIONSHIP_MAP_FILTERS_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as Partial<RelationshipMapFilterState>;
+      return {
+        ...defaultRelationshipMapFilters,
+        ...parsed,
+        minimumIntensity: Math.max(1, Math.min(parsed.minimumIntensity ?? 1, 5)),
+      };
+    }
+  } catch {}
+
+  return defaultRelationshipMapFilters;
+}
+
+function saveRelationshipMapFilters(state: RelationshipMapFilterState) {
+  try {
+    localStorage.setItem(RELATIONSHIP_MAP_FILTERS_KEY, JSON.stringify(state));
+  } catch {}
+}
+
 const relationshipIcons: Record<string, any> = {
   'Ally': Handshake,
   'Rival': Swords,
@@ -42,6 +82,7 @@ const relationshipIcons: Record<string, any> = {
 };
 
 export default function Relationships() {
+  const persistedMapFilters = useMemo(loadRelationshipMapFilters, []);
   const { relationships, loading, createRelationship, updateRelationship, deleteRelationship } = useRelationships();
   const { characters } = useCharacters();
   const { currentChronicle } = useChronicles();
@@ -106,12 +147,23 @@ export default function Relationships() {
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
-  const [selectedRelTypes, setSelectedRelTypes] = useState<string[]>([]);
-  const [selectedFactions, setSelectedFactions] = useState<string[]>([]);
-  const [selectedCoteries, setSelectedCoteries] = useState<string[]>([]);
-  const [selectedCharTypes, setSelectedCharTypes] = useState<string[]>([]);
+  const [selectedRelTypes, setSelectedRelTypes] = useState<string[]>(persistedMapFilters.selectedRelTypes);
+  const [selectedFactions, setSelectedFactions] = useState<string[]>(persistedMapFilters.selectedFactions);
+  const [selectedCoteries, setSelectedCoteries] = useState<string[]>(persistedMapFilters.selectedCoteries);
+  const [selectedCharTypes, setSelectedCharTypes] = useState<string[]>(persistedMapFilters.selectedCharTypes);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedClans, setSelectedClans] = useState<string[]>([]);
+  const [minimumIntensity, setMinimumIntensity] = useState<number>(persistedMapFilters.minimumIntensity);
+
+  useEffect(() => {
+    saveRelationshipMapFilters({
+      selectedRelTypes,
+      selectedFactions,
+      selectedCoteries,
+      selectedCharTypes,
+      minimumIntensity,
+    });
+  }, [selectedRelTypes, selectedFactions, selectedCoteries, selectedCharTypes, minimumIntensity]);
 
   const handleEdit = (relationship: Relationship) => {
     setSelectedRelationship(relationship);
@@ -168,6 +220,10 @@ export default function Relationships() {
     // Filter by relationship type
     if (selectedRelTypes.length > 0) {
       filtered = filtered.filter(r => selectedRelTypes.includes(r.relationship_type));
+    }
+
+    if (minimumIntensity > 1) {
+      filtered = filtered.filter(r => r.intensity >= minimumIntensity);
     }
 
     // Filter by character search, faction, type, status, or clan
@@ -272,6 +328,7 @@ export default function Relationships() {
     setSelectedCharTypes([]);
     setSelectedStatuses([]);
     setSelectedClans([]);
+    setMinimumIntensity(1);
   };
 
   const activeFilterCount = 
@@ -280,6 +337,7 @@ export default function Relationships() {
     selectedFactions.length +
     selectedCoteries.length +
     selectedCharTypes.length +
+    (minimumIntensity > 1 ? 1 : 0) +
     selectedStatuses.length +
     selectedClans.length;
 
