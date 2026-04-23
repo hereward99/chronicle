@@ -262,8 +262,8 @@ export default function Relationships() {
     if (searchQuery || selectedFactions.length > 0 || selectedCoteries.length > 0 || selectedCharTypes.length > 0 || 
         selectedStatuses.length > 0 || selectedClans.length > 0) {
       filtered = filtered.filter(r => {
-        const char1 = characters.find(c => c.id === r.character_id);
-        const char2 = characters.find(c => c.id === r.related_character_id);
+        const char1 = characterMap.get(r.character_id);
+        const char2 = characterMap.get(r.related_character_id);
         
         if (!char1 || !char2) return false;
 
@@ -278,12 +278,8 @@ export default function Relationships() {
 
         // Faction filter
         if (selectedFactions.length > 0) {
-          const char1Factions = characterFactions
-            .filter(cf => cf.character_id === char1.id)
-            .map(cf => cf.faction_id);
-          const char2Factions = characterFactions
-            .filter(cf => cf.character_id === char2.id)
-            .map(cf => cf.faction_id);
+          const char1Factions = characterFactionMap.get(char1.id) ?? [];
+          const char2Factions = characterFactionMap.get(char2.id) ?? [];
           
           const hasMatchingFaction = 
             char1Factions.some(f => selectedFactions.includes(f)) ||
@@ -294,12 +290,8 @@ export default function Relationships() {
 
         // Coterie filter
         if (selectedCoteries.length > 0) {
-          const char1Coteries = allCoterieMembers
-            .filter(cm => cm.character_id === char1.id)
-            .map(cm => cm.coterie_id);
-          const char2Coteries = allCoterieMembers
-            .filter(cm => cm.character_id === char2.id)
-            .map(cm => cm.coterie_id);
+          const char1Coteries = characterCoterieMap.get(char1.id) ?? [];
+          const char2Coteries = characterCoterieMap.get(char2.id) ?? [];
           
           const hasMatchingCoterie = 
             char1Coteries.some(c => selectedCoteries.includes(c)) ||
@@ -347,9 +339,9 @@ export default function Relationships() {
     selectedCharTypes, 
     selectedStatuses, 
     selectedClans,
-    characters,
-    characterFactions,
-    allCoterieMembers
+    characterMap,
+    characterFactionMap,
+    characterCoterieMap
   ]);
 
   const clearFilters = () => {
