@@ -238,14 +238,6 @@ export default function Relationships() {
     setMinimumIntensity(1);
   };
 
-  const toggleArrayValue = (value: string, selectedValues: string[], setter: (values: string[]) => void) => {
-    setter(
-      selectedValues.includes(value)
-        ? selectedValues.filter((item) => item !== value)
-        : [...selectedValues, value]
-    );
-  };
-
   // Advanced filtering logic
   const filteredRelationships = useMemo(() => {
     let filtered = relationships;
