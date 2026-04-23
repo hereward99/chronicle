@@ -131,6 +131,12 @@ const resolveNodeCollisions = (nodes: Node[], primaryCharacterIds: string[]) => 
   return recenterOnPrimary(adjustedNodes, primaryCharacterIds);
 };
 
+const getPolygonRadius = (count: number, spacing: number) => {
+  if (count <= 1) return 0;
+  if (count === 2) return spacing / 2;
+  return spacing / (2 * Math.sin(Math.PI / count));
+};
+
 const placeNodesInRing = (nodes: Node[], radius: number, angleOffset = -Math.PI / 2) => {
   if (nodes.length === 0) return [];
 
@@ -147,6 +153,40 @@ const placeNodesInRing = (nodes: Node[], radius: number, angleOffset = -Math.PI 
   }));
 };
 
+const placePrimaryPolygon = (nodes: Node[]) => {
+  if (nodes.length === 0) return [];
+
+  if (nodes.length === 1) {
+    return [{ ...nodes[0], position: { x: 0, y: 0 } }];
+  }
+
+  const radius = Math.max(90, getPolygonRadius(nodes.length, 210));
+  return placeNodesInRing(nodes, radius);
+};
+
+const buildPrimaryAnchoredCircularLayout = (nodes: Node[], edges: Edge[], primaryCharacterIds: string[]) => {
+  if (primaryCharacterIds.length === 0) return nodes;
+
+  const primaryIdSet = new Set(primaryCharacterIds);
+  const firstRingIds = getPrimaryNeighborhoodIds(edges, primaryCharacterIds);
+  const primaryNodes = nodes.filter((node) => primaryIdSet.has(node.id));
+  const firstRingNodes = nodes.filter((node) => firstRingIds.has(node.id) && !primaryIdSet.has(node.id));
+  const remainingNodes = nodes.filter((node) => !firstRingIds.has(node.id));
+
+  const positionedPrimary = placePrimaryPolygon(primaryNodes);
+  const positionedFirstRing = placeNodesInRing(
+    firstRingNodes,
+    Math.max(300, firstRingNodes.length * 40 + 170)
+  );
+  const positionedOuterRing = placeNodesInRing(
+    remainingNodes,
+    Math.max(560, remainingNodes.length * 38 + 340),
+    -Math.PI / 3
+  );
+
+  return [...positionedPrimary, ...positionedFirstRing, ...positionedOuterRing];
+};
+
 const buildPrimaryAnchoredGroupedLayout = (nodes: Node[], edges: Edge[], primaryCharacterIds: string[]) => {
   if (primaryCharacterIds.length === 0) return nodes;
 
@@ -156,16 +196,45 @@ const buildPrimaryAnchoredGroupedLayout = (nodes: Node[], edges: Edge[], primary
   const firstRingNodes = nodes.filter((node) => firstRingIds.has(node.id) && !primaryIdSet.has(node.id));
   const remainingNodes = nodes.filter((node) => !firstRingIds.has(node.id));
 
-  const positionedPrimary = placeNodesInRing(primaryNodes, primaryNodes.length > 1 ? 90 : 0);
-  const positionedFirstRing = placeNodesInRing(
-    firstRingNodes,
-    Math.max(250, firstRingNodes.length * 36 + 140)
-  );
-  const positionedOuterRing = placeNodesInRing(
-    remainingNodes,
-    Math.max(520, remainingNodes.length * 34 + 300),
-    -Math.PI / 3
-  );
+  const clusterByFaction = (items: Node[]) => {
+    const groups = new Map<string, Node[]>();
+
+    items.forEach((node) => {
+      const factionId = ((node.data as { faction?: Faction }).faction?.id) ?? 'none';
+      const existing = groups.get(factionId) ?? [];
+      existing.push(node);
+      groups.set(factionId, existing);
+    });
+
+    return Array.from(groups.values()).sort((a, b) => b.length - a.length);
+  };
+
+  const placeClusters = (clusters: Node[][], radius: number, spread: number) => {
+    if (clusters.length === 0) return [];
+
+    return clusters.flatMap((cluster, clusterIndex) => {
+      const angle = (clusterIndex / clusters.length) * 2 * Math.PI - Math.PI / 2;
+      const anchorX = radius * Math.cos(angle);
+      const anchorY = radius * Math.sin(angle);
+
+      if (cluster.length === 1) {
+        return [{ ...cluster[0], position: { x: anchorX, y: anchorY } }];
+      }
+
+      const localRadius = Math.max(70, getPolygonRadius(cluster.length, spread));
+      return cluster.map((node, index) => ({
+        ...node,
+        position: {
+          x: anchorX + localRadius * Math.cos((index / cluster.length) * 2 * Math.PI - Math.PI / 2),
+          y: anchorY + localRadius * Math.sin((index / cluster.length) * 2 * Math.PI - Math.PI / 2),
+        },
+      }));
+    });
+  };
+
+  const positionedPrimary = placePrimaryPolygon(primaryNodes);
+  const positionedFirstRing = placeClusters(clusterByFaction(firstRingNodes), 320, 150);
+  const positionedOuterRing = placeClusters(clusterByFaction(remainingNodes), 620, 135);
 
   return [...positionedPrimary, ...positionedFirstRing, ...positionedOuterRing];
 };
@@ -202,7 +271,7 @@ function getLayoutedNodes(
   if (nodes.length === 0) return nodes;
 
   if (layout === 'circular') {
-    return resolveNodeCollisions(buildPrimaryAnchoredGroupedLayout(nodes, edges, primaryCharacterIds), primaryCharacterIds);
+    return resolveNodeCollisions(buildPrimaryAnchoredCircularLayout(nodes, edges, primaryCharacterIds), primaryCharacterIds);
   }
 
   if (layout === 'hierarchical') {
