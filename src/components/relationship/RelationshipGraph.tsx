@@ -201,41 +201,17 @@ function getLayoutedNodes(
 ): Node[] {
   if (nodes.length === 0) return nodes;
 
-  const centerX = 0;
-  const centerY = 0;
-
   if (layout === 'circular') {
-    const primaryNodes = nodes.filter(n => primaryCharacterIds.includes(n.id));
-    const otherNodes = nodes.filter(n => !primaryCharacterIds.includes(n.id));
-    
-    const innerRadius = primaryNodes.length > 1 ? Math.max(100, primaryNodes.length * 30) : 0;
-    const outerRadius = Math.max(250, (primaryNodes.length + otherNodes.length) * 35);
-
-    return [
-      ...primaryNodes.map((node, index) => ({
-        ...node,
-        position: {
-          x: centerX + innerRadius * Math.cos((index / Math.max(primaryNodes.length, 1)) * 2 * Math.PI - Math.PI / 2),
-          y: centerY + innerRadius * Math.sin((index / Math.max(primaryNodes.length, 1)) * 2 * Math.PI - Math.PI / 2),
-        },
-      })),
-      ...otherNodes.map((node, index) => ({
-        ...node,
-        position: {
-          x: centerX + outerRadius * Math.cos((index / Math.max(otherNodes.length, 1)) * 2 * Math.PI - Math.PI / 2),
-          y: centerY + outerRadius * Math.sin((index / Math.max(otherNodes.length, 1)) * 2 * Math.PI - Math.PI / 2),
-        },
-      })),
-    ];
+    return resolveNodeCollisions(buildPrimaryAnchoredGroupedLayout(nodes, edges, primaryCharacterIds), primaryCharacterIds);
   }
 
   if (layout === 'hierarchical') {
     const g = new dagre.graphlib.Graph();
     g.setDefaultEdgeLabel(() => ({}));
-    g.setGraph({ rankdir: 'TB', nodesep: 80, ranksep: 120 });
+    g.setGraph({ rankdir: 'TB', nodesep: 120, ranksep: 170 });
 
     nodes.forEach((node) => {
-      g.setNode(node.id, { width: 180, height: 80 });
+      g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
     });
 
     edges.forEach((edge) => {
@@ -262,56 +238,16 @@ function getLayoutedNodes(
       return {
         ...node,
         position: {
-          x: nodeWithPosition.x - 90,
-          y: nodeWithPosition.y - 40,
+          x: nodeWithPosition.x - NODE_WIDTH / 2,
+          y: nodeWithPosition.y - NODE_HEIGHT / 2,
         },
       };
     });
 
-    // Center the graph so primary nodes are at the middle horizontally
-    if (primaryCharacterIds.length > 0) {
-      const primaryPositioned = layoutedResult.filter(n => primaryCharacterIds.includes(n.id));
-      if (primaryPositioned.length > 0) {
-        const avgX = primaryPositioned.reduce((sum, n) => sum + n.position.x, 0) / primaryPositioned.length;
-        const offsetX = centerX - avgX;
-        const minY = Math.min(...layoutedResult.map(n => n.position.y));
-        const offsetY = centerY - minY;
-        return layoutedResult.map(n => ({
-          ...n,
-          position: {
-            x: n.position.x + offsetX,
-            y: n.position.y + offsetY,
-          },
-        }));
-      }
-    }
-
-    return layoutedResult;
+    return resolveNodeCollisions(recenterOnPrimary(layoutedResult, primaryCharacterIds), primaryCharacterIds);
   }
 
-  // 'force' (Grouped) layout — keep faction-based clustering, but shift so primary coterie is central
-  if (primaryCharacterIds.length > 0) {
-    // Use the original faction-grouped positions from rawNodes, then shift so primary is centered
-    const primaryNodes = nodes.filter(n => primaryCharacterIds.includes(n.id));
-
-    if (primaryNodes.length > 0) {
-      const avgX = primaryNodes.reduce((sum, n) => sum + n.position.x, 0) / primaryNodes.length;
-      const avgY = primaryNodes.reduce((sum, n) => sum + n.position.y, 0) / primaryNodes.length;
-      const offsetX = centerX - avgX;
-      const offsetY = centerY - avgY;
-
-      return nodes.map(n => ({
-        ...n,
-        position: {
-          x: n.position.x + offsetX,
-          y: n.position.y + offsetY,
-        },
-      }));
-    }
-  }
-
-  // No primary coterie — return original faction-grouped positions
-  return nodes;
+  return resolveNodeCollisions(buildPrimaryAnchoredGroupedLayout(nodes, edges, primaryCharacterIds), primaryCharacterIds);
 }
 
 export function RelationshipGraph({ 
