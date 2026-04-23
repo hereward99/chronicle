@@ -271,7 +271,7 @@ function getLayoutedNodes(
   if (nodes.length === 0) return nodes;
 
   if (layout === 'circular') {
-    return resolveNodeCollisions(buildPrimaryAnchoredGroupedLayout(nodes, edges, primaryCharacterIds), primaryCharacterIds);
+    return resolveNodeCollisions(buildPrimaryAnchoredCircularLayout(nodes, edges, primaryCharacterIds), primaryCharacterIds);
   }
 
   if (layout === 'hierarchical') {
