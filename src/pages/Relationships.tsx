@@ -660,14 +660,18 @@ export default function Relationships() {
               <div className="space-y-3">
                 <div className="space-y-2">
                   <p className="text-xs font-medium text-muted-foreground">Relationship type</p>
-                  <ToggleGroup type="multiple" value={selectedRelTypes} className="flex flex-wrap justify-start gap-2">
+                  <ToggleGroup
+                    type="multiple"
+                    value={selectedRelTypes}
+                    onValueChange={setSelectedRelTypes}
+                    className="flex flex-wrap justify-start gap-2"
+                  >
                     {relationshipTypes.map((type) => (
                       <ToggleGroupItem
                         key={type}
                         value={type}
                         variant="outline"
                         size="sm"
-                        onPressedChange={() => toggleArrayValue(type, selectedRelTypes, setSelectedRelTypes)}
                         className="h-8"
                       >
                         {type}
@@ -697,14 +701,18 @@ export default function Relationships() {
                 {factions.length > 0 && (
                   <div className="space-y-2">
                     <p className="text-xs font-medium text-muted-foreground">Faction</p>
-                    <ToggleGroup type="multiple" value={selectedFactions} className="flex flex-wrap justify-start gap-2">
+                    <ToggleGroup
+                      type="multiple"
+                      value={selectedFactions}
+                      onValueChange={setSelectedFactions}
+                      className="flex flex-wrap justify-start gap-2"
+                    >
                       {factions.map((faction) => (
                         <ToggleGroupItem
                           key={faction.id}
                           value={faction.id}
                           variant="outline"
                           size="sm"
-                          onPressedChange={() => toggleArrayValue(faction.id, selectedFactions, setSelectedFactions)}
                           className="h-8"
                         >
                           {faction.name}
@@ -717,14 +725,18 @@ export default function Relationships() {
                 {coteries.length > 0 && (
                   <div className="space-y-2">
                     <p className="text-xs font-medium text-muted-foreground">Coterie</p>
-                    <ToggleGroup type="multiple" value={selectedCoteries} className="flex flex-wrap justify-start gap-2">
+                    <ToggleGroup
+                      type="multiple"
+                      value={selectedCoteries}
+                      onValueChange={setSelectedCoteries}
+                      className="flex flex-wrap justify-start gap-2"
+                    >
                       {coteries.map((coterie) => (
                         <ToggleGroupItem
                           key={coterie.id}
                           value={coterie.id}
                           variant="outline"
                           size="sm"
-                          onPressedChange={() => toggleArrayValue(coterie.id, selectedCoteries, setSelectedCoteries)}
                           className="h-8"
                         >
                           {coterie.name}
@@ -736,14 +748,18 @@ export default function Relationships() {
 
                 <div className="space-y-2">
                   <p className="text-xs font-medium text-muted-foreground">Character type</p>
-                  <ToggleGroup type="multiple" value={selectedCharTypes} className="flex flex-wrap justify-start gap-2">
+                  <ToggleGroup
+                    type="multiple"
+                    value={selectedCharTypes}
+                    onValueChange={setSelectedCharTypes}
+                    className="flex flex-wrap justify-start gap-2"
+                  >
                     {characterTypes.map((type) => (
                       <ToggleGroupItem
                         key={type}
                         value={type}
                         variant="outline"
                         size="sm"
-                        onPressedChange={() => toggleArrayValue(type, selectedCharTypes, setSelectedCharTypes)}
                         className="h-8"
                       >
                         {type}
