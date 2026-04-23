@@ -267,7 +267,7 @@ export function RelationshipGraph({
   const [focusNodeId, setFocusNodeId] = useState<string | null>(null);
   const [focusDepth, setFocusDepth] = useState<1 | 2>(1);
   const [showLegend, setShowLegend] = useState(true);
-  const { fitView, zoomIn, zoomOut } = useReactFlow();
+  const { fitView, zoomIn, zoomOut, setViewport } = useReactFlow();
 
   // Cancel connection / focus mode with Escape
   useEffect(() => {
@@ -446,6 +446,10 @@ export function RelationshipGraph({
 
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const initialViewportNodeIds = useMemo(() => {
+    if (primaryCharacterIds.length === 0) return null;
+    return getPrimaryNeighborhoodIds(initialEdges, primaryCharacterIds);
+  }, [initialEdges, primaryCharacterIds]);
 
   useEffect(() => {
     setNodes(layoutedNodes);
@@ -546,13 +550,36 @@ export function RelationshipGraph({
     );
   }, [focusedNodeIds, setEdges]);
 
-  // Fit view after layout change
+  // Fit view after layout change, centered on primary coterie + immediate ring when available
   useEffect(() => {
     const timeout = setTimeout(() => {
+      if (initialViewportNodeIds && initialViewportNodeIds.size > 0) {
+        const nodesToFrame = nodes.filter((node) => initialViewportNodeIds.has(node.id));
+        if (nodesToFrame.length > 0) {
+          const bounds = getNodesBounds(nodesToFrame);
+          const paddingX = 180;
+          const paddingY = 140;
+          fitView({
+            nodes: nodesToFrame.map((node) => ({ id: node.id })),
+            padding: 0.25,
+            duration: 450,
+          });
+          setViewport(
+            {
+              x: -(bounds.x + bounds.width / 2) + paddingX,
+              y: -(bounds.y + bounds.height / 2) + paddingY,
+              zoom: Math.min(1, bounds.width > 0 || bounds.height > 0 ? 0.9 : 1),
+            },
+            { duration: 450 }
+          );
+          return;
+        }
+      }
+
       fitView({ padding: 0.2, duration: 400 });
     }, 50);
     return () => clearTimeout(timeout);
-  }, [layout, fitView]);
+  }, [layout, fitView, initialViewportNodeIds, nodes, setViewport]);
 
   const onNodeClickHandler = useCallback((event: React.MouseEvent, node: Node) => {
     if (connectionMode) {
