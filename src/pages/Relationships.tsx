@@ -32,6 +32,7 @@ import type { Coterie } from '@/hooks/useCoteries';
 import { MentionText } from '@/components/mentions/MentionText';
 import { SuggestedRelationships } from '@/components/relationship/SuggestedRelationships';
 import { getRelationshipBadgeClassName } from '@/lib/relationshipStyles';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 const RELATIONSHIP_MAP_FILTERS_KEY = 'relationships-map-filters';
 
@@ -201,10 +202,41 @@ export default function Relationships() {
     Array.from(new Set(characters.map(c => c.clan))).sort(),
     [characters]
   );
+  const characterMap = useMemo(
+    () => new Map(characters.map((character) => [character.id, character])),
+    [characters]
+  );
+  const characterFactionMap = useMemo(() => {
+    const map = new Map<string, string[]>();
+    characterFactions.forEach((membership) => {
+      const existing = map.get(membership.character_id) ?? [];
+      existing.push(membership.faction_id);
+      map.set(membership.character_id, existing);
+    });
+    return map;
+  }, [characterFactions]);
+  const characterCoterieMap = useMemo(() => {
+    const map = new Map<string, string[]>();
+    allCoterieMembers.forEach((membership) => {
+      const existing = map.get(membership.character_id) ?? [];
+      existing.push(membership.coterie_id);
+      map.set(membership.character_id, existing);
+    });
+    return map;
+  }, [allCoterieMembers]);
   
   const relationshipTypes = ['Ally', 'Rival', 'Contact', 'Friend', 'Enemy'];
   const characterTypes = ['PC', 'NPC'];
   const characterStatuses = ['Active', 'Inactive', 'Retired', 'Dead'];
+  const graphFilterCount = selectedRelTypes.length + selectedFactions.length + selectedCoteries.length + selectedCharTypes.length + (minimumIntensity > 1 ? 1 : 0);
+
+  const clearGraphFilters = () => {
+    setSelectedRelTypes([]);
+    setSelectedFactions([]);
+    setSelectedCoteries([]);
+    setSelectedCharTypes([]);
+    setMinimumIntensity(1);
+  };
 
   // Advanced filtering logic
   const filteredRelationships = useMemo(() => {
