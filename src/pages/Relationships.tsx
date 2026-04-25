@@ -646,190 +646,188 @@ export default function Relationships() {
         </TabsList>
 
         <TabsContent value="graph" className="space-y-4">
-          <div className={`grid grid-cols-1 ${mapFiltersOpen ? 'lg:grid-cols-[1fr_280px]' : 'lg:grid-cols-[1fr_auto]'} gap-4 items-start`}>
-            <div className="space-y-4 min-w-0 order-2 lg:order-1">
-              {loading ? (
-                <Card>
-                  <CardContent className="flex items-center justify-center py-12">
-                    <p className="text-muted-foreground">Loading graph...</p>
-                  </CardContent>
-                </Card>
-              ) : filteredRelationships.length === 0 ? (
-                <Card>
-                  <CardContent className="flex flex-col items-center justify-center py-12">
-                    <Network className="w-12 h-12 text-muted-foreground mb-4" />
-                    <p className="text-lg font-medium mb-2">No relationships to display</p>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Create relationships to see the network graph
-                    </p>
-                    <Button onClick={() => setCreateDialogOpen(true)}>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create First Relationship
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <>
-                  <ReactFlowProvider key={graphRefreshKey}>
-                    <RelationshipGraph
-                      relationships={filteredRelationships}
-                      characters={characters}
-                      factions={factions}
-                      characterFactions={characterFactions}
-                      primaryCharacterIds={primaryCharacterIds}
-                      onNodeClick={handleNodeClick}
-                      onEdgeClick={handleEdit}
-                      onCreateRelationship={handleCreateRelationshipFromGraph}
-                    />
-                  </ReactFlowProvider>
-                  <RelationshipLegend />
-                </>
-              )}
-            </div>
+          {loading ? (
+            <Card>
+              <CardContent className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground">Loading graph...</p>
+              </CardContent>
+            </Card>
+          ) : filteredRelationships.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Network className="w-12 h-12 text-muted-foreground mb-4" />
+                <p className="text-lg font-medium mb-2">No relationships to display</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Create relationships to see the network graph
+                </p>
+                <Button onClick={() => setCreateDialogOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create First Relationship
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <div className="relative">
+                <ReactFlowProvider key={graphRefreshKey}>
+                  <RelationshipGraph
+                    relationships={filteredRelationships}
+                    characters={characters}
+                    factions={factions}
+                    characterFactions={characterFactions}
+                    primaryCharacterIds={primaryCharacterIds}
+                    onNodeClick={handleNodeClick}
+                    onEdgeClick={handleEdit}
+                    onCreateRelationship={handleCreateRelationshipFromGraph}
+                  />
 
-            <Collapsible
-              open={mapFiltersOpen}
-              onOpenChange={setMapFiltersOpen}
-              className="order-1 lg:order-2 lg:sticky lg:top-4"
-            >
-              <Card className={mapFiltersOpen ? 'lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto' : ''}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Filter className="w-4 h-4 text-muted-foreground shrink-0" />
-                      <CardTitle className="text-sm">{mapFiltersOpen ? 'Map filters' : 'Filters'}</CardTitle>
-                      {graphFilterCount > 0 && <Badge variant="secondary" className="shrink-0">{graphFilterCount}</Badge>}
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      {graphFilterCount > 0 && mapFiltersOpen && (
-                        <Button variant="ghost" size="sm" onClick={clearGraphFilters} className="h-7 px-2">
-                          <X className="w-3.5 h-3.5" />
-                        </Button>
-                      )}
-                      <CollapsibleTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-7 px-2" aria-label={mapFiltersOpen ? 'Collapse filters' : 'Expand filters'}>
-                          <ChevronDown className={`w-3.5 h-3.5 transition-transform ${mapFiltersOpen ? '' : '-rotate-90'}`} />
-                        </Button>
-                      </CollapsibleTrigger>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CollapsibleContent>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium text-muted-foreground">Relationship type</p>
-                      <ToggleGroup
-                        type="multiple"
-                        value={selectedRelTypes}
-                        onValueChange={setSelectedRelTypes}
-                        className="flex flex-wrap justify-start gap-1.5"
-                      >
-                        {relationshipTypes.map((type) => (
-                          <ToggleGroupItem
-                            key={type}
-                            value={type}
-                            variant="outline"
-                            size="sm"
-                            className="h-7 px-2 text-xs"
-                          >
-                            {type}
-                          </ToggleGroupItem>
-                        ))}
-                      </ToggleGroup>
-                    </div>
-
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium text-muted-foreground">Minimum intensity</p>
-                      <ToggleGroup
-                        type="single"
-                        value={String(minimumIntensity)}
-                        onValueChange={(value) => {
-                          if (value) setMinimumIntensity(Number(value));
-                        }}
-                        className="flex flex-wrap justify-start gap-1.5"
-                      >
-                        {[1, 2, 3, 4, 5].map((value) => (
-                          <ToggleGroupItem key={value} value={String(value)} variant="outline" size="sm" className="h-7 px-2 text-xs min-w-9">
-                            {value}+
-                          </ToggleGroupItem>
-                        ))}
-                      </ToggleGroup>
-                    </div>
-
-                    {factions.length > 0 && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-medium text-muted-foreground">Faction</p>
-                        <ToggleGroup
-                          type="multiple"
-                          value={selectedFactions}
-                          onValueChange={setSelectedFactions}
-                          className="flex flex-wrap justify-start gap-1.5"
-                        >
-                          {factions.map((faction) => (
-                            <ToggleGroupItem
-                              key={faction.id}
-                              value={faction.id}
-                              variant="outline"
-                              size="sm"
-                              className="h-7 px-2 text-xs"
+                  <Collapsible
+                    open={mapFiltersOpen}
+                    onOpenChange={setMapFiltersOpen}
+                    className="absolute top-3 right-3 z-10 w-72 max-w-[calc(100%-1.5rem)]"
+                  >
+                    <Card className={`bg-card/95 backdrop-blur-sm shadow-lg ${mapFiltersOpen ? 'max-h-[calc(100%-1.5rem)] overflow-y-auto' : ''}`}>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Filter className="w-4 h-4 text-muted-foreground shrink-0" />
+                            <CardTitle className="text-sm">Map filters</CardTitle>
+                            {graphFilterCount > 0 && <Badge variant="secondary" className="shrink-0">{graphFilterCount}</Badge>}
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {graphFilterCount > 0 && mapFiltersOpen && (
+                              <Button variant="ghost" size="sm" onClick={clearGraphFilters} className="h-7 px-2">
+                                <X className="w-3.5 h-3.5" />
+                              </Button>
+                            )}
+                            <CollapsibleTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-7 px-2" aria-label={mapFiltersOpen ? 'Collapse filters' : 'Expand filters'}>
+                                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${mapFiltersOpen ? '' : '-rotate-90'}`} />
+                              </Button>
+                            </CollapsibleTrigger>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CollapsibleContent>
+                        <CardContent className="space-y-4">
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium text-muted-foreground">Relationship type</p>
+                            <ToggleGroup
+                              type="multiple"
+                              value={selectedRelTypes}
+                              onValueChange={setSelectedRelTypes}
+                              className="flex flex-wrap justify-start gap-1.5"
                             >
-                              {faction.name}
-                            </ToggleGroupItem>
-                          ))}
-                        </ToggleGroup>
-                      </div>
-                    )}
+                              {relationshipTypes.map((type) => (
+                                <ToggleGroupItem
+                                  key={type}
+                                  value={type}
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 px-2 text-xs"
+                                >
+                                  {type}
+                                </ToggleGroupItem>
+                              ))}
+                            </ToggleGroup>
+                          </div>
 
-                    {coteries.length > 0 && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-medium text-muted-foreground">Coterie</p>
-                        <ToggleGroup
-                          type="multiple"
-                          value={selectedCoteries}
-                          onValueChange={setSelectedCoteries}
-                          className="flex flex-wrap justify-start gap-1.5"
-                        >
-                          {coteries.map((coterie) => (
-                            <ToggleGroupItem
-                              key={coterie.id}
-                              value={coterie.id}
-                              variant="outline"
-                              size="sm"
-                              className="h-7 px-2 text-xs"
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium text-muted-foreground">Minimum intensity</p>
+                            <ToggleGroup
+                              type="single"
+                              value={String(minimumIntensity)}
+                              onValueChange={(value) => {
+                                if (value) setMinimumIntensity(Number(value));
+                              }}
+                              className="flex flex-wrap justify-start gap-1.5"
                             >
-                              {coterie.name}
-                            </ToggleGroupItem>
-                          ))}
-                        </ToggleGroup>
-                      </div>
-                    )}
+                              {[1, 2, 3, 4, 5].map((value) => (
+                                <ToggleGroupItem key={value} value={String(value)} variant="outline" size="sm" className="h-7 px-2 text-xs min-w-9">
+                                  {value}+
+                                </ToggleGroupItem>
+                              ))}
+                            </ToggleGroup>
+                          </div>
 
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium text-muted-foreground">Character type</p>
-                      <ToggleGroup
-                        type="multiple"
-                        value={selectedCharTypes}
-                        onValueChange={setSelectedCharTypes}
-                        className="flex flex-wrap justify-start gap-1.5"
-                      >
-                        {characterTypes.map((type) => (
-                          <ToggleGroupItem
-                            key={type}
-                            value={type}
-                            variant="outline"
-                            size="sm"
-                            className="h-7 px-2 text-xs"
-                          >
-                            {type}
-                          </ToggleGroupItem>
-                        ))}
-                      </ToggleGroup>
-                    </div>
-                  </CardContent>
-                </CollapsibleContent>
-              </Card>
-            </Collapsible>
-          </div>
+                          {factions.length > 0 && (
+                            <div className="space-y-2">
+                              <p className="text-xs font-medium text-muted-foreground">Faction</p>
+                              <ToggleGroup
+                                type="multiple"
+                                value={selectedFactions}
+                                onValueChange={setSelectedFactions}
+                                className="flex flex-wrap justify-start gap-1.5"
+                              >
+                                {factions.map((faction) => (
+                                  <ToggleGroupItem
+                                    key={faction.id}
+                                    value={faction.id}
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 px-2 text-xs"
+                                  >
+                                    {faction.name}
+                                  </ToggleGroupItem>
+                                ))}
+                              </ToggleGroup>
+                            </div>
+                          )}
+
+                          {coteries.length > 0 && (
+                            <div className="space-y-2">
+                              <p className="text-xs font-medium text-muted-foreground">Coterie</p>
+                              <ToggleGroup
+                                type="multiple"
+                                value={selectedCoteries}
+                                onValueChange={setSelectedCoteries}
+                                className="flex flex-wrap justify-start gap-1.5"
+                              >
+                                {coteries.map((coterie) => (
+                                  <ToggleGroupItem
+                                    key={coterie.id}
+                                    value={coterie.id}
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 px-2 text-xs"
+                                  >
+                                    {coterie.name}
+                                  </ToggleGroupItem>
+                                ))}
+                              </ToggleGroup>
+                            </div>
+                          )}
+
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium text-muted-foreground">Character type</p>
+                            <ToggleGroup
+                              type="multiple"
+                              value={selectedCharTypes}
+                              onValueChange={setSelectedCharTypes}
+                              className="flex flex-wrap justify-start gap-1.5"
+                            >
+                              {characterTypes.map((type) => (
+                                <ToggleGroupItem
+                                  key={type}
+                                  value={type}
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 px-2 text-xs"
+                                >
+                                  {type}
+                                </ToggleGroupItem>
+                              ))}
+                            </ToggleGroup>
+                          </div>
+                        </CardContent>
+                      </CollapsibleContent>
+                    </Card>
+                  </Collapsible>
+                </ReactFlowProvider>
+              </div>
+              <RelationshipLegend />
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="list" className="space-y-4">
