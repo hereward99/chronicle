@@ -644,32 +644,67 @@ export default function Relationships() {
         </TabsList>
 
         <TabsContent value="graph" className="space-y-4">
-          <Card>
-            <CardContent className="space-y-4 pt-6">
-              <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-sm font-semibold">Map filters</h2>
-                    {graphFilterCount > 0 && <Badge variant="secondary">{graphFilterCount} active</Badge>}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">Refine the relationship graph without leaving the map.</p>
-                </div>
-                {graphFilterCount > 0 && (
-                  <Button variant="ghost" size="sm" onClick={clearGraphFilters} className="self-start">
-                    <X className="w-4 h-4 mr-2" />
-                    Clear map filters
-                  </Button>
-                )}
-              </div>
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-4 items-start">
+            <div className="space-y-4 min-w-0 order-2 lg:order-1">
+              {loading ? (
+                <Card>
+                  <CardContent className="flex items-center justify-center py-12">
+                    <p className="text-muted-foreground">Loading graph...</p>
+                  </CardContent>
+                </Card>
+              ) : filteredRelationships.length === 0 ? (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center py-12">
+                    <Network className="w-12 h-12 text-muted-foreground mb-4" />
+                    <p className="text-lg font-medium mb-2">No relationships to display</p>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Create relationships to see the network graph
+                    </p>
+                    <Button onClick={() => setCreateDialogOpen(true)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create First Relationship
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <ReactFlowProvider key={graphRefreshKey}>
+                  <RelationshipGraph
+                    relationships={filteredRelationships}
+                    characters={characters}
+                    factions={factions}
+                    characterFactions={characterFactions}
+                    primaryCharacterIds={primaryCharacterIds}
+                    onNodeClick={handleNodeClick}
+                    onEdgeClick={handleEdit}
+                    onCreateRelationship={handleCreateRelationshipFromGraph}
+                  />
+                </ReactFlowProvider>
+              )}
+            </div>
 
-              <div className="space-y-3">
+            <Card className="order-1 lg:order-2 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Filter className="w-4 h-4 text-muted-foreground shrink-0" />
+                    <CardTitle className="text-sm">Map filters</CardTitle>
+                    {graphFilterCount > 0 && <Badge variant="secondary" className="shrink-0">{graphFilterCount}</Badge>}
+                  </div>
+                  {graphFilterCount > 0 && (
+                    <Button variant="ghost" size="sm" onClick={clearGraphFilters} className="h-7 px-2 shrink-0">
+                      <X className="w-3.5 h-3.5" />
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <p className="text-xs font-medium text-muted-foreground">Relationship type</p>
                   <ToggleGroup
                     type="multiple"
                     value={selectedRelTypes}
                     onValueChange={setSelectedRelTypes}
-                    className="flex flex-wrap justify-start gap-2"
+                    className="flex flex-wrap justify-start gap-1.5"
                   >
                     {relationshipTypes.map((type) => (
                       <ToggleGroupItem
@@ -677,7 +712,7 @@ export default function Relationships() {
                         value={type}
                         variant="outline"
                         size="sm"
-                        className="h-8"
+                        className="h-7 px-2 text-xs"
                       >
                         {type}
                       </ToggleGroupItem>
@@ -693,10 +728,10 @@ export default function Relationships() {
                     onValueChange={(value) => {
                       if (value) setMinimumIntensity(Number(value));
                     }}
-                    className="flex flex-wrap justify-start gap-2"
+                    className="flex flex-wrap justify-start gap-1.5"
                   >
                     {[1, 2, 3, 4, 5].map((value) => (
-                      <ToggleGroupItem key={value} value={String(value)} variant="outline" size="sm" className="h-8 min-w-10">
+                      <ToggleGroupItem key={value} value={String(value)} variant="outline" size="sm" className="h-7 px-2 text-xs min-w-9">
                         {value}+
                       </ToggleGroupItem>
                     ))}
@@ -710,7 +745,7 @@ export default function Relationships() {
                       type="multiple"
                       value={selectedFactions}
                       onValueChange={setSelectedFactions}
-                      className="flex flex-wrap justify-start gap-2"
+                      className="flex flex-wrap justify-start gap-1.5"
                     >
                       {factions.map((faction) => (
                         <ToggleGroupItem
@@ -718,7 +753,7 @@ export default function Relationships() {
                           value={faction.id}
                           variant="outline"
                           size="sm"
-                          className="h-8"
+                          className="h-7 px-2 text-xs"
                         >
                           {faction.name}
                         </ToggleGroupItem>
@@ -734,7 +769,7 @@ export default function Relationships() {
                       type="multiple"
                       value={selectedCoteries}
                       onValueChange={setSelectedCoteries}
-                      className="flex flex-wrap justify-start gap-2"
+                      className="flex flex-wrap justify-start gap-1.5"
                     >
                       {coteries.map((coterie) => (
                         <ToggleGroupItem
@@ -742,7 +777,7 @@ export default function Relationships() {
                           value={coterie.id}
                           variant="outline"
                           size="sm"
-                          className="h-8"
+                          className="h-7 px-2 text-xs"
                         >
                           {coterie.name}
                         </ToggleGroupItem>
@@ -757,7 +792,7 @@ export default function Relationships() {
                     type="multiple"
                     value={selectedCharTypes}
                     onValueChange={setSelectedCharTypes}
-                    className="flex flex-wrap justify-start gap-2"
+                    className="flex flex-wrap justify-start gap-1.5"
                   >
                     {characterTypes.map((type) => (
                       <ToggleGroupItem
@@ -765,51 +800,16 @@ export default function Relationships() {
                         value={type}
                         variant="outline"
                         size="sm"
-                        className="h-8"
+                        className="h-7 px-2 text-xs"
                       >
                         {type}
                       </ToggleGroupItem>
                     ))}
                   </ToggleGroup>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {loading ? (
-            <Card>
-              <CardContent className="flex items-center justify-center py-12">
-                <p className="text-muted-foreground">Loading graph...</p>
               </CardContent>
             </Card>
-          ) : filteredRelationships.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Network className="w-12 h-12 text-muted-foreground mb-4" />
-                <p className="text-lg font-medium mb-2">No relationships to display</p>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Create relationships to see the network graph
-                </p>
-                <Button onClick={() => setCreateDialogOpen(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create First Relationship
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <ReactFlowProvider key={graphRefreshKey}>
-              <RelationshipGraph
-                relationships={filteredRelationships}
-                characters={characters}
-                factions={factions}
-                characterFactions={characterFactions}
-                primaryCharacterIds={primaryCharacterIds}
-                onNodeClick={handleNodeClick}
-                onEdgeClick={handleEdit}
-                onCreateRelationship={handleCreateRelationshipFromGraph}
-              />
-            </ReactFlowProvider>
-          )}
+          </div>
         </TabsContent>
 
         <TabsContent value="list" className="space-y-4">
