@@ -335,7 +335,7 @@ export function RelationshipGraph({
   const [focusMode, setFocusMode] = useState(false);
   const [focusNodeId, setFocusNodeId] = useState<string | null>(null);
   const [focusDepth, setFocusDepth] = useState<1 | 2>(1);
-  const [showLegend, setShowLegend] = useState(true);
+  
   const { fitView, zoomIn, zoomOut, setViewport } = useReactFlow();
 
   // Cancel connection / focus mode with Escape
