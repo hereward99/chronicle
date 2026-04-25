@@ -149,6 +149,7 @@ export default function Relationships() {
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
+  const [mapFiltersOpen, setMapFiltersOpen] = useState(true);
   const [selectedRelTypes, setSelectedRelTypes] = useState<string[]>(persistedMapFilters.selectedRelTypes);
   const [selectedFactions, setSelectedFactions] = useState<string[]>(persistedMapFilters.selectedFactions);
   const [selectedCoteries, setSelectedCoteries] = useState<string[]>(persistedMapFilters.selectedCoteries);
