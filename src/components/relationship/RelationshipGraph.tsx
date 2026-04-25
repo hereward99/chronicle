@@ -909,25 +909,6 @@ export function RelationshipGraph({
 
                 <div className="border-t border-border my-1" />
 
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant={showLegend ? "secondary" : "outline"}
-                        onClick={() => setShowLegend((current) => !current)}
-                        className="gap-2"
-                      >
-                        {showLegend ? <PanelRightClose className="w-4 h-4" /> : <PanelRightOpen className="w-4 h-4" />}
-                        Legend
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{showLegend ? 'Hide legend' : 'Show legend'}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-
                 {/* Layout switcher */}
                 <div className="text-xs font-medium text-muted-foreground px-1 mb-0.5">Layout</div>
                 {layoutOptions.map((opt) => (
