@@ -33,6 +33,7 @@ import { MentionText } from '@/components/mentions/MentionText';
 import { SuggestedRelationships } from '@/components/relationship/SuggestedRelationships';
 import { getRelationshipBadgeClassName } from '@/lib/relationshipStyles';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { RelationshipLegend } from '@/components/relationship/RelationshipLegend';
 
 const RELATIONSHIP_MAP_FILTERS_KEY = 'relationships-map-filters';
 
