@@ -31,7 +31,6 @@ import {
 import {
   getRelationshipColor,
   getRelationshipEdgeStyle,
-  relationshipLegendItems,
 } from '@/lib/relationshipStyles';
 
 interface RelationshipGraphProps {
