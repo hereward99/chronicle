@@ -339,6 +339,7 @@ export default function Relationships() {
     selectedCharTypes, 
     selectedStatuses, 
     selectedClans,
+    minimumIntensity,
     characterMap,
     characterFactionMap,
     characterCoterieMap
