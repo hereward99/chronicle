@@ -136,18 +136,22 @@ const getPolygonRadius = (count: number, spacing: number) => {
   return spacing / (2 * Math.sin(Math.PI / count));
 };
 
-const placeNodesInRing = (nodes: Node[], radius: number, angleOffset = -Math.PI / 2) => {
+// Horizontal aspect: stretches X and compresses Y so layouts favour wide screens
+const HORIZONTAL_STRETCH_X = 1.4;
+const HORIZONTAL_STRETCH_Y = 0.85;
+
+const placeNodesInRing = (nodes: Node[], radius: number, angleOffset = 0) => {
   if (nodes.length === 0) return [];
 
   if (nodes.length === 1) {
-    return [{ ...nodes[0], position: { x: 0, y: radius === 0 ? 0 : -radius } }];
+    return [{ ...nodes[0], position: { x: radius === 0 ? 0 : -radius, y: 0 } }];
   }
 
   return nodes.map((node, index) => ({
     ...node,
     position: {
-      x: radius * Math.cos((index / nodes.length) * 2 * Math.PI + angleOffset),
-      y: radius * Math.sin((index / nodes.length) * 2 * Math.PI + angleOffset),
+      x: radius * HORIZONTAL_STRETCH_X * Math.cos((index / nodes.length) * 2 * Math.PI + angleOffset),
+      y: radius * HORIZONTAL_STRETCH_Y * Math.sin((index / nodes.length) * 2 * Math.PI + angleOffset),
     },
   }));
 };
@@ -160,7 +164,8 @@ const placePrimaryPolygon = (nodes: Node[]) => {
   }
 
   const radius = Math.max(90, getPolygonRadius(nodes.length, 210));
-  return placeNodesInRing(nodes, radius);
+  // Start polygon flat: first node at left, so 2-node groups sit horizontally
+  return placeNodesInRing(nodes, radius, Math.PI);
 };
 
 const buildPrimaryAnchoredCircularLayout = (nodes: Node[], edges: Edge[], primaryCharacterIds: string[]) => {
@@ -212,9 +217,9 @@ const buildPrimaryAnchoredGroupedLayout = (nodes: Node[], edges: Edge[], primary
     if (clusters.length === 0) return [];
 
     return clusters.flatMap((cluster, clusterIndex) => {
-      const angle = (clusterIndex / clusters.length) * 2 * Math.PI - Math.PI / 2;
-      const anchorX = radius * Math.cos(angle);
-      const anchorY = radius * Math.sin(angle);
+      const angle = (clusterIndex / clusters.length) * 2 * Math.PI;
+      const anchorX = radius * HORIZONTAL_STRETCH_X * Math.cos(angle);
+      const anchorY = radius * HORIZONTAL_STRETCH_Y * Math.sin(angle);
 
       if (cluster.length === 1) {
         return [{ ...cluster[0], position: { x: anchorX, y: anchorY } }];
@@ -224,8 +229,8 @@ const buildPrimaryAnchoredGroupedLayout = (nodes: Node[], edges: Edge[], primary
       return cluster.map((node, index) => ({
         ...node,
         position: {
-          x: anchorX + localRadius * Math.cos((index / cluster.length) * 2 * Math.PI - Math.PI / 2),
-          y: anchorY + localRadius * Math.sin((index / cluster.length) * 2 * Math.PI - Math.PI / 2),
+          x: anchorX + localRadius * HORIZONTAL_STRETCH_X * Math.cos((index / cluster.length) * 2 * Math.PI),
+          y: anchorY + localRadius * HORIZONTAL_STRETCH_Y * Math.sin((index / cluster.length) * 2 * Math.PI),
         },
       }));
     });
@@ -276,7 +281,7 @@ function getLayoutedNodes(
   if (layout === 'hierarchical') {
     const g = new dagre.graphlib.Graph();
     g.setDefaultEdgeLabel(() => ({}));
-    g.setGraph({ rankdir: 'TB', nodesep: 120, ranksep: 170 });
+    g.setGraph({ rankdir: 'LR', nodesep: 100, ranksep: 200 });
 
     nodes.forEach((node) => {
       g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
