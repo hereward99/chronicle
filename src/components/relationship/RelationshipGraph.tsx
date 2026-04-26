@@ -217,9 +217,9 @@ const buildPrimaryAnchoredGroupedLayout = (nodes: Node[], edges: Edge[], primary
     if (clusters.length === 0) return [];
 
     return clusters.flatMap((cluster, clusterIndex) => {
-      const angle = (clusterIndex / clusters.length) * 2 * Math.PI - Math.PI / 2;
-      const anchorX = radius * Math.cos(angle);
-      const anchorY = radius * Math.sin(angle);
+      const angle = (clusterIndex / clusters.length) * 2 * Math.PI;
+      const anchorX = radius * HORIZONTAL_STRETCH_X * Math.cos(angle);
+      const anchorY = radius * HORIZONTAL_STRETCH_Y * Math.sin(angle);
 
       if (cluster.length === 1) {
         return [{ ...cluster[0], position: { x: anchorX, y: anchorY } }];
@@ -229,8 +229,8 @@ const buildPrimaryAnchoredGroupedLayout = (nodes: Node[], edges: Edge[], primary
       return cluster.map((node, index) => ({
         ...node,
         position: {
-          x: anchorX + localRadius * Math.cos((index / cluster.length) * 2 * Math.PI - Math.PI / 2),
-          y: anchorY + localRadius * Math.sin((index / cluster.length) * 2 * Math.PI - Math.PI / 2),
+          x: anchorX + localRadius * HORIZONTAL_STRETCH_X * Math.cos((index / cluster.length) * 2 * Math.PI),
+          y: anchorY + localRadius * HORIZONTAL_STRETCH_Y * Math.sin((index / cluster.length) * 2 * Math.PI),
         },
       }));
     });
