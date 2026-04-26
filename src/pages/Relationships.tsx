@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef, useLayoutEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -150,6 +150,18 @@ export default function Relationships() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const [mapFiltersOpen, setMapFiltersOpen] = useState(true);
+  const mapFiltersRef = useRef<HTMLDivElement>(null);
+  const [mapFiltersHeight, setMapFiltersHeight] = useState<number>(0);
+
+  useLayoutEffect(() => {
+    const el = mapFiltersRef.current;
+    if (!el) return;
+    const update = () => setMapFiltersHeight(el.offsetHeight);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [mapFiltersOpen]);
   const [selectedRelTypes, setSelectedRelTypes] = useState<string[]>(persistedMapFilters.selectedRelTypes);
   const [selectedFactions, setSelectedFactions] = useState<string[]>(persistedMapFilters.selectedFactions);
   const [selectedCoteries, setSelectedCoteries] = useState<string[]>(persistedMapFilters.selectedCoteries);
@@ -668,7 +680,10 @@ export default function Relationships() {
             </Card>
           ) : (
             <>
-              <div className="relative">
+              <div
+                className="relative"
+                style={{ height: `${Math.max(600, mapFiltersHeight + 24)}px` }}
+              >
                 <ReactFlowProvider key={graphRefreshKey}>
                   <RelationshipGraph
                     relationships={filteredRelationships}
@@ -686,7 +701,7 @@ export default function Relationships() {
                     onOpenChange={setMapFiltersOpen}
                     className="absolute top-3 right-3 z-10 w-72 max-w-[calc(100%-1.5rem)]"
                   >
-                    <Card className={`bg-card/95 backdrop-blur-sm shadow-lg ${mapFiltersOpen ? 'max-h-[calc(100%-1.5rem)] overflow-y-auto' : ''}`}>
+                    <Card ref={mapFiltersRef} className="bg-card/95 backdrop-blur-sm shadow-lg">
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2 min-w-0">

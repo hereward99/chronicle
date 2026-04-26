@@ -731,7 +731,7 @@ export function RelationshipGraph({
   ];
 
   return (
-    <div className="w-full h-[600px] border rounded-lg bg-background relative">
+    <div className="w-full h-full min-h-[600px] border rounded-lg bg-background relative">
       {connectionMode && (() => {
         const sourceName = pendingSourceId
           ? characters.find((c) => c.id === pendingSourceId)?.name
