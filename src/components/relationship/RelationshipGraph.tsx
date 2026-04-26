@@ -281,7 +281,7 @@ function getLayoutedNodes(
   if (layout === 'hierarchical') {
     const g = new dagre.graphlib.Graph();
     g.setDefaultEdgeLabel(() => ({}));
-    g.setGraph({ rankdir: 'TB', nodesep: 120, ranksep: 170 });
+    g.setGraph({ rankdir: 'LR', nodesep: 100, ranksep: 200 });
 
     nodes.forEach((node) => {
       g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
