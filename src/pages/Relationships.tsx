@@ -150,6 +150,18 @@ export default function Relationships() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const [mapFiltersOpen, setMapFiltersOpen] = useState(true);
+  const mapFiltersRef = useRef<HTMLDivElement>(null);
+  const [mapFiltersHeight, setMapFiltersHeight] = useState<number>(0);
+
+  useLayoutEffect(() => {
+    const el = mapFiltersRef.current;
+    if (!el) return;
+    const update = () => setMapFiltersHeight(el.offsetHeight);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [mapFiltersOpen]);
   const [selectedRelTypes, setSelectedRelTypes] = useState<string[]>(persistedMapFilters.selectedRelTypes);
   const [selectedFactions, setSelectedFactions] = useState<string[]>(persistedMapFilters.selectedFactions);
   const [selectedCoteries, setSelectedCoteries] = useState<string[]>(persistedMapFilters.selectedCoteries);
