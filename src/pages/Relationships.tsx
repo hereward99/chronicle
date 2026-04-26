@@ -680,7 +680,10 @@ export default function Relationships() {
             </Card>
           ) : (
             <>
-              <div className="relative">
+              <div
+                className="relative"
+                style={{ height: `${Math.max(600, mapFiltersHeight + 24)}px` }}
+              >
                 <ReactFlowProvider key={graphRefreshKey}>
                   <RelationshipGraph
                     relationships={filteredRelationships}
@@ -698,7 +701,7 @@ export default function Relationships() {
                     onOpenChange={setMapFiltersOpen}
                     className="absolute top-3 right-3 z-10 w-72 max-w-[calc(100%-1.5rem)]"
                   >
-                    <Card className={`bg-card/95 backdrop-blur-sm shadow-lg ${mapFiltersOpen ? 'max-h-[calc(100%-1.5rem)] overflow-y-auto' : ''}`}>
+                    <Card ref={mapFiltersRef} className="bg-card/95 backdrop-blur-sm shadow-lg">
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2 min-w-0">
