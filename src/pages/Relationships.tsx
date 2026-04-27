@@ -112,24 +112,6 @@ export default function Relationships() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const [mapFiltersOpen, setMapFiltersOpen] = useState(true);
-  const mapFiltersRef = useRef<HTMLDivElement>(null);
-  const [mapFiltersExpandedHeight, setMapFiltersExpandedHeight] = useState<number>(0);
-
-  useLayoutEffect(() => {
-    const el = mapFiltersRef.current;
-    if (!el) return;
-    const update = () => {
-      // Only update the tracked height when filters are expanded so the
-      // map area stays sized to the expanded panel even when collapsed.
-      if (mapFiltersOpen) {
-        setMapFiltersExpandedHeight(el.offsetHeight);
-      }
-    };
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [mapFiltersOpen]);
   const [selectedRelTypes, setSelectedRelTypes] = useState<string[]>(persistedMapFilters.selectedRelTypes);
   const [selectedFactions, setSelectedFactions] = useState<string[]>(persistedMapFilters.selectedFactions);
   const [selectedCoteries, setSelectedCoteries] = useState<string[]>(persistedMapFilters.selectedCoteries);
