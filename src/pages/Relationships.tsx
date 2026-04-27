@@ -113,12 +113,18 @@ export default function Relationships() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [mapFiltersOpen, setMapFiltersOpen] = useState(true);
   const mapFiltersRef = useRef<HTMLDivElement>(null);
-  const [mapFiltersHeight, setMapFiltersHeight] = useState<number>(0);
+  const [mapFiltersExpandedHeight, setMapFiltersExpandedHeight] = useState<number>(0);
 
   useLayoutEffect(() => {
     const el = mapFiltersRef.current;
     if (!el) return;
-    const update = () => setMapFiltersHeight(el.offsetHeight);
+    const update = () => {
+      // Only update the tracked height when filters are expanded so the
+      // map area stays sized to the expanded panel even when collapsed.
+      if (mapFiltersOpen) {
+        setMapFiltersExpandedHeight(el.offsetHeight);
+      }
+    };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
@@ -630,7 +636,7 @@ export default function Relationships() {
             <>
               <div
                 className="relative"
-                style={{ height: `${Math.max(600, mapFiltersHeight + 24)}px` }}
+                style={{ height: `${Math.max(600, mapFiltersExpandedHeight + 24)}px` }}
               >
                 <ReactFlowProvider key={graphRefreshKey}>
                   <RelationshipGraph
