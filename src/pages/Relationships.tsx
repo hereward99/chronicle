@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useLayoutEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -112,24 +112,6 @@ export default function Relationships() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const [mapFiltersOpen, setMapFiltersOpen] = useState(true);
-  const mapFiltersRef = useRef<HTMLDivElement>(null);
-  const [mapFiltersExpandedHeight, setMapFiltersExpandedHeight] = useState<number>(0);
-
-  useLayoutEffect(() => {
-    const el = mapFiltersRef.current;
-    if (!el) return;
-    const update = () => {
-      // Only update the tracked height when filters are expanded so the
-      // map area stays sized to the expanded panel even when collapsed.
-      if (mapFiltersOpen) {
-        setMapFiltersExpandedHeight(el.offsetHeight);
-      }
-    };
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [mapFiltersOpen]);
   const [selectedRelTypes, setSelectedRelTypes] = useState<string[]>(persistedMapFilters.selectedRelTypes);
   const [selectedFactions, setSelectedFactions] = useState<string[]>(persistedMapFilters.selectedFactions);
   const [selectedCoteries, setSelectedCoteries] = useState<string[]>(persistedMapFilters.selectedCoteries);
@@ -635,8 +617,7 @@ export default function Relationships() {
           ) : (
             <>
               <div
-                className="relative"
-                style={{ height: `${Math.max(600, mapFiltersExpandedHeight + 24)}px` }}
+                className="relative h-[min(900px,calc(100vh-16rem))] min-h-[600px]"
               >
                 <ReactFlowProvider key={graphRefreshKey}>
                   <RelationshipGraph
@@ -653,9 +634,9 @@ export default function Relationships() {
                   <Collapsible
                     open={mapFiltersOpen}
                     onOpenChange={setMapFiltersOpen}
-                    className="absolute top-3 right-3 z-10 w-72 max-w-[calc(100%-1.5rem)]"
+                    className="absolute top-3 right-3 bottom-3 z-10 w-72 max-w-[calc(100%-1.5rem)] flex flex-col"
                   >
-                    <Card ref={mapFiltersRef} className="bg-card/95 backdrop-blur-sm shadow-lg">
+                    <Card className="bg-card/95 backdrop-blur-sm shadow-lg flex flex-col min-h-0 max-h-full">
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2 min-w-0">
@@ -677,8 +658,8 @@ export default function Relationships() {
                           </div>
                         </div>
                       </CardHeader>
-                      <CollapsibleContent>
-                        <CardContent className="space-y-4">
+                      <CollapsibleContent className="min-h-0 overflow-hidden flex-1 flex flex-col">
+                        <CardContent className="space-y-4 overflow-y-auto flex-1 min-h-0">
                           <div className="space-y-2">
                             <p className="text-xs font-medium text-muted-foreground">Relationship type</p>
                             <ToggleGroup
