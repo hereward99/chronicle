@@ -634,9 +634,9 @@ export default function Relationships() {
                   <Collapsible
                     open={mapFiltersOpen}
                     onOpenChange={setMapFiltersOpen}
-                    className="absolute top-3 right-3 z-10 w-72 max-w-[calc(100%-1.5rem)]"
+                    className="absolute top-3 right-3 bottom-3 z-10 w-72 max-w-[calc(100%-1.5rem)] flex flex-col"
                   >
-                    <Card ref={mapFiltersRef} className="bg-card/95 backdrop-blur-sm shadow-lg">
+                    <Card className="bg-card/95 backdrop-blur-sm shadow-lg flex flex-col min-h-0 max-h-full">
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2 min-w-0">
