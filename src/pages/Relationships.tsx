@@ -78,18 +78,9 @@ export default function Relationships() {
   const { relationships, loading, createRelationship, updateRelationship, deleteRelationship } = useRelationships();
   const { characters } = useCharacters();
   const { currentChronicle } = useChronicles();
-  const { 
-    factions, 
-    characterFactions, 
-    createFaction, 
-    updateFaction, 
-    deleteFaction,
-    addCharacterToFaction,
-    removeCharacterFromFaction 
-  } = useFactions(currentChronicle?.id);
-  const { coteries, loading: coteriesLoading, getCoterieMembers, allCoterieMembers, setPrimaryCoterie } = useCoteries();
-  const { searchQuery: highlightQuery } = useSearchHighlight();
-  
+  const { factions, characterFactions } = useFactions(currentChronicle?.id);
+  const { coteries, allCoterieMembers } = useCoteries();
+
   const [selectedCharacter, setSelectedCharacter] = useState<string>('all');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [createDialogDefaults, setCreateDialogDefaults] = useState<{ from?: string; to?: string }>({});
@@ -97,13 +88,6 @@ export default function Relationships() {
   const [selectedRelationship, setSelectedRelationship] = useState<Relationship | null>(null);
   const [viewCharacterDialogOpen, setViewCharacterDialogOpen] = useState(false);
   const [viewCharacter, setViewCharacter] = useState<Character | null>(null);
-  const [createFactionDialogOpen, setCreateFactionDialogOpen] = useState(false);
-  const [editFactionDialogOpen, setEditFactionDialogOpen] = useState(false);
-  const [selectedFaction, setSelectedFaction] = useState<Faction | null>(null);
-  const [manageMembersDialogOpen, setManageMembersDialogOpen] = useState(false);
-  const [showCreateCoterieDialog, setShowCreateCoterieDialog] = useState(false);
-  const [selectedCoterie, setSelectedCoterie] = useState<Coterie | null>(null);
-  const [memberCounts, setMemberCounts] = useState<Record<string, number>>({});
 
   const openCreateDialog = (from?: string, to?: string) => {
     setCreateDialogDefaults({ from, to });
@@ -114,18 +98,6 @@ export default function Relationships() {
     setCreateDialogOpen(open);
     if (!open) setCreateDialogDefaults({});
   };
-
-  useEffect(() => {
-    const fetchMemberCounts = async () => {
-      for (const coterie of coteries) {
-        const members = await getCoterieMembers(coterie.id);
-        setMemberCounts(prev => ({ ...prev, [coterie.id]: members.length }));
-      }
-    };
-    if (coteries.length > 0) {
-      fetchMemberCounts();
-    }
-  }, [coteries]);
 
   // Primary coterie member IDs for graph centering
   const primaryCharacterIds = useMemo(() => {
@@ -181,16 +153,6 @@ export default function Relationships() {
       setViewCharacter(character);
       setViewCharacterDialogOpen(true);
     }
-  };
-
-  const handleEditFaction = (faction: Faction) => {
-    setSelectedFaction(faction);
-    setEditFactionDialogOpen(true);
-  };
-
-  const handleManageMembers = (faction: Faction) => {
-    setSelectedFaction(faction);
-    setManageMembersDialogOpen(true);
   };
 
   const handleCreateRelationshipFromGraph = (sourceId: string, targetId: string) => {
