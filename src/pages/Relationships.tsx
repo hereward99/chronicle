@@ -617,8 +617,7 @@ export default function Relationships() {
           ) : (
             <>
               <div
-                className="relative"
-                style={{ height: `${Math.max(600, mapFiltersExpandedHeight + 24)}px` }}
+                className="relative h-[min(900px,calc(100vh-16rem))] min-h-[600px]"
               >
                 <ReactFlowProvider key={graphRefreshKey}>
                   <RelationshipGraph
