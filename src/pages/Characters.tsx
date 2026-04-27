@@ -80,21 +80,36 @@ export default function Characters() {
   const [showCreateCoterie, setShowCreateCoterie] = useState(false);
   const [selectedCoterie, setSelectedCoterie] = useState<Coterie | null>(null);
   const [showBulkNPCDialog, setShowBulkNPCDialog] = useState(false);
+  const [createFactionDialogOpen, setCreateFactionDialogOpen] = useState(false);
+  const [editFactionDialogOpen, setEditFactionDialogOpen] = useState(false);
+  const [selectedFaction, setSelectedFaction] = useState<Faction | null>(null);
+  const [manageMembersDialogOpen, setManageMembersDialogOpen] = useState(false);
 
   const { characters, loading, updateCharacter, deleteCharacter } = useCharacters();
   const { currentChronicle } = useChronicles();
-  const { factions, characterFactions } = useFactions(currentChronicle?.id);
+  const {
+    factions,
+    characterFactions,
+    createFaction,
+    updateFaction,
+    deleteFaction,
+    addCharacterToFaction,
+    removeCharacterFromFaction,
+  } = useFactions(currentChronicle?.id);
   const { coteries, allCoterieMembers, loading: coteriesLoading, setPrimaryCoterie } = useCoteries();
   const { plots } = usePlots();
   const { plotCharacters } = usePlotCharacters();
   const { highlightId, searchQuery: highlightQuery } = useSearchHighlight();
 
-  // Auto-switch to coteries tab when highlighting a coterie
+  // Auto-switch tab when highlighting a coterie or faction
   useEffect(() => {
-    if (highlightId && coteries.some(c => c.id === highlightId)) {
+    if (!highlightId) return;
+    if (coteries.some(c => c.id === highlightId)) {
       setActiveTab("coteries");
+    } else if (factions.some(f => f.id === highlightId)) {
+      setActiveTab("factions");
     }
-  }, [highlightId, coteries]);
+  }, [highlightId, coteries, factions]);
 
   useEffect(() => { saveToolbarState(toolbar); }, [toolbar]);
 
