@@ -266,8 +266,8 @@ export default function Characters() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Characters & Coteries</h1>
-          <p className="text-muted-foreground">Manage your chronicle's characters and coteries</p>
+          <h1 className="text-3xl font-bold text-foreground">Characters & Groups</h1>
+          <p className="text-muted-foreground">Manage your chronicle's characters, coteries, and factions</p>
         </div>
       </div>
 
@@ -275,6 +275,7 @@ export default function Characters() {
         <TabsList>
           <TabsTrigger value="characters">Characters</TabsTrigger>
           <TabsTrigger value="coteries">Coteries</TabsTrigger>
+          <TabsTrigger value="factions">Factions</TabsTrigger>
         </TabsList>
 
         {/* ===== Characters Tab ===== */}
