@@ -403,7 +403,7 @@ export default function Relationships() {
         <div>
           <h1 className="text-4xl font-bold mb-2">Relationship Map</h1>
           <p className="text-muted-foreground">
-            Track connections, alliances, and rivalries between characters
+            Visualize connections between characters. Manage factions and coteries on the Characters page.
           </p>
         </div>
         <Button
