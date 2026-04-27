@@ -3,14 +3,15 @@ import { EmptyState } from "@/components/onboarding/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Search, Users, Wand2, X, ChevronDown, UsersRound } from "lucide-react";
+import { Plus, Search, Users, Wand2, X, ChevronDown, UsersRound, Flag, Edit, UserPlus } from "lucide-react";
 import { BulkNPCDialog } from "@/components/dialogs/BulkNPCDialog";
 import { useCharacters, Character } from "@/hooks/useCharacters";
-import { useFactions } from "@/hooks/useFactions";
+import { useFactions, Faction } from "@/hooks/useFactions";
 import { useChronicles } from "@/hooks/useChronicles";
 import { useCoteries } from "@/hooks/useCoteries";
 import { usePlots } from "@/hooks/usePlots";
@@ -23,6 +24,9 @@ import { CharacterCard } from "@/components/characters/CharacterCard";
 import { CoterieCard } from "@/components/characters/CoterieCard";
 import { CreateCoterieDialog } from "@/components/dialogs/CreateCoterieDialog";
 import { ManageCoterieDialog } from "@/components/dialogs/ManageCoterieDialog";
+import { CreateFactionDialog } from "@/components/dialogs/CreateFactionDialog";
+import { EditFactionDialog } from "@/components/dialogs/EditFactionDialog";
+import { ManageFactionMembersDialog } from "@/components/dialogs/ManageFactionMembersDialog";
 import { useSearchHighlight } from "@/hooks/useSearchHighlight";
 import type { Coterie } from "@/hooks/useCoteries";
 
@@ -76,21 +80,36 @@ export default function Characters() {
   const [showCreateCoterie, setShowCreateCoterie] = useState(false);
   const [selectedCoterie, setSelectedCoterie] = useState<Coterie | null>(null);
   const [showBulkNPCDialog, setShowBulkNPCDialog] = useState(false);
+  const [createFactionDialogOpen, setCreateFactionDialogOpen] = useState(false);
+  const [editFactionDialogOpen, setEditFactionDialogOpen] = useState(false);
+  const [selectedFaction, setSelectedFaction] = useState<Faction | null>(null);
+  const [manageMembersDialogOpen, setManageMembersDialogOpen] = useState(false);
 
   const { characters, loading, updateCharacter, deleteCharacter } = useCharacters();
   const { currentChronicle } = useChronicles();
-  const { factions, characterFactions } = useFactions(currentChronicle?.id);
+  const {
+    factions,
+    characterFactions,
+    createFaction,
+    updateFaction,
+    deleteFaction,
+    addCharacterToFaction,
+    removeCharacterFromFaction,
+  } = useFactions(currentChronicle?.id);
   const { coteries, allCoterieMembers, loading: coteriesLoading, setPrimaryCoterie } = useCoteries();
   const { plots } = usePlots();
   const { plotCharacters } = usePlotCharacters();
   const { highlightId, searchQuery: highlightQuery } = useSearchHighlight();
 
-  // Auto-switch to coteries tab when highlighting a coterie
+  // Auto-switch tab when highlighting a coterie or faction
   useEffect(() => {
-    if (highlightId && coteries.some(c => c.id === highlightId)) {
+    if (!highlightId) return;
+    if (coteries.some(c => c.id === highlightId)) {
       setActiveTab("coteries");
+    } else if (factions.some(f => f.id === highlightId)) {
+      setActiveTab("factions");
     }
-  }, [highlightId, coteries]);
+  }, [highlightId, coteries, factions]);
 
   useEffect(() => { saveToolbarState(toolbar); }, [toolbar]);
 
@@ -247,8 +266,8 @@ export default function Characters() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Characters & Coteries</h1>
-          <p className="text-muted-foreground">Manage your chronicle's characters and coteries</p>
+          <h1 className="text-3xl font-bold text-foreground">Characters & Groups</h1>
+          <p className="text-muted-foreground">Manage your chronicle's characters, coteries, and factions</p>
         </div>
       </div>
 
@@ -256,6 +275,7 @@ export default function Characters() {
         <TabsList>
           <TabsTrigger value="characters">Characters</TabsTrigger>
           <TabsTrigger value="coteries">Coteries</TabsTrigger>
+          <TabsTrigger value="factions">Factions</TabsTrigger>
         </TabsList>
 
         {/* ===== Characters Tab ===== */}
@@ -515,6 +535,120 @@ export default function Characters() {
             </div>
           )}
         </TabsContent>
+
+        {/* ===== Factions Tab ===== */}
+        <TabsContent value="factions" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold">Factions & Groups</h2>
+              <p className="text-sm text-muted-foreground">
+                Organize characters into factions and see group dynamics
+              </p>
+            </div>
+            <Button
+              onClick={() => setCreateFactionDialogOpen(true)}
+              className="bg-gradient-blood hover:opacity-90 shadow-crimson"
+            >
+              <Plus className="w-4 h-4 mr-2" /> Create Faction
+            </Button>
+          </div>
+
+          {factions.length === 0 ? (
+            <EmptyState
+              icon={<Flag className="h-7 w-7" />}
+              title="No factions yet"
+              description="Factions are larger political or social groups that characters belong to — sects, clans, covenants, or rival organizations."
+              tip="Create characters first, then organize them into factions to track allegiances and rivalries."
+              action={
+                <Button
+                  onClick={() => setCreateFactionDialogOpen(true)}
+                  className="bg-gradient-blood hover:opacity-90 shadow-crimson"
+                >
+                  <Plus className="w-4 h-4 mr-2" /> Create First Faction
+                </Button>
+              }
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {factions.map(faction => {
+                const members = characterFactions
+                  .filter(cf => cf.faction_id === faction.id)
+                  .map(cf => characters.find(c => c.id === cf.character_id))
+                  .filter(Boolean) as Character[];
+
+                return (
+                  <Card
+                    key={faction.id}
+                    className="hover:shadow-lg transition-shadow overflow-hidden min-w-0"
+                    style={{ borderTop: `4px solid ${faction.color}` }}
+                  >
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="flex items-center gap-2">
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: faction.color }}
+                            />
+                            {faction.name}
+                          </CardTitle>
+                          {faction.description && (
+                            <CardDescription className="mt-2">
+                              {faction.description}
+                            </CardDescription>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setSelectedFaction(faction);
+                            setEditFactionDialogOpen(true);
+                          }}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">
+                            {members.length} member{members.length !== 1 ? 's' : ''}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedFaction(faction);
+                              setManageMembersDialogOpen(true);
+                            }}
+                          >
+                            <UserPlus className="w-4 h-4 mr-2" /> Manage
+                          </Button>
+                        </div>
+                        {members.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {members.slice(0, 5).map(member => (
+                              <Badge key={member.id} variant="secondary" className="text-xs">
+                                {member.name}
+                              </Badge>
+                            ))}
+                            {members.length > 5 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{members.length - 5} more
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </TabsContent>
       </Tabs>
 
       {/* Dialogs */}
@@ -523,6 +657,32 @@ export default function Characters() {
       <CharacterWizard open={wizardOpen} onOpenChange={setWizardOpen} />
       <CreateCoterieDialog open={showCreateCoterie} onOpenChange={setShowCreateCoterie} />
       <ManageCoterieDialog open={!!selectedCoterie} onOpenChange={open => !open && setSelectedCoterie(null)} coterie={selectedCoterie} />
+      {currentChronicle && (
+        <>
+          <CreateFactionDialog
+            open={createFactionDialogOpen}
+            onOpenChange={setCreateFactionDialogOpen}
+            chronicleId={currentChronicle.id}
+            onCreate={createFaction}
+          />
+          <EditFactionDialog
+            faction={selectedFaction}
+            open={editFactionDialogOpen}
+            onOpenChange={setEditFactionDialogOpen}
+            onUpdate={updateFaction}
+            onDelete={deleteFaction}
+          />
+          <ManageFactionMembersDialog
+            faction={selectedFaction}
+            open={manageMembersDialogOpen}
+            onOpenChange={setManageMembersDialogOpen}
+            characters={characters}
+            characterFactions={characterFactions}
+            onAddCharacter={addCharacterToFaction}
+            onRemoveCharacter={removeCharacterFromFaction}
+          />
+        </>
+      )}
       <BulkNPCDialog open={showBulkNPCDialog} onOpenChange={setShowBulkNPCDialog} />
     </div>
   );
