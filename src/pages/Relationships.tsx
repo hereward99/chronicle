@@ -964,45 +964,6 @@ export default function Relationships() {
         onOpenChange={setViewCharacterDialogOpen}
       />
 
-      {currentChronicle && (
-        <>
-          <CreateFactionDialog
-            open={createFactionDialogOpen}
-            onOpenChange={setCreateFactionDialogOpen}
-            chronicleId={currentChronicle.id}
-            onCreate={createFaction}
-          />
-
-          <EditFactionDialog
-            faction={selectedFaction}
-            open={editFactionDialogOpen}
-            onOpenChange={setEditFactionDialogOpen}
-            onUpdate={updateFaction}
-            onDelete={deleteFaction}
-          />
-
-          <ManageFactionMembersDialog
-            faction={selectedFaction}
-            open={manageMembersDialogOpen}
-            onOpenChange={setManageMembersDialogOpen}
-            characters={characters}
-            characterFactions={characterFactions}
-            onAddCharacter={addCharacterToFaction}
-            onRemoveCharacter={removeCharacterFromFaction}
-          />
-        </>
-      )}
-
-      <CreateCoterieDialog
-        open={showCreateCoterieDialog}
-        onOpenChange={setShowCreateCoterieDialog}
-      />
-
-      <ManageCoterieDialog
-        open={!!selectedCoterie}
-        onOpenChange={(open) => !open && setSelectedCoterie(null)}
-        coterie={selectedCoterie}
-      />
     </div>
   );
 }
