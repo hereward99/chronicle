@@ -645,15 +645,11 @@ export default function Relationships() {
         <TabsList className="w-full flex-wrap h-auto gap-1">
           <TabsTrigger value="graph" className="gap-2 flex-1 min-w-0">
             <Network className="w-4 h-4 shrink-0" />
-            <span className="truncate">Graph View</span>
+            <span className="truncate">Map</span>
           </TabsTrigger>
           <TabsTrigger value="list" className="gap-2 flex-1 min-w-0">
             <Users className="w-4 h-4 shrink-0" />
-            <span className="truncate">List View</span>
-          </TabsTrigger>
-          <TabsTrigger value="factions" className="gap-2 flex-1 min-w-0">
-            <Flag className="w-4 h-4 shrink-0" />
-            <span className="truncate">Factions</span>
+            <span className="truncate">List</span>
           </TabsTrigger>
         </TabsList>
 
