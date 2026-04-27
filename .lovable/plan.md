@@ -1,53 +1,52 @@
+## Goal — Option A: Roster vs. Web
 
-## Plan: Fix password login + add hybrid auth & recovery
+Treat **Characters** as the *roster* (entities & groupings) and **Relationships** as the *web* (connections only).
 
-### Diagnosis update
-You clarified: the Sign In button does nothing — no spinner, no error, no network call. That changes the diagnosis. It's not a service-worker hang; it's that `handleLogin` is silently exiting before reaching `signInWithPassword`. Most likely cause: the Zod schema in `Auth.tsx` rejects the input but the `catch` only toasts on `ZodError` — and a stray whitespace, a non-`ZodError` throw, or a state issue causes a silent no-op. We'll fix this by:
-- Trimming inputs before validation
-- Adding explicit error logging and a fallback toast for any non-Zod error
-- Keeping the existing Supabase call path intact
+| Page | Tabs (after) |
+|---|---|
+| **Characters & Groups** | Characters · Coteries · **Factions** |
+| **Relationship Map** | **Map** · List |
 
-This means **no `vite.config.ts` change is needed**. PWA service worker stays as-is. You keep magic-link login on Lovable.
+---
 
-### What gets built (single file: `src/pages/Auth.tsx`)
+## Changes
 
-**1. Hybrid Sign In tab**
-- Primary button: **Sign In** (existing `signInWithPassword`, with the fixes above)
-- Secondary link-style button below it: **Send magic link instead** → `signInWithOtp({ email, options: { emailRedirectTo: getRedirectUrl() } })`
-- Small **Forgot password?** link next to the password label → `resetPasswordForEmail(email, { redirectTo: getRedirectUrl() })`
+### 1. `src/pages/Characters.tsx`
+- **Add a `factions` tab** alongside Characters & Coteries.
+- Move the entire Factions tab UI from `Relationships.tsx` into this new tab — header, "Create Faction" button, empty state, and faction grid (cards with color border, member badges, Manage/Edit buttons).
+- Wire in the faction state already returned by the existing `useFactions(currentChronicle?.id)` hook (currently only used for the Faction filter dropdown). Add the missing pieces: `createFaction`, `updateFaction`, `deleteFaction`, `addCharacterToFaction`, `removeCharacterFromFaction`.
+- Add the dialogs at the bottom: `CreateFactionDialog`, `EditFactionDialog`, `ManageFactionMembersDialog` (all guarded by `currentChronicle`).
+- Add local state: `createFactionDialogOpen`, `editFactionDialogOpen`, `selectedFaction`, `manageMembersDialogOpen`.
+- **Auto-switch to `factions` tab** when global search highlights a faction (mirror existing coterie auto-switch in `useEffect` on `highlightId`).
+- Update the page header subtitle from "Manage your chronicle's characters and coteries" to "Manage your chronicle's characters, coteries, and factions".
+- Optional polish: small summary strip above the tabs — "X characters · Y coteries · Z factions".
 
-**2. Smart redirect helper**
-```ts
-const getRedirectUrl = () => `${window.location.origin}${window.location.pathname}`;
-```
-Returns user to whichever host they started from — Lovable preview, GitHub Pages subpath, or future custom domain. No hardcoded URLs, no env vars needed.
+### 2. `src/pages/Relationships.tsx`
+- **Remove the `factions` `TabsTrigger` and `TabsContent`** entirely (lines ~654–657 and ~946–1049).
+- **Rename the `graph` tab to `Map`** (label only — keep `value="graph"` to avoid breaking any deep links, or change to `value="map"` if there are no external references; quick rg shows none).
+- **Remove the entire bottom Coteries section** (lines ~1052–1164) — it's already on the Characters page, so this eliminates the duplicate.
+- Remove now-unused imports/state related to factions UI: `CreateFactionDialog`, `EditFactionDialog`, `ManageFactionMembersDialog`, `EmptyState`, `Flag`, `UserPlus`, faction dialog state. **Keep** `useFactions` and `factions`/`characterFactions` — they're still needed for the Map filter sidebar and the SuggestedRelationships component.
+- Remove unused coterie UI bits: `CreateCoterieDialog`, `ManageCoterieDialog`, `showCreateCoterieDialog`, `selectedCoterie`, `memberCounts`, `setPrimaryCoterie`, `getCoterieMembers`, `Star`, `MapPin`, `MentionText`, `TextHighlight` if no longer referenced. **Keep** `coteries`, `allCoterieMembers` and `primaryCharacterIds` — still needed for Map filters and graph centering.
+- Update header subtitle to clarify focus: "Visualize and manage connections between characters" (factions/coteries are managed on the Characters page).
 
-**3. Password recovery in-place**
-- Subscribe to `supabase.auth.onAuthStateChange`; when event is `PASSWORD_RECOVERY`, swap the Tabs UI for a "Set a new password" form (two password inputs + submit → `supabase.auth.updateUser({ password })`).
-- Existing "redirect if logged in" check skips when in recovery mode.
-- After successful update: toast + navigate to `/`.
+### 3. `src/hooks/useGlobalSearch.tsx`
+- Change the navigation route for type `faction` from `/relationships` → `/characters` (line 19) so ⌘K-jumping to a faction lands on the new tab.
+- Coterie route already points to `/characters` after this change… actually it currently points to `/relationships` (line 20) — update it to `/characters` too, since the Coteries section is being removed from Relationships.
 
-**4. Robustness fixes for the silent-fail bug**
-- `email.trim()` and `password` passed through validation
-- `try/catch` always toasts on unknown errors (not just ZodError)
-- `console.error` traces around the sign-in call so the next attempt produces actionable logs if anything else is wrong
+### 4. `src/components/CommandPalette.tsx`
+- Update the help hint copy (line 113) — no functional change, just keeps wording consistent.
 
-### What stays untouched
-- `vite.config.ts` (PWA + service worker)
-- `App.tsx` routing, no new routes, no `basename` change
-- `useAuth.tsx`, `ProtectedRoute.tsx`
-- `src/integrations/supabase/client.ts`
+---
 
-### GitHub Pages compatibility
-- Magic link & password reset emails will redirect to `window.location.origin + pathname`, so a GitHub Pages deployment at `https://you.github.io/chronicle-keeper/auth` returns users to that exact URL.
-- Each hosted instance has its own Supabase auth session (separate origin = separate localStorage), so testers on GitHub Pages get a "clean" environment isolated from your Lovable session.
-- **One config step you'll do in Supabase dashboard** (not code): add your GitHub Pages URL to **Authentication → URL Configuration → Redirect URLs**. I'll remind you with a link after the change.
+## Why this works
+- **Single source of truth**: every "grouping of characters" (coterie, faction) lives in one place — the roster page.
+- **Relationships page becomes lean**: just the Map + List of edges, with Map filters still able to filter by faction/coterie membership (data still loaded via hooks).
+- **No data model changes** — purely a UI reshuffle. All hooks, dialogs, and DB tables are untouched.
+- **Global search stays correct** because we update the route mapping for faction/coterie results.
 
-### Verification checklist (after switch to default mode)
-1. Sign In with email + password — works or shows a clear error toast (no more silent no-op)
-2. Click **Send magic link instead** — email arrives, link returns you to the same host logged in
-3. Click **Forgot password?** — email arrives, link opens the auth page in recovery mode showing "Set new password", submission logs you in
-4. From a GitHub Pages deployment, repeat 2 and 3 — emails return to the GitHub Pages URL, not Lovable
+## Out of scope (can be follow-ups)
+- Renaming the `graph` tab value to `map` if you want cleaner internals.
+- Adding "View on map →" shortcuts on Coterie/Faction cards.
+- Summary strip ("12 characters · 2 coteries · 3 factions").
 
-### Files touched
-- `src/pages/Auth.tsx` (modify only)
+Let me know if you want any of those folded in before I implement.

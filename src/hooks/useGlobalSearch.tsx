@@ -17,7 +17,7 @@ const TYPE_ROUTES: Record<SearchResult['type'], string> = {
   location: '/locations',
   note: '/',
   faction: '/characters',
-  coterie: '/relationships',
+  coterie: '/characters',
   boon: '/relationships',
 };
 
