@@ -658,8 +658,8 @@ export default function Relationships() {
                           </div>
                         </div>
                       </CardHeader>
-                      <CollapsibleContent>
-                        <CardContent className="space-y-4">
+                      <CollapsibleContent className="min-h-0 overflow-hidden flex-1 flex flex-col">
+                        <CardContent className="space-y-4 overflow-y-auto flex-1 min-h-0">
                           <div className="space-y-2">
                             <p className="text-xs font-medium text-muted-foreground">Relationship type</p>
                             <ToggleGroup
