@@ -636,7 +636,7 @@ export default function Relationships() {
             <>
               <div
                 className="relative"
-                style={{ height: `${Math.max(600, mapFiltersHeight + 24)}px` }}
+                style={{ height: `${Math.max(600, mapFiltersExpandedHeight + 24)}px` }}
               >
                 <ReactFlowProvider key={graphRefreshKey}>
                   <RelationshipGraph
