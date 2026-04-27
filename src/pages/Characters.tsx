@@ -535,6 +535,120 @@ export default function Characters() {
             </div>
           )}
         </TabsContent>
+
+        {/* ===== Factions Tab ===== */}
+        <TabsContent value="factions" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold">Factions & Groups</h2>
+              <p className="text-sm text-muted-foreground">
+                Organize characters into factions and see group dynamics
+              </p>
+            </div>
+            <Button
+              onClick={() => setCreateFactionDialogOpen(true)}
+              className="bg-gradient-blood hover:opacity-90 shadow-crimson"
+            >
+              <Plus className="w-4 h-4 mr-2" /> Create Faction
+            </Button>
+          </div>
+
+          {factions.length === 0 ? (
+            <EmptyState
+              icon={<Flag className="h-7 w-7" />}
+              title="No factions yet"
+              description="Factions are larger political or social groups that characters belong to — sects, clans, covenants, or rival organizations."
+              tip="Create characters first, then organize them into factions to track allegiances and rivalries."
+              action={
+                <Button
+                  onClick={() => setCreateFactionDialogOpen(true)}
+                  className="bg-gradient-blood hover:opacity-90 shadow-crimson"
+                >
+                  <Plus className="w-4 h-4 mr-2" /> Create First Faction
+                </Button>
+              }
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {factions.map(faction => {
+                const members = characterFactions
+                  .filter(cf => cf.faction_id === faction.id)
+                  .map(cf => characters.find(c => c.id === cf.character_id))
+                  .filter(Boolean) as Character[];
+
+                return (
+                  <Card
+                    key={faction.id}
+                    className="hover:shadow-lg transition-shadow overflow-hidden min-w-0"
+                    style={{ borderTop: `4px solid ${faction.color}` }}
+                  >
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="flex items-center gap-2">
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: faction.color }}
+                            />
+                            {faction.name}
+                          </CardTitle>
+                          {faction.description && (
+                            <CardDescription className="mt-2">
+                              {faction.description}
+                            </CardDescription>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setSelectedFaction(faction);
+                            setEditFactionDialogOpen(true);
+                          }}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">
+                            {members.length} member{members.length !== 1 ? 's' : ''}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedFaction(faction);
+                              setManageMembersDialogOpen(true);
+                            }}
+                          >
+                            <UserPlus className="w-4 h-4 mr-2" /> Manage
+                          </Button>
+                        </div>
+                        {members.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {members.slice(0, 5).map(member => (
+                              <Badge key={member.id} variant="secondary" className="text-xs">
+                                {member.name}
+                              </Badge>
+                            ))}
+                            {members.length > 5 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{members.length - 5} more
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </TabsContent>
       </Tabs>
 
       {/* Dialogs */}
@@ -543,6 +657,32 @@ export default function Characters() {
       <CharacterWizard open={wizardOpen} onOpenChange={setWizardOpen} />
       <CreateCoterieDialog open={showCreateCoterie} onOpenChange={setShowCreateCoterie} />
       <ManageCoterieDialog open={!!selectedCoterie} onOpenChange={open => !open && setSelectedCoterie(null)} coterie={selectedCoterie} />
+      {currentChronicle && (
+        <>
+          <CreateFactionDialog
+            open={createFactionDialogOpen}
+            onOpenChange={setCreateFactionDialogOpen}
+            chronicleId={currentChronicle.id}
+            onCreate={createFaction}
+          />
+          <EditFactionDialog
+            faction={selectedFaction}
+            open={editFactionDialogOpen}
+            onOpenChange={setEditFactionDialogOpen}
+            onUpdate={updateFaction}
+            onDelete={deleteFaction}
+          />
+          <ManageFactionMembersDialog
+            faction={selectedFaction}
+            open={manageMembersDialogOpen}
+            onOpenChange={setManageMembersDialogOpen}
+            characters={characters}
+            characterFactions={characterFactions}
+            onAddCharacter={addCharacterToFaction}
+            onRemoveCharacter={removeCharacterFromFaction}
+          />
+        </>
+      )}
       <BulkNPCDialog open={showBulkNPCDialog} onOpenChange={setShowBulkNPCDialog} />
     </div>
   );
