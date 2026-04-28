@@ -129,7 +129,7 @@ function addLabelValue(pdf: jsPDF, label: string, value: string, y: number, x: n
   pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
   pdf.setFontSize(10);
   pdf.setFont('helvetica', 'normal');
-  const lines = pdf.splitTextToSize(value, valueMaxWidth);
+  const lines = pdf.splitTextToSize(stripMentions(value), valueMaxWidth);
   pdf.text(lines, valueX, y);
   
   return y + (lines.length * 5);
