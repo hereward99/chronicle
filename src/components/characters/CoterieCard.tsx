@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DotRating } from "./DotRating";
 import { DotRatedDisplay } from "./DotRatedList";
-import { Users, MapPin, ChevronDown, Edit, Star, FileText, Image as ImageIcon } from "lucide-react";
+import { Users, MapPin, ChevronDown, Edit, Star, FileText, Image as ImageIcon, Download } from "lucide-react";
 import type { Coterie } from "@/hooks/useCoteries";
 import type { Character } from "@/hooks/useCharacters";
 import { MentionText } from "@/components/mentions/MentionText";
+import { exportCoterieToPDF } from "@/lib/pdfExport";
 
 interface CoterieCardProps {
   coterie: Coterie;
@@ -55,6 +56,14 @@ export function CoterieCard({ coterie, members, onEdit, onSetPrimary }: CoterieC
               title="Set as primary coterie"
             >
               <Star className={`h-4 w-4 ${coterie.is_primary ? "fill-primary text-primary" : ""}`} />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => exportCoterieToPDF(coterie, members)}
+              title="Export as PDF"
+            >
+              <Download className="h-4 w-4" />
             </Button>
             <Button size="sm" variant="ghost" onClick={() => onEdit(coterie)}>
               <Edit className="h-4 w-4" />
