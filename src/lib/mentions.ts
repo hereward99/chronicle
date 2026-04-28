@@ -105,3 +105,12 @@ export function hasMentions(text: string): boolean {
   MENTION_REGEX.lastIndex = 0;
   return MENTION_REGEX.test(text);
 }
+
+/**
+ * Replace @[Name](type:id) mentions with plain "@Name" text.
+ * Used when rendering to plain-text contexts like PDFs.
+ */
+export function stripMentions(text: string | null | undefined): string {
+  if (!text) return '';
+  return text.replace(MENTION_REGEX, (_m, name) => `@${name}`);
+}

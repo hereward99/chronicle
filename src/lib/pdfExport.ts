@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import { stripMentions } from './mentions';
 
 // VtM Gothic Theme Colors (HSL to RGB)
 const COLORS = {
@@ -105,7 +106,7 @@ function addText(pdf: jsPDF, text: string, y: number, options?: {
   pdf.setFontSize(fontSize);
   pdf.setFont('helvetica', 'normal');
   
-  const lines = pdf.splitTextToSize(text, maxWidth);
+  const lines = pdf.splitTextToSize(stripMentions(text), maxWidth);
   pdf.text(lines, indent, y);
   
   return y + (lines.length * (fontSize * 0.5));
@@ -128,7 +129,7 @@ function addLabelValue(pdf: jsPDF, label: string, value: string, y: number, x: n
   pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
   pdf.setFontSize(10);
   pdf.setFont('helvetica', 'normal');
-  const lines = pdf.splitTextToSize(value, valueMaxWidth);
+  const lines = pdf.splitTextToSize(stripMentions(value), valueMaxWidth);
   pdf.text(lines, valueX, y);
   
   return y + (lines.length * 5);
