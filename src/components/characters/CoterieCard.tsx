@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DotRating } from "./DotRating";
 import { DotRatedDisplay } from "./DotRatedList";
-import { Users, MapPin, ChevronDown, Edit, Star, FileText, Image as ImageIcon } from "lucide-react";
+import { Users, MapPin, ChevronDown, Edit, Star, FileText, Image as ImageIcon, Download } from "lucide-react";
 import type { Coterie } from "@/hooks/useCoteries";
 import type { Character } from "@/hooks/useCharacters";
 import { MentionText } from "@/components/mentions/MentionText";
+import { exportCoterieToPDF } from "@/lib/pdfExport";
 
 interface CoterieCardProps {
   coterie: Coterie;
