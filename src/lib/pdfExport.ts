@@ -912,3 +912,184 @@ export function exportChecklistToPDF(checklist: {
   
   pdf.save(`${checklist.title.replace(/[^a-z0-9]/gi, '_')}_checklist.pdf`);
 }
+
+// Parse the JSON-in-text dot-rated list format used by coteries
+function parseDotRatedItemsForPDF(value: string | null | undefined): { name: string; dots: number }[] {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed;
+  } catch {
+    if (value.trim()) return [{ name: value.trim(), dots: 0 }];
+  }
+  return [];
+}
+
+// Export a Coterie to PDF
+export function exportCoterieToPDF(
+  coterie: {
+    name: string;
+    description?: string | null;
+    coterie_type?: string | null;
+    city?: string | null;
+    is_primary?: boolean;
+    chasse: number;
+    portillon: number;
+    lien: number;
+    domain_merits?: string | null;
+    domain_resonance?: string | null;
+    haven_location?: string | null;
+    haven_merits_and_flaws?: string | null;
+    coterie_advantages_and_flaws?: string | null;
+    coterie_boons_and_debts?: string | null;
+    chronicle_tenets?: string | null;
+    coterie_goals?: string | null;
+    created_at?: string;
+    updated_at?: string;
+  },
+  members: { name: string; clan: string }[] = []
+) {
+  const subtitleParts: string[] = [];
+  if (coterie.coterie_type) subtitleParts.push(coterie.coterie_type);
+  if (coterie.city) subtitleParts.push(coterie.city);
+
+  const pdf = createThemedPDF({
+    title: coterie.name,
+    subtitle: subtitleParts.join(' • ') || 'Coterie',
+  });
+
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  let y = 35;
+
+  // Primary badge
+  if (coterie.is_primary) {
+    pdf.setFontSize(8);
+    addBadge(pdf, 'Primary Coterie', 20, y, true);
+    y += 10;
+  }
+
+  // Description
+  if (coterie.description) {
+    y = addSection(pdf, 'Description', y);
+    y = addText(pdf, coterie.description, y + 4);
+    y += 6;
+  }
+
+  // Domain
+  const hasDomain =
+    coterie.chasse > 0 || coterie.portillon > 0 || coterie.lien > 0 ||
+    coterie.domain_merits || coterie.domain_resonance;
+  if (hasDomain) {
+    y = checkNewPage(pdf, y, 40);
+    y = addSection(pdf, 'Domain', y);
+    y += 4;
+
+    pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
+    pdf.setFontSize(10);
+
+    const drawRating = (label: string, value: number) => {
+      pdf.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+      pdf.setFontSize(10);
+      pdf.text(label, 20, y);
+      drawDots(pdf, 55, y, value, 5);
+      y += 6;
+    };
+    drawRating('Chasse', coterie.chasse);
+    drawRating('Portillon', coterie.portillon);
+    drawRating('Lien', coterie.lien);
+
+    if (coterie.domain_resonance) {
+      y = addLabelValue(pdf, 'Resonance', coterie.domain_resonance, y);
+    }
+
+    const merits = parseDotRatedItemsForPDF(coterie.domain_merits);
+    merits.forEach(m => {
+      y = checkNewPage(pdf, y, 8);
+      pdf.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+      pdf.setFontSize(10);
+      pdf.text(m.name, 20, y);
+      drawDots(pdf, 55, y, m.dots, 5);
+      y += 6;
+    });
+    y += 4;
+  }
+
+  // Haven / Hangout
+  if (coterie.haven_location || coterie.haven_merits_and_flaws) {
+    y = checkNewPage(pdf, y, 30);
+    y = addSection(pdf, 'Haven / Hangout', y);
+    y += 4;
+    if (coterie.haven_location) {
+      y = addText(pdf, coterie.haven_location, y);
+      y += 2;
+    }
+    const havenMerits = parseDotRatedItemsForPDF(coterie.haven_merits_and_flaws);
+    havenMerits.forEach(m => {
+      y = checkNewPage(pdf, y, 8);
+      pdf.setTextColor(COLORS.muted.r, COLORS.muted.g, COLORS.muted.b);
+      pdf.setFontSize(10);
+      pdf.text(m.name, 20, y);
+      drawDots(pdf, 55, y, m.dots, 5);
+      y += 6;
+    });
+    y += 4;
+  }
+
+  // Social Ledger
+  if (coterie.coterie_advantages_and_flaws || coterie.coterie_boons_and_debts) {
+    y = checkNewPage(pdf, y, 30);
+    y = addSection(pdf, 'Social Ledger', y);
+    y += 4;
+    if (coterie.coterie_advantages_and_flaws) {
+      y = addLabelValue(pdf, 'Advantages & Flaws', coterie.coterie_advantages_and_flaws, y);
+    }
+    if (coterie.coterie_boons_and_debts) {
+      y = addLabelValue(pdf, 'Boons & Debts', coterie.coterie_boons_and_debts, y);
+    }
+    y += 4;
+  }
+
+  // Ideology & Ambition
+  if (coterie.chronicle_tenets || coterie.coterie_goals) {
+    y = checkNewPage(pdf, y, 30);
+    y = addSection(pdf, 'Ideology & Ambition', y);
+    y += 4;
+    if (coterie.chronicle_tenets) {
+      y = addLabelValue(pdf, 'Tenets', coterie.chronicle_tenets, y);
+    }
+    if (coterie.coterie_goals) {
+      y = addLabelValue(pdf, 'Goals', coterie.coterie_goals, y);
+    }
+    y += 4;
+  }
+
+  // Members
+  y = checkNewPage(pdf, y, 20);
+  y = addSection(pdf, `Members (${members.length})`, y);
+  y += 4;
+  if (members.length === 0) {
+    y = addText(pdf, 'No members yet', y, { color: 'muted' });
+  } else {
+    members.forEach(m => {
+      y = checkNewPage(pdf, y, 6);
+      y = addText(pdf, `• ${m.name} (${m.clan})`, y);
+      y += 1;
+    });
+  }
+  y += 4;
+
+  // Metadata
+  if (coterie.created_at || coterie.updated_at) {
+    y = checkNewPage(pdf, y, 20);
+    y = addSection(pdf, 'Metadata', y);
+    y += 4;
+    if (coterie.created_at) {
+      y = addLabelValue(pdf, 'Created', new Date(coterie.created_at).toLocaleDateString(), y);
+    }
+    if (coterie.updated_at) {
+      y = addLabelValue(pdf, 'Updated', new Date(coterie.updated_at).toLocaleDateString(), y);
+    }
+  }
+
+  pdf.save(`${coterie.name.replace(/[^a-z0-9]/gi, '_')}_coterie.pdf`);
+}
