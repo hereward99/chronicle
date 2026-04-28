@@ -57,6 +57,14 @@ export function CoterieCard({ coterie, members, onEdit, onSetPrimary }: CoterieC
             >
               <Star className={`h-4 w-4 ${coterie.is_primary ? "fill-primary text-primary" : ""}`} />
             </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => exportCoterieToPDF(coterie, members)}
+              title="Export as PDF"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
             <Button size="sm" variant="ghost" onClick={() => onEdit(coterie)}>
               <Edit className="h-4 w-4" />
             </Button>
