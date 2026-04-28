@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import { stripMentions } from './mentions';
 
 // VtM Gothic Theme Colors (HSL to RGB)
 const COLORS = {
