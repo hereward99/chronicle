@@ -106,7 +106,7 @@ function addText(pdf: jsPDF, text: string, y: number, options?: {
   pdf.setFontSize(fontSize);
   pdf.setFont('helvetica', 'normal');
   
-  const lines = pdf.splitTextToSize(text, maxWidth);
+  const lines = pdf.splitTextToSize(stripMentions(text), maxWidth);
   pdf.text(lines, indent, y);
   
   return y + (lines.length * (fontSize * 0.5));
