@@ -91,7 +91,7 @@ export default function Chronicle() {
         <CreateNoteDialog>
           <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
             <Plus className="w-4 h-4 mr-2" />
-            New Entry
+            New Note
           </Button>
         </CreateNoteDialog>
       </div>
