@@ -8,6 +8,8 @@ import { BookOpen, Clock, Users, Flag, FileText, Image as ImageIcon, Download, C
 import { formatInGameDate } from "@/components/InGameDateInput";
 import { Button } from "@/components/ui/button";
 import { exportPlotToPDF } from "@/lib/pdfExport";
+import { PdfExportButton } from "@/components/PdfExportButton";
+import type { PdfTheme } from "@/lib/pdfExport";
 import { MentionText } from "@/components/mentions/MentionText";
 
 interface ViewPlotDialogProps {
