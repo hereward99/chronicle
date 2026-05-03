@@ -147,9 +147,29 @@ function addLabelValue(pdf: jsPDF, label: string, value: string, y: number, x: n
   pdf.setFontSize(10);
   pdf.setFont('helvetica', 'normal');
   const lines = pdf.splitTextToSize(stripMentions(value), valueMaxWidth);
-  pdf.text(lines, valueX, y);
-  
-  return y + (lines.length * 5);
+  const lineHeight = 5;
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const bottomMargin = 20;
+
+  let currentY = y;
+  let isFirst = true;
+  for (const line of lines) {
+    if (currentY + lineHeight > pageHeight - bottomMargin) {
+      pdf.addPage();
+      pdf.setFillColor(COLORS.background.r, COLORS.background.g, COLORS.background.b);
+      pdf.rect(0, 0, pdf.internal.pageSize.getWidth(), pageHeight, 'F');
+      currentY = 20;
+      isFirst = false;
+    }
+    pdf.setTextColor(COLORS.foreground.r, COLORS.foreground.g, COLORS.foreground.b);
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(line, isFirst ? valueX : x, currentY);
+    currentY += lineHeight;
+    isFirst = false;
+  }
+
+  return currentY;
 }
 
 function addBadge(pdf: jsPDF, text: string, x: number, y: number, isPrimary: boolean = false): number {
