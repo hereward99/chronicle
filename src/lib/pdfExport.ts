@@ -914,7 +914,8 @@ export function exportChecklistToPDF(checklist: {
   notes?: string | null;
   items: { text: string; is_completed: boolean }[];
   created_at: string;
-}) {
+}, theme: PdfTheme = 'dark') {
+  setPdfTheme(theme);
   const pdf = createThemedPDF({
     title: checklist.title,
     subtitle: 'Session Prep Checklist'
