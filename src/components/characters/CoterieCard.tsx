@@ -10,6 +10,7 @@ import type { Coterie } from "@/hooks/useCoteries";
 import type { Character } from "@/hooks/useCharacters";
 import { MentionText } from "@/components/mentions/MentionText";
 import { exportCoterieToPDF } from "@/lib/pdfExport";
+import { PdfExportButton } from "@/components/PdfExportButton";
 
 interface CoterieCardProps {
   coterie: Coterie;
