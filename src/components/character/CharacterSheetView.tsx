@@ -380,15 +380,9 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                 <AvatarFallback className="text-3xl">{character.name.substring(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
             )}
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => { exportCharacterToPDF(character); }}
-              className="w-full"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Export PDF
-            </Button>
+            <PdfExportButton
+              onExport={(theme) => { exportCharacterToPDF(character, theme); }}
+            />
           </div>
           
           <div className="flex-1 space-y-3">
