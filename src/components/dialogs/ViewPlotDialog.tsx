@@ -70,8 +70,8 @@ export function ViewPlotDialog({ plot, open, onOpenChange }: ViewPlotDialogProps
     ) || [];
   };
 
-  const handleExportPDF = () => {
-    exportPlotToPDF(plot, assignedCharacters.map(c => ({ name: c.name, clan: c.clan })));
+  const handleExportPDF = (theme: PdfTheme) => {
+    exportPlotToPDF(plot, assignedCharacters.map(c => ({ name: c.name, clan: c.clan })), theme);
   };
 
   return (
