@@ -18,6 +18,7 @@ import { BoonsSection } from "@/components/boons/BoonsSection";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { exportCharacterToPDF } from "@/lib/pdfExport";
+import { PdfExportButton } from "@/components/PdfExportButton";
 import { MentionText } from "@/components/mentions/MentionText";
 import { useCharacterSessions } from "@/hooks/useSessionCharacters";
 import { useSessions } from "@/hooks/useSessions";
