@@ -1017,8 +1017,10 @@ export function exportCoterieToPDF(
     created_at?: string;
     updated_at?: string;
   },
-  members: { name: string; clan: string }[] = []
+  members: { name: string; clan: string }[] = [],
+  theme: PdfTheme = 'dark',
 ) {
+  setPdfTheme(theme);
   const subtitleParts: string[] = [];
   if (coterie.coterie_type) subtitleParts.push(coterie.coterie_type);
   if (coterie.city) subtitleParts.push(coterie.city);
