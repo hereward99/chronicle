@@ -290,7 +290,8 @@ export function exportSessionToPDF(session: {
   date_played: string;
   experience_awarded?: number | null;
   created_at: string;
-}) {
+}, theme: PdfTheme = 'dark') {
+  setPdfTheme(theme);
   const pdf = createThemedPDF({
     title: session.title,
     subtitle: 'Session Log'
