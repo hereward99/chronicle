@@ -408,7 +408,8 @@ export async function exportCharacterToPDF(character: {
   use_dice_pools?: boolean | null;
   skip_attributes?: boolean | null;
   dice_pools?: DicePoolConfig | null;
-}) {
+}, theme: PdfTheme = 'dark') {
+  setPdfTheme(theme);
   const pdf = createThemedPDF({
     title: character.name,
     subtitle: `${character.clan} • ${character.type}`
