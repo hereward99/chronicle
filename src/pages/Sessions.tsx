@@ -12,6 +12,7 @@ import { useSessions, Session } from "@/hooks/useSessions";
 import { usePlots } from "@/hooks/usePlots";
 import { useChecklists } from "@/hooks/useChecklists";
 import { exportSessionToPDF } from "@/lib/pdfExport";
+import { PdfExportButton } from "@/components/PdfExportButton";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { MentionText } from "@/components/mentions/MentionText";
 import { useSearchHighlight } from "@/hooks/useSearchHighlight";
