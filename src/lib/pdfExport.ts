@@ -238,7 +238,8 @@ export function exportPlotToPDF(plot: {
   priority: string;
   created_at: string;
   updated_at: string;
-}, assignedCharacters: { name: string; clan: string }[] = []) {
+}, assignedCharacters: { name: string; clan: string }[] = [], theme: PdfTheme = 'dark') {
+  setPdfTheme(theme);
   const pdf = createThemedPDF({
     title: plot.title,
     subtitle: 'Story / Plot'
