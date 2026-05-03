@@ -488,29 +488,46 @@ export function RelationshipGraph({
   }, [relationships, characters, factions, characterFactions, charactersByFaction, buildNodeData, buildNodeStyle]);
 
   const initialEdges: Edge[] = useMemo(() => {
-    return relationships.map(rel => ({
-      id: rel.id,
-      source: rel.character_id,
-      target: rel.related_character_id,
-      type: 'smoothstep',
-      animated: rel.intensity >= 4,
-      style: getRelationshipEdgeStyle(rel),
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        color: getRelationshipColor(rel.relationship_type),
-      },
-      label: rel.relationship_type,
-      labelStyle: { 
-        fill: getRelationshipColor(rel.relationship_type),
-        fontWeight: 600,
-        fontSize: 12,
-      },
-      labelBgStyle: { 
-        fill: 'hsl(var(--card))',
-        fillOpacity: 0.92,
-      },
-      data: { relationship: rel },
-    }));
+    // Detect reciprocal pairs: if a reverse relationship exists, treat as mutual
+    const pairKey = (a: string, b: string) => [a, b].sort().join('::');
+    const reciprocalPairs = new Set<string>();
+    const seen = new Map<string, string>();
+    relationships.forEach((r) => {
+      const key = pairKey(r.character_id, r.related_character_id);
+      const dirKey = `${r.character_id}->${r.related_character_id}`;
+      const reverseKey = `${r.related_character_id}->${r.character_id}`;
+      if (seen.has(reverseKey)) reciprocalPairs.add(key);
+      seen.set(dirKey, r.id);
+    });
+
+    return relationships.map(rel => {
+      const effectivelyMutual =
+        rel.is_mutual || reciprocalPairs.has(pairKey(rel.character_id, rel.related_character_id));
+      const effectiveRel = { ...rel, is_mutual: effectivelyMutual };
+      return {
+        id: rel.id,
+        source: rel.character_id,
+        target: rel.related_character_id,
+        type: 'smoothstep',
+        animated: rel.intensity >= 4,
+        style: getRelationshipEdgeStyle(effectiveRel),
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          color: getRelationshipColor(rel.relationship_type),
+        },
+        label: rel.relationship_type,
+        labelStyle: {
+          fill: getRelationshipColor(rel.relationship_type),
+          fontWeight: 600,
+          fontSize: 12,
+        },
+        labelBgStyle: {
+          fill: 'hsl(var(--card))',
+          fillOpacity: 0.92,
+        },
+        data: { relationship: rel },
+      };
+    });
   }, [relationships]);
 
   const layoutedNodes = useMemo(() => {
