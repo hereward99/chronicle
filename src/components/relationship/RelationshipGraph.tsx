@@ -509,7 +509,7 @@ export function RelationshipGraph({
         source: rel.character_id,
         target: rel.related_character_id,
         type: 'smoothstep',
-        animated: rel.intensity >= 4,
+        animated: false,
         style: getRelationshipEdgeStyle(effectiveRel),
         markerEnd: {
           type: MarkerType.ArrowClosed,
