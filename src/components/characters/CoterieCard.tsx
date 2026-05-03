@@ -10,6 +10,7 @@ import type { Coterie } from "@/hooks/useCoteries";
 import type { Character } from "@/hooks/useCharacters";
 import { MentionText } from "@/components/mentions/MentionText";
 import { exportCoterieToPDF } from "@/lib/pdfExport";
+import { PdfExportButton } from "@/components/PdfExportButton";
 
 interface CoterieCardProps {
   coterie: Coterie;
@@ -57,14 +58,12 @@ export function CoterieCard({ coterie, members, onEdit, onSetPrimary }: CoterieC
             >
               <Star className={`h-4 w-4 ${coterie.is_primary ? "fill-primary text-primary" : ""}`} />
             </Button>
-            <Button
-              size="sm"
+            <PdfExportButton
               variant="ghost"
-              onClick={() => exportCoterieToPDF(coterie, members)}
+              iconOnly
               title="Export as PDF"
-            >
-              <Download className="h-4 w-4" />
-            </Button>
+              onExport={(theme) => exportCoterieToPDF(coterie, members, theme)}
+            />
             <Button size="sm" variant="ghost" onClick={() => onEdit(coterie)}>
               <Edit className="h-4 w-4" />
             </Button>

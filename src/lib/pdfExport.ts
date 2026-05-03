@@ -2,14 +2,42 @@ import jsPDF from 'jspdf';
 import { stripMentions } from './mentions';
 
 // VtM Gothic Theme Colors (HSL to RGB)
-const COLORS = {
-  background: { r: 18, g: 21, b: 25 },      // 220 13% 8%
-  card: { r: 27, g: 31, b: 35 },             // 220 13% 12%
-  foreground: { r: 242, g: 242, b: 242 },    // 0 0% 95%
-  primary: { r: 220, g: 38, b: 38 },         // 0 72% 51% (crimson)
-  muted: { r: 140, g: 148, b: 160 },         // muted foreground
-  border: { r: 45, g: 50, b: 58 },           // 220 13% 20%
+type Palette = {
+  background: { r: number; g: number; b: number };
+  card: { r: number; g: number; b: number };
+  foreground: { r: number; g: number; b: number };
+  primary: { r: number; g: number; b: number };
+  muted: { r: number; g: number; b: number };
+  border: { r: number; g: number; b: number };
 };
+
+const DARK_PALETTE: Palette = {
+  background: { r: 18, g: 21, b: 25 },
+  card: { r: 27, g: 31, b: 35 },
+  foreground: { r: 242, g: 242, b: 242 },
+  primary: { r: 220, g: 38, b: 38 },
+  muted: { r: 140, g: 148, b: 160 },
+  border: { r: 45, g: 50, b: 58 },
+};
+
+// Printer-friendly: white background, dark text, very light tints (saves ink)
+const LIGHT_PALETTE: Palette = {
+  background: { r: 255, g: 255, b: 255 },
+  card: { r: 240, g: 240, b: 240 },
+  foreground: { r: 20, g: 20, b: 20 },
+  primary: { r: 153, g: 27, b: 27 },
+  muted: { r: 90, g: 90, b: 90 },
+  border: { r: 200, g: 200, b: 200 },
+};
+
+// Mutable reference to the active palette. Swapped at the start of each export.
+let COLORS: Palette = DARK_PALETTE;
+
+export type PdfTheme = 'dark' | 'light';
+
+function setPdfTheme(theme: PdfTheme) {
+  COLORS = theme === 'light' ? LIGHT_PALETTE : DARK_PALETTE;
+}
 
 interface PDFOptions {
   title: string;
@@ -210,7 +238,8 @@ export function exportPlotToPDF(plot: {
   priority: string;
   created_at: string;
   updated_at: string;
-}, assignedCharacters: { name: string; clan: string }[] = []) {
+}, assignedCharacters: { name: string; clan: string }[] = [], theme: PdfTheme = 'dark') {
+  setPdfTheme(theme);
   const pdf = createThemedPDF({
     title: plot.title,
     subtitle: 'Story / Plot'
@@ -261,7 +290,8 @@ export function exportSessionToPDF(session: {
   date_played: string;
   experience_awarded?: number | null;
   created_at: string;
-}) {
+}, theme: PdfTheme = 'dark') {
+  setPdfTheme(theme);
   const pdf = createThemedPDF({
     title: session.title,
     subtitle: 'Session Log'
@@ -378,7 +408,8 @@ export async function exportCharacterToPDF(character: {
   use_dice_pools?: boolean | null;
   skip_attributes?: boolean | null;
   dice_pools?: DicePoolConfig | null;
-}) {
+}, theme: PdfTheme = 'dark') {
+  setPdfTheme(theme);
   const pdf = createThemedPDF({
     title: character.name,
     subtitle: `${character.clan} • ${character.type}`
@@ -883,7 +914,8 @@ export function exportChecklistToPDF(checklist: {
   notes?: string | null;
   items: { text: string; is_completed: boolean }[];
   created_at: string;
-}) {
+}, theme: PdfTheme = 'dark') {
+  setPdfTheme(theme);
   const pdf = createThemedPDF({
     title: checklist.title,
     subtitle: 'Session Prep Checklist'
@@ -985,8 +1017,10 @@ export function exportCoterieToPDF(
     created_at?: string;
     updated_at?: string;
   },
-  members: { name: string; clan: string }[] = []
+  members: { name: string; clan: string }[] = [],
+  theme: PdfTheme = 'dark',
 ) {
+  setPdfTheme(theme);
   const subtitleParts: string[] = [];
   if (coterie.coterie_type) subtitleParts.push(coterie.coterie_type);
   if (coterie.city) subtitleParts.push(coterie.city);

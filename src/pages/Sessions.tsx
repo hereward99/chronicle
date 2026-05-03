@@ -12,6 +12,7 @@ import { useSessions, Session } from "@/hooks/useSessions";
 import { usePlots } from "@/hooks/usePlots";
 import { useChecklists } from "@/hooks/useChecklists";
 import { exportSessionToPDF } from "@/lib/pdfExport";
+import { PdfExportButton } from "@/components/PdfExportButton";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { MentionText } from "@/components/mentions/MentionText";
 import { useSearchHighlight } from "@/hooks/useSearchHighlight";
@@ -174,13 +175,10 @@ const Sessions = () => {
             >
               <Pencil className="h-4 w-4" />
             </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => exportSessionToPDF(session)}
-            >
-              <Download className="h-4 w-4" />
-            </Button>
+            <PdfExportButton
+              iconOnly
+              onExport={(theme) => exportSessionToPDF(session, theme)}
+            />
             <Button
               variant="outline"
               size="sm"

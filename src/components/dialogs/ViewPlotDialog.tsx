@@ -8,6 +8,8 @@ import { BookOpen, Clock, Users, Flag, FileText, Image as ImageIcon, Download, C
 import { formatInGameDate } from "@/components/InGameDateInput";
 import { Button } from "@/components/ui/button";
 import { exportPlotToPDF } from "@/lib/pdfExport";
+import { PdfExportButton } from "@/components/PdfExportButton";
+import type { PdfTheme } from "@/lib/pdfExport";
 import { MentionText } from "@/components/mentions/MentionText";
 
 interface ViewPlotDialogProps {
@@ -68,8 +70,8 @@ export function ViewPlotDialog({ plot, open, onOpenChange }: ViewPlotDialogProps
     ) || [];
   };
 
-  const handleExportPDF = () => {
-    exportPlotToPDF(plot, assignedCharacters.map(c => ({ name: c.name, clan: c.clan })));
+  const handleExportPDF = (theme: PdfTheme) => {
+    exportPlotToPDF(plot, assignedCharacters.map(c => ({ name: c.name, clan: c.clan })), theme);
   };
 
   return (
@@ -77,10 +79,7 @@ export function ViewPlotDialog({ plot, open, onOpenChange }: ViewPlotDialogProps
       <DialogContent className="max-w-2xl max-h-[90vh] bg-gradient-subtle border-border">
         <DialogHeader className="flex flex-row items-center justify-between pr-8">
           <DialogTitle className="text-2xl text-foreground">{plot.title}</DialogTitle>
-          <Button variant="outline" size="sm" onClick={handleExportPDF}>
-            <Download className="h-4 w-4 mr-2" />
-            Export PDF
-          </Button>
+          <PdfExportButton onExport={handleExportPDF} />
         </DialogHeader>
         
         <ScrollArea className="max-h-[calc(90vh-120px)] pr-4">
