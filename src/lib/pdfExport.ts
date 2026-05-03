@@ -107,9 +107,26 @@ function addText(pdf: jsPDF, text: string, y: number, options?: {
   pdf.setFont('helvetica', 'normal');
   
   const lines = pdf.splitTextToSize(stripMentions(text), maxWidth);
-  pdf.text(lines, indent, y);
-  
-  return y + (lines.length * (fontSize * 0.5));
+  const lineHeight = fontSize * 0.5;
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const bottomMargin = 20;
+
+  let currentY = y;
+  for (const line of lines) {
+    if (currentY + lineHeight > pageHeight - bottomMargin) {
+      pdf.addPage();
+      pdf.setFillColor(COLORS.background.r, COLORS.background.g, COLORS.background.b);
+      pdf.rect(0, 0, pdf.internal.pageSize.getWidth(), pageHeight, 'F');
+      currentY = 20;
+      pdf.setTextColor(textColor.r, textColor.g, textColor.b);
+      pdf.setFontSize(fontSize);
+      pdf.setFont('helvetica', 'normal');
+    }
+    pdf.text(line, indent, currentY);
+    currentY += lineHeight;
+  }
+
+  return currentY;
 }
 
 function addLabelValue(pdf: jsPDF, label: string, value: string, y: number, x: number = 20, maxWidth?: number): number {
