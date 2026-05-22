@@ -99,8 +99,8 @@ const Stories = () => {
             className="text-sm text-muted-foreground line-clamp-3 block"
           />
         )}
-      </CardHeader>
-      <CardContent className="pt-0">
+      </EntityCardHeader>
+      <EntityCardContent className="pt-0">
         <div className="space-y-2">
           <div className="flex items-center text-sm text-muted-foreground">
             <Clock className="h-4 w-4 mr-2" />
@@ -179,8 +179,8 @@ const Stories = () => {
             </Button>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </EntityCardContent>
+    </EntityCard>
   );
 
   return (
