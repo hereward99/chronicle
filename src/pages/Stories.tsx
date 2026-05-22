@@ -2,6 +2,8 @@ import { useState } from "react";
 import { EmptyState } from "@/components/onboarding/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EntityCard, EntityCardContent, EntityCardHeader, EntityCardTitle } from "@/components/ui/entity-card";
+import { statusBadgeClass } from "@/lib/statusColors";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -35,20 +37,9 @@ const Stories = () => {
     return sessions.filter(session => session.plot_id === plotId).length;
   };
 
-  const getStatusColor = (status: string): string => {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return 'bg-emerald-600 text-white hover:bg-emerald-700 border-transparent';
-      case 'completed':
-        return 'bg-muted text-muted-foreground hover:bg-muted/80 border-transparent';
-      case 'planned':
-        return 'bg-blue-900 text-blue-100 hover:bg-blue-800 border-transparent';
-      case 'critical':
-        return 'bg-red-600 text-white hover:bg-red-700 border-transparent';
-      default:
-        return 'bg-muted text-muted-foreground border-transparent';
-    }
-  };
+  // status colors now centralised in @/lib/statusColors
+
+
 
   const getFilteredStories = (status?: string) => {
     let filtered = plots.filter(story =>
