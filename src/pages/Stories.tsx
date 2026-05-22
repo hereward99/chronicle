@@ -2,6 +2,8 @@ import { useState } from "react";
 import { EmptyState } from "@/components/onboarding/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EntityCard, EntityCardContent, EntityCardHeader, EntityCardTitle } from "@/components/ui/entity-card";
+import { statusBadgeClass } from "@/lib/statusColors";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -35,20 +37,9 @@ const Stories = () => {
     return sessions.filter(session => session.plot_id === plotId).length;
   };
 
-  const getStatusColor = (status: string): string => {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return 'bg-emerald-600 text-white hover:bg-emerald-700 border-transparent';
-      case 'completed':
-        return 'bg-muted text-muted-foreground hover:bg-muted/80 border-transparent';
-      case 'planned':
-        return 'bg-blue-900 text-blue-100 hover:bg-blue-800 border-transparent';
-      case 'critical':
-        return 'bg-red-600 text-white hover:bg-red-700 border-transparent';
-      default:
-        return 'bg-muted text-muted-foreground border-transparent';
-    }
-  };
+  // status colors now centralised in @/lib/statusColors
+
+
 
   const getFilteredStories = (status?: string) => {
     let filtered = plots.filter(story =>
@@ -86,13 +77,13 @@ const Stories = () => {
   const activeHighlight = highlightQuery || searchTerm;
 
   const renderStoryCard = (story: Plot) => (
-    <Card key={story.id} data-entity-id={story.id} className="bg-card border-border shadow-gothic hover:shadow-crimson transition-shadow">
-      <CardHeader className="pb-3">
+    <EntityCard key={story.id} entityId={story.id}>
+      <EntityCardHeader className="pb-3">
         <div className="flex items-start justify-between">
-          <CardTitle className="text-lg text-foreground line-clamp-2">
+          <EntityCardTitle className="text-lg text-foreground line-clamp-2">
             <TextHighlight text={story.title} highlight={activeHighlight} />
-          </CardTitle>
-          <Badge className={`shrink-0 ${getStatusColor(story.status)}`}>
+          </EntityCardTitle>
+          <Badge className={`shrink-0 ${statusBadgeClass("plot", story.status)}`}>
             {story.status}
           </Badge>
         </div>
@@ -108,8 +99,8 @@ const Stories = () => {
             className="text-sm text-muted-foreground line-clamp-3 block"
           />
         )}
-      </CardHeader>
-      <CardContent className="pt-0">
+      </EntityCardHeader>
+      <EntityCardContent className="pt-0">
         <div className="space-y-2">
           <div className="flex items-center text-sm text-muted-foreground">
             <Clock className="h-4 w-4 mr-2" />
@@ -188,8 +179,8 @@ const Stories = () => {
             </Button>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </EntityCardContent>
+    </EntityCard>
   );
 
   return (

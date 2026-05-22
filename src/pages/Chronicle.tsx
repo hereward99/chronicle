@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EntityCard } from "@/components/ui/entity-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -125,7 +126,7 @@ export default function Chronicle() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-gradient-subtle border-border shadow-gothic">
+        <EntityCard variant="panel">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Characters</CardTitle>
             <Users className="h-4 w-4 text-primary" />
@@ -142,9 +143,9 @@ export default function Chronicle() {
               <p className="text-xs text-muted-foreground">{stats.characters.pcs} PCs, {stats.characters.npcs} NPCs</p>
             )}
           </CardContent>
-        </Card>
+        </EntityCard>
 
-        <Card className="bg-gradient-subtle border-border shadow-gothic">
+        <EntityCard variant="panel">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Plots</CardTitle>
             <BookOpen className="h-4 w-4 text-primary" />
@@ -161,9 +162,9 @@ export default function Chronicle() {
               <p className="text-xs text-muted-foreground">{stats.plots.active} active plots</p>
             )}
           </CardContent>
-        </Card>
+        </EntityCard>
 
-        <Card className="bg-gradient-subtle border-border shadow-gothic">
+        <EntityCard variant="panel">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Sessions</CardTitle>
             <Calendar className="h-4 w-4 text-primary" />
@@ -185,9 +186,9 @@ export default function Chronicle() {
               </p>
             )}
           </CardContent>
-        </Card>
+        </EntityCard>
 
-        <Card className="bg-gradient-subtle border-border shadow-gothic">
+        <EntityCard variant="panel">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Notes</CardTitle>
             <Scroll className="h-4 w-4 text-primary" />
@@ -204,12 +205,12 @@ export default function Chronicle() {
               <p className="text-xs text-muted-foreground">Chronicle entries</p>
             )}
           </CardContent>
-        </Card>
+        </EntityCard>
       </div>
 
       {/* Recent Activity and Active Plots */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="bg-gradient-subtle border-border shadow-gothic">
+        <EntityCard variant="panel">
           <CardHeader>
             <CardTitle className="text-foreground">Recent Activity</CardTitle>
           </CardHeader>
@@ -247,9 +248,9 @@ export default function Chronicle() {
               ))
             )}
           </CardContent>
-        </Card>
+        </EntityCard>
 
-        <Card className="bg-gradient-subtle border-border shadow-gothic">
+        <EntityCard variant="panel">
           <CardHeader>
             <CardTitle className="text-foreground">Active Plots</CardTitle>
           </CardHeader>
@@ -294,11 +295,11 @@ export default function Chronicle() {
               ))
             )}
           </CardContent>
-        </Card>
+        </EntityCard>
       </div>
 
       {/* Chronicle Notes */}
-      <Card className="bg-gradient-subtle border-border shadow-gothic">
+      <EntityCard variant="panel">
         <CardHeader>
           <CardTitle className="text-foreground">Chronicle Notes</CardTitle>
         </CardHeader>
@@ -327,7 +328,7 @@ export default function Chronicle() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {notes.map((note) => (
-                <Card key={note.id} className="border-border">
+                <EntityCard key={note.id} entityId={note.id}>
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <CardTitle className="text-base text-foreground">{note.title}</CardTitle>
@@ -380,15 +381,15 @@ export default function Chronicle() {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
+                </EntityCard>
               ))}
             </div>
           )}
         </CardContent>
-      </Card>
+      </EntityCard>
 
       {/* Quick Actions */}
-      <Card className="bg-gradient-subtle border-border shadow-gothic">
+      <EntityCard variant="panel">
         <CardHeader>
           <CardTitle className="text-foreground">Quick Actions</CardTitle>
         </CardHeader>
@@ -420,7 +421,7 @@ export default function Chronicle() {
             </CreateNoteDialog>
           </div>
         </CardContent>
-      </Card>
+      </EntityCard>
 
       {/* Chronicle Management */}
       <ChronicleManager title="Chronicle Management" />

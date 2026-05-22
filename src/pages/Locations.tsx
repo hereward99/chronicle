@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { EmptyState } from '@/components/onboarding/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { EntityCard } from '@/components/ui/entity-card';
 import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
@@ -54,9 +55,9 @@ function LocationCard({
   onDelete: (l: Location) => void;
 }) {
   return (
-    <Card
-      data-entity-id={location.id}
-      className="p-4 hover:border-primary/50 transition-colors cursor-pointer group"
+    <EntityCard
+      entityId={location.id}
+      className="p-4 hover:border-primary/50 cursor-pointer group"
       onClick={() => onView(location)}
     >
       <div className="flex items-start justify-between gap-2">
@@ -113,7 +114,7 @@ function LocationCard({
           className="text-sm text-muted-foreground mt-2 line-clamp-2"
         />
       )}
-    </Card>
+    </EntityCard>
   );
 }
 

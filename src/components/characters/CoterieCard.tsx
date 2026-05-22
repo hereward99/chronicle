@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EntityCard, EntityCardContent, EntityCardHeader, EntityCardTitle } from "@/components/ui/entity-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -27,17 +27,17 @@ export function CoterieCard({ coterie, members, onEdit, onSetPrimary }: CoterieC
   const docs = attachments.filter((a: Record<string, unknown>) => typeof a.type !== 'string' || !(a.type as string).startsWith("image/"));
 
   return (
-    <Card data-entity-id={coterie.id} className={`transition-shadow hover:shadow-lg ${coterie.is_primary ? "ring-2 ring-primary" : ""}`}>
-      <CardHeader className="pb-3">
+    <EntityCard entityId={coterie.id} highlighted={coterie.is_primary}>
+      <EntityCardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <EntityCardTitle className="flex items-center gap-2 text-lg">
               <Users className="h-5 w-5 text-primary" />
               {coterie.name}
               {coterie.is_primary && (
                 <Badge variant="default" className="text-xs">Primary</Badge>
               )}
-            </CardTitle>
+            </EntityCardTitle>
             <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
               {coterie.coterie_type && <span>{coterie.coterie_type}</span>}
               {coterie.city && (
@@ -74,9 +74,9 @@ export function CoterieCard({ coterie, members, onEdit, onSetPrimary }: CoterieC
             <MentionText text={coterie.description} />
           </p>
         )}
-      </CardHeader>
+      </EntityCardHeader>
 
-      <CardContent className="space-y-3 pt-0">
+      <EntityCardContent className="space-y-3 pt-0">
         {/* Domain */}
         {(coterie.chasse > 0 || coterie.portillon > 0 || coterie.lien > 0 || coterie.domain_merits || coterie.domain_resonance) && (
           <div className="space-y-2 p-3 rounded-md bg-secondary/30">
@@ -174,7 +174,7 @@ export function CoterieCard({ coterie, members, onEdit, onSetPrimary }: CoterieC
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </EntityCardContent>
+    </EntityCard>
   );
 }
