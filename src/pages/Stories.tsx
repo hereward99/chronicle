@@ -77,13 +77,13 @@ const Stories = () => {
   const activeHighlight = highlightQuery || searchTerm;
 
   const renderStoryCard = (story: Plot) => (
-    <Card key={story.id} data-entity-id={story.id} className="bg-card border-border shadow-gothic hover:shadow-crimson transition-shadow">
-      <CardHeader className="pb-3">
+    <EntityCard key={story.id} entityId={story.id}>
+      <EntityCardHeader className="pb-3">
         <div className="flex items-start justify-between">
-          <CardTitle className="text-lg text-foreground line-clamp-2">
+          <EntityCardTitle className="text-lg text-foreground line-clamp-2">
             <TextHighlight text={story.title} highlight={activeHighlight} />
-          </CardTitle>
-          <Badge className={`shrink-0 ${getStatusColor(story.status)}`}>
+          </EntityCardTitle>
+          <Badge className={`shrink-0 ${statusBadgeClass("plot", story.status)}`}>
             {story.status}
           </Badge>
         </div>
