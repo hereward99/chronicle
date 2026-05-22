@@ -3,6 +3,7 @@ import { EmptyState } from "@/components/onboarding/EmptyState";
 import { formatInGameDate } from "@/components/InGameDateInput";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EntityCard, EntityCardContent, EntityCardHeader, EntityCardTitle, EntityCardDescription } from "@/components/ui/entity-card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Calendar, Loader2, FileText, Download, BookOpen, ChevronDown, ChevronRight, Pencil, ClipboardList, Trash2, ArrowUp, ArrowDown } from "lucide-react";
@@ -121,14 +122,14 @@ const Sessions = () => {
   };
 
   const renderSessionCard = (session: Session, groupSessions: Session[], indexInGroup: number) => (
-    <Card key={session.id} data-entity-id={session.id} className="bg-card border-border shadow-gothic hover:shadow-crimson transition-shadow">
-      <CardHeader className="pb-4">
+    <EntityCard key={session.id} entityId={session.id}>
+      <EntityCardHeader className="pb-4">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
           <div className="space-y-1">
-            <CardTitle className="text-xl text-foreground">
+            <EntityCardTitle className="text-xl text-foreground">
               <TextHighlight text={session.title} highlight={highlightQuery} />
-            </CardTitle>
-            <CardDescription className="flex items-center gap-2">
+            </EntityCardTitle>
+            <EntityCardDescription className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               {formatDate(session.date_played)}
               {formatInGameDate(session.in_game_date_start, session.in_game_date_end) && (
@@ -136,7 +137,7 @@ const Sessions = () => {
                   · Set in: {formatInGameDate(session.in_game_date_start, session.in_game_date_end)}
                 </span>
               )}
-            </CardDescription>
+            </EntityCardDescription>
           </div>
           <div className="flex items-center gap-1">
             {groupSessions.length > 1 && (
@@ -189,8 +190,8 @@ const Sessions = () => {
             </Button>
           </div>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
+      </EntityCardHeader>
+      <EntityCardContent className="space-y-4">
         {session.summary && (
           <div className="space-y-2">
             <h4 className="text-sm font-medium text-foreground">Session Summary:</h4>
@@ -236,8 +237,8 @@ const Sessions = () => {
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </EntityCardContent>
+    </EntityCard>
   );
 
   return (
