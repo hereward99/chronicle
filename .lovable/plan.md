@@ -1,52 +1,94 @@
-## Goal — Option A: Roster vs. Web
+# Issue 1: Unified Entity Card Pattern
 
-Treat **Characters** as the *roster* (entities & groupings) and **Relationships** as the *web* (connections only).
+## The problem
 
-| Page | Tabs (after) |
-|---|---|
-| **Characters & Groups** | Characters · Coteries · **Factions** |
-| **Relationship Map** | **Map** · List |
+List/grid cards across the app look related but drift in small, visible ways. Sample:
 
----
+| Card | Surface | Hover | Status badge source |
+|---|---|---|---|
+| CharacterCard | `bg-gradient-subtle shadow-gothic` | `shadow-deep` | hardcoded Tailwind (`bg-emerald-600`, `bg-red-600`…) |
+| CoterieCard | plain `bg-card` | `shadow-lg` | n/a |
+| Session card (in Sessions.tsx) | `bg-card shadow-gothic` | `shadow-crimson` | inline |
+| Story card (in Stories.tsx) | `bg-card shadow-gothic` | `shadow-crimson` | inline |
+| Chronicle dashboard cards | `bg-gradient-subtle shadow-gothic` | none | n/a |
+| Note card (in Chronicle.tsx) | plain `border-border` | none | n/a |
+| LocationCard | custom | custom | inline |
 
-## Changes
+Three different surface styles, three different hover shadows, and status-color logic duplicated with slightly different palettes in 4+ places.
 
-### 1. `src/pages/Characters.tsx`
-- **Add a `factions` tab** alongside Characters & Coteries.
-- Move the entire Factions tab UI from `Relationships.tsx` into this new tab — header, "Create Faction" button, empty state, and faction grid (cards with color border, member badges, Manage/Edit buttons).
-- Wire in the faction state already returned by the existing `useFactions(currentChronicle?.id)` hook (currently only used for the Faction filter dropdown). Add the missing pieces: `createFaction`, `updateFaction`, `deleteFaction`, `addCharacterToFaction`, `removeCharacterFromFaction`.
-- Add the dialogs at the bottom: `CreateFactionDialog`, `EditFactionDialog`, `ManageFactionMembersDialog` (all guarded by `currentChronicle`).
-- Add local state: `createFactionDialogOpen`, `editFactionDialogOpen`, `selectedFaction`, `manageMembersDialogOpen`.
-- **Auto-switch to `factions` tab** when global search highlights a faction (mirror existing coterie auto-switch in `useEffect` on `highlightId`).
-- Update the page header subtitle from "Manage your chronicle's characters and coteries" to "Manage your chronicle's characters, coteries, and factions".
-- Optional polish: small summary strip above the tabs — "X characters · Y coteries · Z factions".
+## Goal
 
-### 2. `src/pages/Relationships.tsx`
-- **Remove the `factions` `TabsTrigger` and `TabsContent`** entirely (lines ~654–657 and ~946–1049).
-- **Rename the `graph` tab to `Map`** (label only — keep `value="graph"` to avoid breaking any deep links, or change to `value="map"` if there are no external references; quick rg shows none).
-- **Remove the entire bottom Coteries section** (lines ~1052–1164) — it's already on the Characters page, so this eliminates the duplicate.
-- Remove now-unused imports/state related to factions UI: `CreateFactionDialog`, `EditFactionDialog`, `ManageFactionMembersDialog`, `EmptyState`, `Flag`, `UserPlus`, faction dialog state. **Keep** `useFactions` and `factions`/`characterFactions` — they're still needed for the Map filter sidebar and the SuggestedRelationships component.
-- Remove unused coterie UI bits: `CreateCoterieDialog`, `ManageCoterieDialog`, `showCreateCoterieDialog`, `selectedCoterie`, `memberCounts`, `setPrimaryCoterie`, `getCoterieMembers`, `Star`, `MapPin`, `MentionText`, `TextHighlight` if no longer referenced. **Keep** `coteries`, `allCoterieMembers` and `primaryCharacterIds` — still needed for Map filters and graph centering.
-- Update header subtitle to clarify focus: "Visualize and manage connections between characters" (factions/coteries are managed on the Characters page).
+One shared shell + one shared status-badge helper so every list/grid card on the app reads as part of the same family. No behavioral changes, no layout rewrites of card *contents* — just the wrapper, hover state, and status colors.
 
-### 3. `src/hooks/useGlobalSearch.tsx`
-- Change the navigation route for type `faction` from `/relationships` → `/characters` (line 19) so ⌘K-jumping to a faction lands on the new tab.
-- Coterie route already points to `/characters` after this change… actually it currently points to `/relationships` (line 20) — update it to `/characters` too, since the Coteries section is being removed from Relationships.
+## Scope (this step only)
 
-### 4. `src/components/CommandPalette.tsx`
-- Update the help hint copy (line 113) — no functional change, just keeps wording consistent.
+In scope:
+- New `src/components/ui/entity-card.tsx` — thin wrapper over shadcn `Card` with two variants (`list` for grid items, `panel` for dashboard sections) and a `highlighted` prop for the primary/ring state.
+- New `src/lib/statusColors.ts` — single source for `character.status`, `plot.status`, `session.status` → semantic Tailwind classes (using existing tokens; no new HSL).
+- Migrate the obvious offenders to use both:
+  - `CharacterCard`, `CoterieCard`, `LocationCard` (Locations.tsx inline), session card (Sessions.tsx `renderSessionCard`), story card (Stories.tsx `renderStoryCard`), note card (Chronicle.tsx).
+- Chronicle dashboard section cards → `EntityCard variant="panel"` so the gradient + shadow is defined in one place.
 
----
+Out of scope (later issues will handle these):
+- Restructuring card *contents* or actions placement.
+- Touching dialogs, forms, or PDF export.
+- Replacing hardcoded mention colors (that's issue #4).
+- Detail-page redesigns.
 
-## Why this works
-- **Single source of truth**: every "grouping of characters" (coterie, faction) lives in one place — the roster page.
-- **Relationships page becomes lean**: just the Map + List of edges, with Map filters still able to filter by faction/coterie membership (data still loaded via hooks).
-- **No data model changes** — purely a UI reshuffle. All hooks, dialogs, and DB tables are untouched.
-- **Global search stays correct** because we update the route mapping for faction/coterie results.
+## Technical details
 
-## Out of scope (can be follow-ups)
-- Renaming the `graph` tab value to `map` if you want cleaner internals.
-- Adding "View on map →" shortcuts on Coterie/Faction cards.
-- Summary strip ("12 characters · 2 coteries · 3 factions").
+**`EntityCard` API**
 
-Let me know if you want any of those folded in before I implement.
+```tsx
+type Variant = "list" | "panel";
+interface EntityCardProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: Variant;        // default "list"
+  highlighted?: boolean;    // ring-2 ring-primary (e.g. primary coterie)
+  interactive?: boolean;    // adds hover shadow + cursor (default true for list)
+  entityId?: string;        // sets data-entity-id for search highlight
+}
+```
+
+Resolved classes:
+- `list`: `bg-card border-border shadow-gothic` + (interactive ? `hover:shadow-crimson transition-shadow` : "")
+- `panel`: `bg-gradient-subtle border-border shadow-gothic`
+- `highlighted`: append `ring-2 ring-primary`
+
+Re-exports `CardHeader/Content/Footer/Title/Description` unchanged so call sites only change the outer element name.
+
+**`statusColors.ts`**
+
+```ts
+export type EntityStatusKind = "character" | "plot" | "session";
+export function statusBadgeClass(kind, status): string
+```
+
+Returns classes built from semantic tokens where possible (`bg-primary`, `bg-muted`, `bg-destructive`, `text-*-foreground`) and falls back to a small fixed palette for distinct states (Ally=blue, Rival=amber). All HSL values added to `index.css` as `--status-*` tokens if not already present — no raw Tailwind color literals in components.
+
+**Migrations** are mechanical: replace `<Card className="bg-gradient-subtle …">` with `<EntityCard variant="panel">`, replace inline status switch with `statusBadgeClass(...)`.
+
+## Files
+
+New:
+- `src/components/ui/entity-card.tsx`
+- `src/lib/statusColors.ts`
+
+Edited:
+- `src/components/characters/CharacterCard.tsx`
+- `src/components/characters/CoterieCard.tsx`
+- `src/pages/Locations.tsx` (the inline `LocationCard`)
+- `src/pages/Sessions.tsx` (the `renderSessionCard` shell only)
+- `src/pages/Stories.tsx` (the `renderStoryCard` shell only)
+- `src/pages/Chronicle.tsx` (dashboard section cards + the inline note card)
+- `src/index.css` (only if new status tokens are needed)
+
+## Verification
+
+- Build passes.
+- Visually re-check Characters grid, Coteries grid, Stories list, Sessions list, Locations grid, Chronicle dashboard, and note list — all cards should share the same border, surface gradient, and hover shadow.
+- Primary coterie still shows its ring.
+- Character status badges still render with appropriate colors for Active / Ally / Enemy / Dead / Missing / Inactive / Unknown.
+
+## After this step
+
+I'll stop and confirm with you before moving on to issue #2 (standardized dialog sizes & layout).
