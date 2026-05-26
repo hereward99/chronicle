@@ -3,10 +3,16 @@ import { EmptyState } from "@/components/onboarding/EmptyState";
 import { formatInGameDate } from "@/components/InGameDateInput";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { EntityCard, EntityCardContent, EntityCardHeader, EntityCardTitle, EntityCardDescription } from "@/components/ui/entity-card";
+import {
+  EntityCard,
+  EntityCardContent,
+  EntityCardHeaderBar,
+  CardIconAction,
+} from "@/components/ui/entity-card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Calendar, Loader2, FileText, Download, BookOpen, ChevronDown, ChevronRight, Pencil, ClipboardList, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+
 import { CreateSessionDialog } from "@/components/dialogs/CreateSessionDialog";
 import { EditSessionDialog } from "@/components/dialogs/EditSessionDialog";
 import { useSessions, Session } from "@/hooks/useSessions";
