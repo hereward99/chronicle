@@ -2,12 +2,18 @@ import { useState } from "react";
 import { EmptyState } from "@/components/onboarding/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { EntityCard, EntityCardContent, EntityCardHeader, EntityCardTitle } from "@/components/ui/entity-card";
+import {
+  EntityCard,
+  EntityCardContent,
+  EntityCardHeaderBar,
+  CardIconAction,
+} from "@/components/ui/entity-card";
 import { statusBadgeClass } from "@/lib/statusColors";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, BookOpen, Clock, Users, Eye, Edit, FileText, Image as ImageIcon, Calendar } from "lucide-react";
+import { Plus, Search, BookOpen, Clock, Users, Eye, Pencil, FileText, Calendar } from "lucide-react";
+
 import { formatInGameDate } from "@/components/InGameDateInput";
 import { StoryCardSkeleton } from "@/components/skeletons/CardSkeleton";
 import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
