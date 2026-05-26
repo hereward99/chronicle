@@ -84,11 +84,6 @@ const Stories = () => {
 
   const renderStoryCard = (story: Plot) => (
     <EntityCard key={story.id} entityId={story.id}>
-      <EntityCardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <EntityCardTitle className="text-lg text-foreground line-clamp-2">
-  const renderStoryCard = (story: Plot) => (
-    <EntityCard key={story.id} entityId={story.id}>
       <EntityCardHeaderBar
         leading={<BookOpen className="h-5 w-5 text-primary" />}
         title={
