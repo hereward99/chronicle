@@ -6,6 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Download } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { PdfTheme } from "@/lib/pdfExport";
 
 interface PdfExportButtonProps {
@@ -15,6 +16,8 @@ interface PdfExportButtonProps {
   size?: "sm" | "default" | "icon";
   iconOnly?: boolean;
   title?: string;
+  /** When true (and iconOnly), use the compact 8x8 toolbar size. */
+  toolbar?: boolean;
 }
 
 export function PdfExportButton({
@@ -24,11 +27,18 @@ export function PdfExportButton({
   size = "sm",
   iconOnly = false,
   title = "Export as PDF",
+  toolbar = false,
 }: PdfExportButtonProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={variant} size={iconOnly ? "icon" : size} title={title}>
+        <Button
+          variant={variant}
+          size={iconOnly ? "icon" : size}
+          title={title}
+          aria-label={title}
+          className={cn(iconOnly && toolbar && "h-8 w-8")}
+        >
           <Download className={iconOnly ? "h-4 w-4" : "h-4 w-4 mr-2"} />
           {!iconOnly && label}
         </Button>
@@ -44,3 +54,4 @@ export function PdfExportButton({
     </DropdownMenu>
   );
 }
+
