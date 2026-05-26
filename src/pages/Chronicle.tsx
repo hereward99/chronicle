@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EntityCard } from "@/components/ui/entity-card";
+import { EntityCard, EntityCardContent, EntityCardHeaderBar, CardIconAction } from "@/components/ui/entity-card";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
