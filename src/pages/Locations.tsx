@@ -52,66 +52,65 @@ function LocationCard({
   return (
     <EntityCard
       entityId={location.id}
-      className="p-4 hover:border-primary/50 cursor-pointer group"
+      className="hover:border-primary/50 cursor-pointer group"
       onClick={() => onView(location)}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <MapPin className="h-4 w-4 text-primary shrink-0" />
-          <h3 className="font-medium truncate">
+      <EntityCardHeaderBar
+        leading={<MapPin className="h-4 w-4 text-primary" />}
+        title={
+          <span className="text-base truncate block">
             <TextHighlight text={location.name} highlight={highlightQuery} />
-          </h3>
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+          </span>
+        }
+        titleClassName="text-base font-medium"
+        actions={
+          <>
+            <CardIconAction
+              label="View location"
+              onClick={(e) => { e.stopPropagation(); onView(location); }}
             >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onView(location); }}>
-              <Eye className="h-4 w-4 mr-2" />
-              View
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(location); }}>
-              <Pencil className="h-4 w-4 mr-2" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-destructive"
+              <Eye className="h-4 w-4" />
+            </CardIconAction>
+            <CardIconAction
+              label="Edit location"
+              onClick={(e) => { e.stopPropagation(); onEdit(location); }}
+            >
+              <Pencil className="h-4 w-4" />
+            </CardIconAction>
+            <CardIconAction
+              label="Delete location"
+              className="text-destructive hover:text-destructive"
               onClick={(e) => { e.stopPropagation(); onDelete(location); }}
             >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      {location.coordinates && (
-        <a
-          href={`https://www.google.com/maps/d/u/0/viewer?mid=1Y2Zyar_gNkgjPoLZ7Q9Vmo5x-obp4WA&ll=${encodeURIComponent(location.coordinates)}&z=${getZoomForCoordinates(location.coordinates)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-1"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <MapPin className="h-3 w-3" />
-          {location.coordinates}
-        </a>
-      )}
-      {location.description && (
-        <MentionText
-          text={location.description}
-          className="text-sm text-muted-foreground mt-2 line-clamp-2"
-        />
-      )}
+              <Trash2 className="h-4 w-4" />
+            </CardIconAction>
+          </>
+        }
+      />
+      <EntityCardContent className="pt-0 space-y-2">
+        {location.coordinates && (
+          <a
+            href={`https://www.google.com/maps/d/u/0/viewer?mid=1Y2Zyar_gNkgjPoLZ7Q9Vmo5x-obp4WA&ll=${encodeURIComponent(location.coordinates)}&z=${getZoomForCoordinates(location.coordinates)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MapPin className="h-3 w-3" />
+            {location.coordinates}
+          </a>
+        )}
+        {location.description && (
+          <MentionText
+            text={location.description}
+            className="text-sm text-muted-foreground line-clamp-2"
+          />
+        )}
+      </EntityCardContent>
     </EntityCard>
   );
 }
+
 
 export default function Locations() {
   const { locations, isLoading, deleteLocation } = useLocations();
