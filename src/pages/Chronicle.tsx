@@ -330,39 +330,31 @@ export default function Chronicle() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {notes.map((note) => (
                 <EntityCard key={note.id} entityId={note.id}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="text-base text-foreground">{note.title}</CardTitle>
-                      <div className="flex items-center gap-1 ml-2">
-                        <Badge variant="outline">
-                          {note.category || 'General'}
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <MentionText 
-                      text={note.content || 'No content'} 
-                      className="text-sm text-muted-foreground line-clamp-3 block"
-                    />
-                    <div className="flex items-center justify-between pt-2">
-                      <p className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(note.created_at))} ago
-                      </p>
-                      <div className="flex gap-1">
-                        <Button
-                          size="sm"
-                          variant="ghost"
+                  <EntityCardHeaderBar
+                    leading={<Scroll className="h-4 w-4 text-primary" />}
+                    title={<span className="text-base">{note.title}</span>}
+                    titleClassName="text-base"
+                    badge={
+                      <Badge variant="outline">
+                        {note.category || 'General'}
+                      </Badge>
+                    }
+                    actions={
+                      <>
+                        <CardIconAction
+                          label="Edit note"
                           onClick={() => handleEditNote(note)}
-                          className="h-7 w-7 p-0"
                         >
-                          <Pencil className="h-3 w-3" />
-                        </Button>
+                          <Pencil className="h-4 w-4" />
+                        </CardIconAction>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive hover:text-destructive">
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
+                            <CardIconAction
+                              label="Delete note"
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </CardIconAction>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
@@ -379,11 +371,21 @@ export default function Chronicle() {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
-                      </div>
-                    </div>
-                  </CardContent>
+                      </>
+                    }
+                  />
+                  <EntityCardContent className="pt-0 space-y-2">
+                    <MentionText
+                      text={note.content || 'No content'}
+                      className="text-sm text-muted-foreground line-clamp-3 block"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(note.created_at))} ago
+                    </p>
+                  </EntityCardContent>
                 </EntityCard>
               ))}
+
             </div>
           )}
         </CardContent>
