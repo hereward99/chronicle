@@ -129,74 +129,62 @@ const Sessions = () => {
 
   const renderSessionCard = (session: Session, groupSessions: Session[], indexInGroup: number) => (
     <EntityCard key={session.id} entityId={session.id}>
-      <EntityCardHeader className="pb-4">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-          <div className="space-y-1">
-            <EntityCardTitle className="text-xl text-foreground">
-              <TextHighlight text={session.title} highlight={highlightQuery} />
-            </EntityCardTitle>
-            <EntityCardDescription className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              {formatDate(session.date_played)}
-              {formatInGameDate(session.in_game_date_start, session.in_game_date_end) && (
-                <span className="text-muted-foreground ml-2">
-                  · Set in: {formatInGameDate(session.in_game_date_start, session.in_game_date_end)}
-                </span>
-              )}
-            </EntityCardDescription>
-          </div>
-          <div className="flex items-center gap-1">
-            {groupSessions.length > 1 && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  disabled={indexInGroup === 0}
-                  onClick={() => moveSession(groupSessions, indexInGroup, -1)}
-                  title="Move up"
-                >
-                  <ArrowUp className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  disabled={indexInGroup === groupSessions.length - 1}
-                  onClick={() => moveSession(groupSessions, indexInGroup, 1)}
-                  title="Move down"
-                >
-                  <ArrowDown className="h-4 w-4" />
-                </Button>
-              </>
+      <EntityCardHeaderBar
+        leading={<Calendar className="h-5 w-5 text-primary" />}
+        title={<TextHighlight text={session.title} highlight={highlightQuery} />}
+        subtitle={
+          <>
+            <span>{formatDate(session.date_played)}</span>
+            {formatInGameDate(session.in_game_date_start, session.in_game_date_end) && (
+              <span>· Set in: {formatInGameDate(session.in_game_date_start, session.in_game_date_end)}</span>
             )}
             {session.experience_awarded && (
-              <Badge variant="secondary" className="w-fit">
-                {session.experience_awarded} XP awarded
+              <Badge variant="secondary" className="text-xs">
+                {session.experience_awarded} XP
               </Badge>
             )}
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setEditingSession(session)}
-            >
+          </>
+        }
+        actions={
+          <>
+            {groupSessions.length > 1 && (
+              <>
+                <CardIconAction
+                  label="Move up"
+                  disabled={indexInGroup === 0}
+                  onClick={() => moveSession(groupSessions, indexInGroup, -1)}
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </CardIconAction>
+                <CardIconAction
+                  label="Move down"
+                  disabled={indexInGroup === groupSessions.length - 1}
+                  onClick={() => moveSession(groupSessions, indexInGroup, 1)}
+                >
+                  <ArrowDown className="h-4 w-4" />
+                </CardIconAction>
+              </>
+            )}
+            <CardIconAction label="Edit session" onClick={() => setEditingSession(session)}>
               <Pencil className="h-4 w-4" />
-            </Button>
+            </CardIconAction>
             <PdfExportButton
+              variant="ghost"
               iconOnly
+              toolbar
               onExport={(theme) => exportSessionToPDF(session, theme)}
             />
-            <Button
-              variant="outline"
-              size="sm"
+            <CardIconAction
+              label="Delete session"
               className="text-destructive hover:text-destructive"
               onClick={() => setDeleteTarget(session)}
             >
               <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </EntityCardHeader>
+            </CardIconAction>
+          </>
+        }
+      />
+
       <EntityCardContent className="space-y-4">
         {session.summary && (
           <div className="space-y-2">
