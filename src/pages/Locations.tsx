@@ -2,14 +2,8 @@ import { useState, useMemo } from 'react';
 import { EmptyState } from '@/components/onboarding/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { EntityCard } from '@/components/ui/entity-card';
+import { EntityCard, EntityCardContent, EntityCardHeaderBar, CardIconAction } from '@/components/ui/entity-card';
 import { Input } from '@/components/ui/input';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,7 +19,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { Plus, Search, MapPin, MoreVertical, Eye, Pencil, Trash2, ChevronRight } from 'lucide-react';
+import { Plus, Search, MapPin, Eye, Pencil, Trash2, ChevronRight } from 'lucide-react';
+
 import { useLocations, Location } from '@/hooks/useLocations';
 import { CreateLocationDialog } from '@/components/dialogs/CreateLocationDialog';
 import { EditLocationDialog } from '@/components/dialogs/EditLocationDialog';
