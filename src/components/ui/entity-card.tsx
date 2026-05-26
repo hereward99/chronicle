@@ -8,6 +8,7 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
+import { Button, type ButtonProps } from "@/components/ui/button";
 
 type EntityCardVariant = "list" | "panel";
 
@@ -63,6 +64,115 @@ export const EntityCard = React.forwardRef<HTMLDivElement, EntityCardProps>(
   },
 );
 EntityCard.displayName = "EntityCard";
+
+/* -------------------------------------------------------------------------- */
+/*  EntityCardHeaderBar — shared header for every list-style entity card.     */
+/* -------------------------------------------------------------------------- */
+
+export interface EntityCardHeaderBarProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
+  /** Leading icon or avatar element. */
+  leading?: React.ReactNode;
+  /** Title node (string or highlighted text). */
+  title: React.ReactNode;
+  /** Optional subtitle row (clan, date, location, etc.). */
+  subtitle?: React.ReactNode;
+  /** Status badge / metadata badge slot, top-right of the text block. */
+  badge?: React.ReactNode;
+  /** Icon-only action buttons; rendered in a flex row, top-right. */
+  actions?: React.ReactNode;
+  /** Extra class names for the title element. */
+  titleClassName?: string;
+  /** Pass-through to the underlying CardHeader. */
+  headerClassName?: string;
+}
+
+/**
+ * Standard header layout for entity cards:
+ *
+ *   [leading] [title …………………… badge] [actions]
+ *             [subtitle ……………]
+ *
+ * Either or both of `badge` and `actions` are optional.
+ */
+export function EntityCardHeaderBar({
+  leading,
+  title,
+  subtitle,
+  badge,
+  actions,
+  titleClassName,
+  headerClassName,
+  className,
+  ...rest
+}: EntityCardHeaderBarProps) {
+  return (
+    <CardHeader className={cn("pb-3", headerClassName)}>
+      <div
+        className={cn("flex items-start justify-between gap-3", className)}
+        {...rest}
+      >
+        <div className="flex items-start gap-3 min-w-0 flex-1">
+          {leading && <div className="shrink-0 mt-0.5">{leading}</div>}
+          <div className="min-w-0 flex-1 space-y-1">
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle
+                className={cn(
+                  "text-lg text-foreground leading-tight",
+                  titleClassName,
+                )}
+              >
+                {title}
+              </CardTitle>
+              {badge && <div className="shrink-0">{badge}</div>}
+            </div>
+            {subtitle && (
+              <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
+                {subtitle}
+              </div>
+            )}
+          </div>
+        </div>
+        {actions && (
+          <div className="flex items-center gap-1 shrink-0">{actions}</div>
+        )}
+      </div>
+    </CardHeader>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  CardIconAction — standard icon-only header button.                        */
+/* -------------------------------------------------------------------------- */
+
+export interface CardIconActionProps extends Omit<ButtonProps, "size"> {
+  /** Tooltip / accessible label. Required for discoverability. */
+  label: string;
+}
+
+/**
+ * Standard icon-only action button used in entity card header toolbars.
+ * Wraps shadcn Button with a fixed 8x8 size and `ghost` default variant.
+ */
+export const CardIconAction = React.forwardRef<
+  HTMLButtonElement,
+  CardIconActionProps
+>(({ label, variant = "ghost", className, children, ...props }, ref) => {
+  return (
+    <Button
+      ref={ref}
+      variant={variant}
+      size="icon"
+      title={label}
+      aria-label={label}
+      className={cn("h-8 w-8", className)}
+      {...props}
+    >
+      {children}
+    </Button>
+  );
+});
+CardIconAction.displayName = "CardIconAction";
 
 export {
   CardHeader as EntityCardHeader,

@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { EntityCard, EntityCardContent, EntityCardHeader, EntityCardTitle } from "@/components/ui/entity-card";
+import {
+  EntityCard,
+  EntityCardContent,
+  EntityCardHeaderBar,
+  CardIconAction,
+} from "@/components/ui/entity-card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DotRating } from "./DotRating";
 import { DotRatedDisplay } from "./DotRatedList";
-import { Users, MapPin, ChevronDown, Edit, Star, FileText, Image as ImageIcon, Download } from "lucide-react";
+import { Users, MapPin, ChevronDown, Pencil, Star, FileText } from "lucide-react";
 import type { Coterie } from "@/hooks/useCoteries";
 import type { Character } from "@/hooks/useCharacters";
 import { MentionText } from "@/components/mentions/MentionText";
@@ -28,17 +32,19 @@ export function CoterieCard({ coterie, members, onEdit, onSetPrimary }: CoterieC
 
   return (
     <EntityCard entityId={coterie.id} highlighted={coterie.is_primary}>
-      <EntityCardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <EntityCardTitle className="flex items-center gap-2 text-lg">
-              <Users className="h-5 w-5 text-primary" />
-              {coterie.name}
-              {coterie.is_primary && (
-                <Badge variant="default" className="text-xs">Primary</Badge>
-              )}
-            </EntityCardTitle>
-            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+      <EntityCardHeaderBar
+        leading={<Users className="h-5 w-5 text-primary" />}
+        title={
+          <span className="flex items-center gap-2">
+            {coterie.name}
+            {coterie.is_primary && (
+              <Badge variant="default" className="text-xs">Primary</Badge>
+            )}
+          </span>
+        }
+        subtitle={
+          (coterie.coterie_type || coterie.city) && (
+            <>
               {coterie.coterie_type && <span>{coterie.coterie_type}</span>}
               {coterie.city && (
                 <>
@@ -47,34 +53,38 @@ export function CoterieCard({ coterie, members, onEdit, onSetPrimary }: CoterieC
                   <span><MentionText text={coterie.city} /></span>
                 </>
               )}
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <Button
-              size="sm"
-              variant="ghost"
+            </>
+          )
+        }
+        actions={
+          <>
+            <CardIconAction
+              label={coterie.is_primary ? "Primary coterie" : "Set as primary coterie"}
               onClick={() => onSetPrimary(coterie.id)}
-              title="Set as primary coterie"
             >
               <Star className={`h-4 w-4 ${coterie.is_primary ? "fill-primary text-primary" : ""}`} />
-            </Button>
+            </CardIconAction>
             <PdfExportButton
               variant="ghost"
               iconOnly
+              toolbar
               title="Export as PDF"
               onExport={(theme) => exportCoterieToPDF(coterie, members, theme)}
             />
-            <Button size="sm" variant="ghost" onClick={() => onEdit(coterie)}>
-              <Edit className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-        {coterie.description && (
-          <p className="text-sm text-muted-foreground mt-2">
+            <CardIconAction label="Edit coterie" onClick={() => onEdit(coterie)}>
+              <Pencil className="h-4 w-4" />
+            </CardIconAction>
+          </>
+        }
+      />
+      {coterie.description && (
+        <div className="px-6 -mt-2 pb-3">
+          <p className="text-sm text-muted-foreground">
             <MentionText text={coterie.description} />
           </p>
-        )}
-      </EntityCardHeader>
+        </div>
+      )}
+
 
       <EntityCardContent className="space-y-3 pt-0">
         {/* Domain */}

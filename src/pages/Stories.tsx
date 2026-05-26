@@ -2,12 +2,18 @@ import { useState } from "react";
 import { EmptyState } from "@/components/onboarding/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { EntityCard, EntityCardContent, EntityCardHeader, EntityCardTitle } from "@/components/ui/entity-card";
+import {
+  EntityCard,
+  EntityCardContent,
+  EntityCardHeaderBar,
+  CardIconAction,
+} from "@/components/ui/entity-card";
 import { statusBadgeClass } from "@/lib/statusColors";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, BookOpen, Clock, Users, Eye, Edit, FileText, Image as ImageIcon, Calendar } from "lucide-react";
+import { Plus, Search, BookOpen, Clock, Users, Eye, Pencil, FileText, Calendar } from "lucide-react";
+
 import { formatInGameDate } from "@/components/InGameDateInput";
 import { StoryCardSkeleton } from "@/components/skeletons/CardSkeleton";
 import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
@@ -78,31 +84,45 @@ const Stories = () => {
 
   const renderStoryCard = (story: Plot) => (
     <EntityCard key={story.id} entityId={story.id}>
-      <EntityCardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <EntityCardTitle className="text-lg text-foreground line-clamp-2">
+      <EntityCardHeaderBar
+        leading={<BookOpen className="h-5 w-5 text-primary" />}
+        title={
+          <span className="line-clamp-2">
             <TextHighlight text={story.title} highlight={activeHighlight} />
-          </EntityCardTitle>
-          <Badge className={`shrink-0 ${statusBadgeClass("plot", story.status)}`}>
+          </span>
+        }
+        badge={
+          <Badge className={statusBadgeClass("plot", story.status)}>
             {story.status}
           </Badge>
-        </div>
-        {activeHighlight ? (
-          <TextHighlight 
-            text={story.summary || story.description || "No summary provided"} 
-            className="text-sm text-muted-foreground line-clamp-3 block"
-            highlight={activeHighlight}
-          />
-        ) : (
-          <MentionText 
-            text={story.summary || story.description || "No summary provided"} 
-            className="text-sm text-muted-foreground line-clamp-3 block"
-          />
-        )}
-      </EntityCardHeader>
+        }
+        actions={
+          <>
+            <CardIconAction label="View story" onClick={() => setViewingPlot(story)}>
+              <Eye className="h-4 w-4" />
+            </CardIconAction>
+            <CardIconAction label="Edit story" onClick={() => setEditingPlot(story)}>
+              <Pencil className="h-4 w-4" />
+            </CardIconAction>
+          </>
+        }
+      />
       <EntityCardContent className="pt-0">
         <div className="space-y-2">
-          <div className="flex items-center text-sm text-muted-foreground">
+          {activeHighlight ? (
+            <TextHighlight
+              text={story.summary || story.description || "No summary provided"}
+              className="text-sm text-muted-foreground line-clamp-3 block"
+              highlight={activeHighlight}
+            />
+          ) : (
+            <MentionText
+              text={story.summary || story.description || "No summary provided"}
+              className="text-sm text-muted-foreground line-clamp-3 block"
+            />
+          )}
+
+          <div className="flex items-center text-sm text-muted-foreground pt-2">
             <Clock className="h-4 w-4 mr-2" />
             {getSessionCountForPlot(story.id)} session{getSessionCountForPlot(story.id) !== 1 ? 's' : ''} played
           </div>
@@ -156,32 +176,11 @@ const Stories = () => {
               ))}
             </div>
           )}
-
-          {/* Action Buttons */}
-          <div className="flex gap-2 pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1"
-              onClick={() => setViewingPlot(story)}
-            >
-              <Eye className="h-4 w-4 mr-2" />
-              View
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1"
-              onClick={() => setEditingPlot(story)}
-            >
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
-          </div>
         </div>
       </EntityCardContent>
     </EntityCard>
   );
+
 
   return (
     <div className="space-y-6">
