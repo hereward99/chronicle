@@ -115,26 +115,32 @@ export function EntityCardHeaderBar({
         <div className="flex items-start gap-3 min-w-0 flex-1">
           {leading && <div className="shrink-0 mt-0.5">{leading}</div>}
           <div className="min-w-0 flex-1 space-y-1">
-            <div className="flex items-start justify-between gap-2">
-              <CardTitle
-                className={cn(
-                  "text-lg text-foreground leading-tight",
-                  titleClassName,
+            <CardTitle
+              className={cn(
+                "text-lg text-foreground leading-tight break-words",
+                titleClassName,
+              )}
+            >
+              {title}
+            </CardTitle>
+            {(subtitle || badge) && (
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                {subtitle ? (
+                  <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap min-w-0">
+                    {subtitle}
+                  </div>
+                ) : (
+                  <span />
                 )}
-              >
-                {title}
-              </CardTitle>
-              {badge && <div className="shrink-0">{badge}</div>}
-            </div>
-            {subtitle && (
-              <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
-                {subtitle}
+                {badge && <div className="shrink-0">{badge}</div>}
               </div>
             )}
           </div>
         </div>
         {actions && (
-          <div className="flex items-center gap-1 shrink-0">{actions}</div>
+          <div className="flex items-center gap-1 shrink-0 self-start">
+            {actions}
+          </div>
         )}
       </div>
     </CardHeader>
