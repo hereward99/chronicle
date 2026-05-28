@@ -578,40 +578,39 @@ export default function Characters() {
                   .filter(Boolean) as Character[];
 
                 return (
-                  <Card
+                  <EntityCard
                     key={faction.id}
-                    className="hover:shadow-lg transition-shadow overflow-hidden min-w-0"
+                    entityId={faction.id}
+                    variant="panel"
+                    className="overflow-hidden min-w-0"
                     style={{ borderTop: `4px solid ${faction.color}` }}
                   >
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <CardTitle className="flex items-center gap-2">
-                            <div
-                              className="w-3 h-3 rounded-full"
-                              style={{ backgroundColor: faction.color }}
-                            />
-                            {faction.name}
-                          </CardTitle>
-                          {faction.description && (
-                            <CardDescription className="mt-2">
-                              {faction.description}
-                            </CardDescription>
-                          )}
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
+                    <EntityCardHeaderBar
+                      leading={
+                        <div
+                          className="w-3 h-3 rounded-full mt-1.5"
+                          style={{ backgroundColor: faction.color }}
+                        />
+                      }
+                      title={faction.name}
+                      subtitle={
+                        faction.description ? (
+                          <span className="line-clamp-2">{faction.description}</span>
+                        ) : undefined
+                      }
+                      actions={
+                        <CardIconAction
+                          label="Edit faction"
                           onClick={() => {
                             setSelectedFaction(faction);
                             setEditFactionDialogOpen(true);
                           }}
                         >
                           <Edit className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
+                        </CardIconAction>
+                      }
+                    />
+                    <EntityCardContent>
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">
@@ -643,8 +642,8 @@ export default function Characters() {
                           </div>
                         )}
                       </div>
-                    </CardContent>
-                  </Card>
+                    </EntityCardContent>
+                  </EntityCard>
                 );
               })}
             </div>
