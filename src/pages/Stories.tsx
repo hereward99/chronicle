@@ -87,9 +87,10 @@ const Stories = () => {
       <EntityCardHeaderBar
         leading={<BookOpen className="h-5 w-5 text-primary" />}
         title={
-          <span className="line-clamp-2">
+          <span className="break-words">
             <TextHighlight text={story.title} highlight={activeHighlight} />
           </span>
+
         }
         badge={
           <Badge className={statusBadgeClass("plot", story.status)}>
