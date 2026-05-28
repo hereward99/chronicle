@@ -58,7 +58,7 @@ function LocationCard({
       <EntityCardHeaderBar
         leading={<MapPin className="h-4 w-4 text-primary" />}
         title={
-          <span className="text-base truncate block">
+          <span className="text-base break-words">
             <TextHighlight text={location.name} highlight={highlightQuery} />
           </span>
         }
