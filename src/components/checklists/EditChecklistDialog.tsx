@@ -52,7 +52,7 @@ export function EditChecklistDialog({ checklist, open, onOpenChange, onSave }: E
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[450px]">
+      <DialogContent size="sm">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Edit Checklist</DialogTitle>
