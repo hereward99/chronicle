@@ -336,7 +336,7 @@ export function CreateRelationshipDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent size="sm">
         <DialogHeader>
           <DialogTitle>Create New Relationship{bulkMode ? 's' : ''}</DialogTitle>
           <DialogDescription>
