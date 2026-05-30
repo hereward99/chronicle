@@ -125,7 +125,7 @@ export function EditBoonDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent size="sm">
         <DialogHeader>
           <DialogTitle>Edit Boon</DialogTitle>
         </DialogHeader>
