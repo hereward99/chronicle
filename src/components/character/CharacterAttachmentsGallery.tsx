@@ -145,7 +145,7 @@ export function CharacterAttachmentsGallery({ attachments }: CharacterAttachment
 
       {/* Image Lightbox */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+        <DialogContent size="lg" className="p-0">
           <DialogHeader className="p-4 pb-0">
             <DialogTitle className="flex items-center justify-between">
               <span className="truncate">{selectedImage?.name}</span>
