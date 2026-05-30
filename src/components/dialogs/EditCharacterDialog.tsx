@@ -498,7 +498,7 @@ export function EditCharacterDialog({
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl h-[90vh] flex flex-col min-h-0">
+      <DialogContent size="lg">
         <DialogHeader>
           <DialogTitle>Edit Character Sheet</DialogTitle>
           <DialogDescription>Update attributes, skills, and details.</DialogDescription>
