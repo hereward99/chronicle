@@ -176,7 +176,7 @@ export function CharacterAttachmentsGallery({ attachments }: CharacterAttachment
 
       {/* Document Viewer */}
       <Dialog open={!!selectedDocument} onOpenChange={closeDocumentDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh]">
+        <DialogContent size="lg">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               <span className="truncate">{selectedDocument?.name}</span>
