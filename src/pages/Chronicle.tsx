@@ -100,7 +100,7 @@ export default function Chronicle() {
 
       {/* Edit Chronicle Header Dialog */}
       <Dialog open={headerEditOpen} onOpenChange={setHeaderEditOpen}>
-        <DialogContent>
+        <DialogContent size="sm">
           <DialogHeader>
             <DialogTitle>Edit Chronicle Details</DialogTitle>
           </DialogHeader>
