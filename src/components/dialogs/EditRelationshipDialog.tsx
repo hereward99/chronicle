@@ -115,7 +115,7 @@ export function EditRelationshipDialog({
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent size="sm">
         <DialogHeader>
           <DialogTitle>Edit Relationship</DialogTitle>
           <DialogDescription>
