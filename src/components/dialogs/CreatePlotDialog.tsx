@@ -137,7 +137,7 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-gradient-subtle border-border">
+      <DialogContent size="sm">
         <DialogHeader>
           <DialogTitle className="text-foreground">Create New Story</DialogTitle>
           <DialogDescription>
