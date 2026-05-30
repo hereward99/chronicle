@@ -134,7 +134,7 @@ export function ManageCoterieDialog({ open, onOpenChange, coterie }: ManageCoter
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto sm:max-w-2xl">
+        <DialogContent size="md">
           <DialogHeader>
             <DialogTitle>Manage Coterie</DialogTitle>
             <DialogDescription>Update coterie details, members, and attachments.</DialogDescription>
