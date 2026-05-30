@@ -35,7 +35,7 @@ export function ChronicleSetupDialog({ open, onComplete }: ChronicleSetupDialogP
 
   return (
     <Dialog open={open}>
-      <DialogContent className="max-w-lg bg-gradient-subtle border-border [&>button]:hidden" onPointerDownOutside={(e) => e.preventDefault()}>
+      <DialogContent size="sm" className="[&>button]:hidden" onPointerDownOutside={(e) => e.preventDefault()}>
         {step === 0 && (
           <div className="text-center space-y-6 py-4">
             <div className="w-16 h-16 bg-gradient-blood rounded-2xl flex items-center justify-center mx-auto shadow-crimson">
