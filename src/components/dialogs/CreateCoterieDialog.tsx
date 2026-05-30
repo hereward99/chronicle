@@ -82,7 +82,7 @@ export function CreateCoterieDialog({ open, onOpenChange }: CreateCoterieDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh]">
+      <DialogContent size="md">
         <DialogHeader>
           <DialogTitle>Create Coterie</DialogTitle>
           <DialogDescription>Create a new coterie using the V5 Coterie Sheet format.</DialogDescription>

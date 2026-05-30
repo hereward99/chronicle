@@ -160,7 +160,7 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-gradient-subtle border-border">
+      <DialogContent size="sm">
         <DialogHeader>
           <DialogTitle className="text-foreground">Quick Create Character</DialogTitle>
           <DialogDescription>

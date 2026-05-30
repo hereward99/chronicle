@@ -71,7 +71,7 @@ export function EditNoteDialog({ note, open, onOpenChange }: EditNoteDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-gradient-subtle border-border">
+      <DialogContent size="sm">
         <DialogHeader>
           <DialogTitle className="text-foreground">Edit Note</DialogTitle>
           <DialogDescription>Update your chronicle note</DialogDescription>

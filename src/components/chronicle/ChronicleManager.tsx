@@ -111,7 +111,7 @@ export function ChronicleManager({ title = "Chronicle" }: { title?: string }) {
 
       {/* Create / Edit Dialog */}
       <Dialog open={showCreate || !!editingChronicle} onOpenChange={(open) => { if (!open) { setShowCreate(false); setEditingChronicle(null); } }}>
-        <DialogContent>
+        <DialogContent size="sm">
           <DialogHeader>
             <DialogTitle>{editingChronicle ? "Edit Chronicle" : "New Chronicle"}</DialogTitle>
             <DialogDescription>

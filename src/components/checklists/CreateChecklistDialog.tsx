@@ -116,7 +116,7 @@ export function CreateChecklistDialog({ children, defaultPlotId }: CreateCheckli
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
+      <DialogContent size="md">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Create Session Prep Checklist</DialogTitle>

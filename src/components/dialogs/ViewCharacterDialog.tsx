@@ -19,7 +19,7 @@ export function ViewCharacterDialog({ character, open, onOpenChange }: ViewChara
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh]">
+      <DialogContent size="lg">
         <DialogHeader>
           <DialogTitle>Character Sheet</DialogTitle>
         </DialogHeader>

@@ -455,7 +455,7 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
 
       {/* Image Lightbox */}
       <Dialog open={!!lightboxImage} onOpenChange={() => setLightboxImage(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+        <DialogContent size="lg" className="p-0">
           <DialogHeader className="p-4 pb-0">
             <DialogTitle className="truncate">{lightboxImage?.name}</DialogTitle>
           </DialogHeader>

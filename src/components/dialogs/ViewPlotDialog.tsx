@@ -76,7 +76,7 @@ export function ViewPlotDialog({ plot, open, onOpenChange }: ViewPlotDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] bg-gradient-subtle border-border">
+      <DialogContent size="md">
         <DialogHeader className="flex flex-row items-center justify-between pr-8">
           <DialogTitle className="text-2xl text-foreground">{plot.title}</DialogTitle>
           <PdfExportButton onExport={handleExportPDF} />
