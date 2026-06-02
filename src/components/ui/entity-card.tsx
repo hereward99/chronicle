@@ -123,23 +123,19 @@ export function EntityCardHeaderBar({
             >
               {title}
             </CardTitle>
-            {(subtitle || badge) && (
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                {subtitle ? (
-                  <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap min-w-0">
-                    {subtitle}
-                  </div>
-                ) : (
-                  <span />
-                )}
-                {badge && <div className="shrink-0">{badge}</div>}
+            {subtitle && (
+              <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap min-w-0">
+                {subtitle}
               </div>
             )}
           </div>
         </div>
-        {actions && (
-          <div className="flex items-center gap-1 shrink-0 self-start">
-            {actions}
+        {(actions || badge) && (
+          <div className="flex flex-col items-end gap-2 shrink-0 self-start">
+            {actions && (
+              <div className="flex items-center gap-1">{actions}</div>
+            )}
+            {badge && <div>{badge}</div>}
           </div>
         )}
       </div>
