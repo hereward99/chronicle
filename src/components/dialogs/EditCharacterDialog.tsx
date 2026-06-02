@@ -1908,7 +1908,7 @@ export function EditCharacterDialog({
           </Tabs>
         </ScrollArea>
 
-        <DialogFooter className="flex justify-between border-t pt-4">
+        <div className="flex justify-between items-center pt-4 border-t border-border">
           <Button
             variant="destructive"
             onClick={() => setShowDeleteDialog(true)}
@@ -1917,7 +1917,7 @@ export function EditCharacterDialog({
             <Trash2 className="h-4 w-4 mr-2" />
             Delete
           </Button>
-          
+
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
@@ -1927,7 +1927,7 @@ export function EditCharacterDialog({
               Save Changes
             </Button>
           </div>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
 
