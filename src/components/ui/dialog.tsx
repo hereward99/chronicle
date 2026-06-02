@@ -32,7 +32,7 @@ export type DialogSize = "sm" | "md" | "lg";
 const dialogSizeClasses: Record<DialogSize, string> = {
   sm: "max-w-md max-h-[85vh] overflow-y-auto",
   md: "max-w-2xl max-h-[90vh] overflow-y-auto",
-  lg: "max-w-6xl h-[90vh] flex flex-col min-h-0",
+  lg: "max-w-6xl h-[90vh] flex flex-col min-h-0 overflow-y-auto",
 };
 
 interface DialogContentProps
