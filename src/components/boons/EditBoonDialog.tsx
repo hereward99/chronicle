@@ -256,11 +256,12 @@ export function EditBoonDialog({
           </div>
         </div>
 
-        <DialogFooter className="flex justify-between">
+        <div className="flex justify-between items-center pt-4 border-t border-border">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="icon">
-                <Trash2 className="h-4 w-4" />
+              <Button variant="destructive">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -288,7 +289,7 @@ export function EditBoonDialog({
               {isSubmitting ? "Saving..." : "Save Changes"}
             </Button>
           </div>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
