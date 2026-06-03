@@ -188,8 +188,8 @@ export function ViewPlotDialog({ plot, open, onOpenChange }: ViewPlotDialogProps
             {/* Metadata */}
             <div className="pt-4 border-t border-border text-xs text-muted-foreground">
               <div className="flex justify-between">
-                <span>Created: {new Date(plot.created_at).toLocaleDateString()}</span>
-                <span>Updated: {new Date(plot.updated_at).toLocaleDateString()}</span>
+                <ChronicleDate value={plot.created_at} prefix="Created" />
+                <ChronicleDate value={plot.updated_at} prefix="Updated" />
               </div>
             </div>
           </div>
