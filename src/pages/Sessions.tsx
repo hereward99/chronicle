@@ -127,17 +127,19 @@ const Sessions = () => {
         leading={<Calendar className="h-5 w-5 text-primary" />}
         title={<TextHighlight text={session.title} highlight={highlightQuery} />}
         subtitle={
-          <>
-            <span>{formatDate(session.date_played)}</span>
-            {formatInGameDate(session.in_game_date_start, session.in_game_date_end) && (
-              <span>· Set in: {formatInGameDate(session.in_game_date_start, session.in_game_date_end)}</span>
-            )}
+          <span className="inline-flex items-center gap-2 flex-wrap">
+            <ChronicleDate value={session.date_played} variant="long" />
+            <ChronicleDate
+              inGameStart={session.in_game_date_start}
+              inGameEnd={session.in_game_date_end}
+              prefix="Set in"
+            />
             {session.experience_awarded && (
               <Badge variant="secondary" className="text-xs">
                 {session.experience_awarded} XP
               </Badge>
             )}
-          </>
+          </span>
         }
         actions={
           <>
