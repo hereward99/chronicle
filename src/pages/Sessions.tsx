@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { EmptyState } from "@/components/onboarding/EmptyState";
-import { formatInGameDate } from "@/components/InGameDateInput";
+import { ChronicleDate } from "@/components/ChronicleDate";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
