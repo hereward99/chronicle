@@ -12,9 +12,9 @@ import { statusBadgeClass } from "@/lib/statusColors";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, BookOpen, Clock, Users, Eye, Pencil, FileText, Calendar } from "lucide-react";
+import { Plus, Search, BookOpen, Clock, Users, Eye, Pencil, FileText } from "lucide-react";
 
-import { formatInGameDate } from "@/components/InGameDateInput";
+import { ChronicleDate } from "@/components/ChronicleDate";
 import { StoryCardSkeleton } from "@/components/skeletons/CardSkeleton";
 import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
 import { EditPlotDialog } from "@/components/dialogs/EditPlotDialog";
