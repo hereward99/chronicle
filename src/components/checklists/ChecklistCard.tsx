@@ -143,10 +143,20 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
                   <Square className="h-4 w-4 mr-2" />
                   Mark All Incomplete
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => exportChecklistToPDF(checklist)}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export to PDF
-                </DropdownMenuItem>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export to PDF
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem onClick={() => exportChecklistToPDF(checklist, 'dark')}>
+                      Dark theme (screen)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => exportChecklistToPDF(checklist, 'light')}>
+                      Light theme (printer-friendly)
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
                 <DropdownMenuItem 
                   onClick={() => setDeleteDialogOpen(true)}
                   className="text-destructive focus:text-destructive"
