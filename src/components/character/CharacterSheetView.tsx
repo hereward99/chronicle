@@ -20,6 +20,7 @@ import { useState } from "react";
 import { exportCharacterToPDF } from "@/lib/pdfExport";
 import { PdfExportButton } from "@/components/PdfExportButton";
 import { MentionText } from "@/components/mentions/MentionText";
+import { ChronicleDate } from "@/components/ChronicleDate";
 import { useCharacterSessions } from "@/hooks/useSessionCharacters";
 import { useSessions } from "@/hooks/useSessions";
 import { usePlots } from "@/hooks/usePlots";
