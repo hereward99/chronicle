@@ -97,14 +97,8 @@ const Sessions = () => {
     });
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
+  // Real-world date formatting handled by <ChronicleDate />
+
 
   const getImageAttachments = (attachments: any[]) => {
     return attachments?.filter(att => att.type?.startsWith('image/')) || [];
