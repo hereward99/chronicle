@@ -12,9 +12,9 @@ import { statusBadgeClass } from "@/lib/statusColors";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, BookOpen, Clock, Users, Eye, Pencil, FileText, Calendar } from "lucide-react";
+import { Plus, Search, BookOpen, Clock, Users, Eye, Pencil, FileText } from "lucide-react";
 
-import { formatInGameDate } from "@/components/InGameDateInput";
+import { ChronicleDate } from "@/components/ChronicleDate";
 import { StoryCardSkeleton } from "@/components/skeletons/CardSkeleton";
 import { CreatePlotDialog } from "@/components/dialogs/CreatePlotDialog";
 import { EditPlotDialog } from "@/components/dialogs/EditPlotDialog";
@@ -135,12 +135,14 @@ const Stories = () => {
             <BookOpen className="h-4 w-4 mr-2" />
             Priority: {story.priority}
           </div>
-          {formatInGameDate(story.in_game_date_start, story.in_game_date_end) && (
-            <div className="flex items-center text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4 mr-2" />
-              Set in: {formatInGameDate(story.in_game_date_start, story.in_game_date_end)}
-            </div>
-          )}
+          <ChronicleDate
+            inGameStart={story.in_game_date_start}
+            inGameEnd={story.in_game_date_end}
+            prefix="Set in"
+            withIcon
+            as="div"
+            className="text-sm"
+          />
 
           {/* Image Thumbnails */}
           {getImageAttachments(story.attachments || []).length > 0 && (

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useDevNotes } from '@/hooks/useDevNotes';
+import { ChronicleDate } from '@/components/ChronicleDate';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -277,9 +278,7 @@ export default function Settings() {
                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border capitalize ${categoryColors[note.category]}`}>
                               {note.category}
                             </span>
-                            <span className="text-[10px] text-muted-foreground">
-                              {new Date(note.created_at).toLocaleDateString()}
-                            </span>
+                            <ChronicleDate value={note.created_at} className="text-[10px] text-muted-foreground" />
                           </div>
                         </div>
                         <button

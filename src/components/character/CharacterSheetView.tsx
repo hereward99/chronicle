@@ -20,6 +20,7 @@ import { useState } from "react";
 import { exportCharacterToPDF } from "@/lib/pdfExport";
 import { PdfExportButton } from "@/components/PdfExportButton";
 import { MentionText } from "@/components/mentions/MentionText";
+import { ChronicleDate } from "@/components/ChronicleDate";
 import { useCharacterSessions } from "@/hooks/useSessionCharacters";
 import { useSessions } from "@/hooks/useSessions";
 import { usePlots } from "@/hooks/usePlots";
@@ -1180,9 +1181,9 @@ function CharacterSessionsTab({ character }: { character: Character }) {
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <h4 className="font-semibold">{session.title}</h4>
-              <p className="text-xs text-muted-foreground">
-                {new Date(session.date_played).toLocaleDateString()}
-                {session.experience_awarded ? ` • ${session.experience_awarded} XP` : ''}
+              <p className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                <ChronicleDate value={session.date_played} />
+                {session.experience_awarded ? <span>• {session.experience_awarded} XP</span> : null}
               </p>
               {session.summary && (
                 <MentionText text={session.summary} className="text-sm text-muted-foreground mt-1 line-clamp-2" />

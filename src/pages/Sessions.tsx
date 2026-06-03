@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { EmptyState } from "@/components/onboarding/EmptyState";
-import { formatInGameDate } from "@/components/InGameDateInput";
+import { ChronicleDate } from "@/components/ChronicleDate";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -97,14 +97,8 @@ const Sessions = () => {
     });
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
+  // Real-world date formatting handled by <ChronicleDate />
+
 
   const getImageAttachments = (attachments: any[]) => {
     return attachments?.filter(att => att.type?.startsWith('image/')) || [];
@@ -133,17 +127,19 @@ const Sessions = () => {
         leading={<Calendar className="h-5 w-5 text-primary" />}
         title={<TextHighlight text={session.title} highlight={highlightQuery} />}
         subtitle={
-          <>
-            <span>{formatDate(session.date_played)}</span>
-            {formatInGameDate(session.in_game_date_start, session.in_game_date_end) && (
-              <span>· Set in: {formatInGameDate(session.in_game_date_start, session.in_game_date_end)}</span>
-            )}
+          <span className="inline-flex items-center gap-2 flex-wrap">
+            <ChronicleDate value={session.date_played} variant="long" />
+            <ChronicleDate
+              inGameStart={session.in_game_date_start}
+              inGameEnd={session.in_game_date_end}
+              prefix="Set in"
+            />
             {session.experience_awarded && (
               <Badge variant="secondary" className="text-xs">
                 {session.experience_awarded} XP
               </Badge>
             )}
-          </>
+          </span>
         }
         actions={
           <>

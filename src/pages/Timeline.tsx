@@ -11,6 +11,7 @@ import { Scroll, BookOpen, Calendar, Filter, ChevronDown, ChevronUp } from "luci
 import { SessionCardSkeleton } from "@/components/skeletons/CardSkeleton";
 import { cn } from "@/lib/utils";
 import { formatInGameDate } from "@/components/InGameDateInput";
+import { ChronicleDate } from "@/components/ChronicleDate";
 
 interface TimelineEvent {
   id: string;
@@ -281,9 +282,12 @@ export default function Timeline() {
                             </div>
 
                             <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
-                              <span>{format(event.date, "MMM d, yyyy")}</span>
+                              <ChronicleDate value={event.date} />
                               {event.inGameDate && (
-                                <span className="text-primary/80">⏳ {event.inGameDate}</span>
+                                <ChronicleDate
+                                  inGameStart={event.inGameDate}
+                                  withIcon
+                                />
                               )}
                               {event.plotTitle && (
                                 <span className="truncate">

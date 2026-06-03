@@ -4,8 +4,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plot } from "@/hooks/usePlots";
 import { useCharacters } from "@/hooks/useCharacters";
 import { usePlotCharacters } from "@/hooks/usePlotCharacters";
-import { BookOpen, Clock, Users, Flag, FileText, Image as ImageIcon, Download, Calendar } from "lucide-react";
-import { formatInGameDate } from "@/components/InGameDateInput";
+import { BookOpen, Clock, Users, Flag, FileText, Image as ImageIcon, Download } from "lucide-react";
+import { ChronicleDate } from "@/components/ChronicleDate";
 import { Button } from "@/components/ui/button";
 import { exportPlotToPDF } from "@/lib/pdfExport";
 import { PdfExportButton } from "@/components/PdfExportButton";
@@ -97,14 +97,14 @@ export function ViewPlotDialog({ plot, open, onOpenChange }: ViewPlotDialogProps
             </div>
 
             {/* In-Game Date */}
-            {formatInGameDate(plot.in_game_date_start, plot.in_game_date_end) && (
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  Set in: {formatInGameDate(plot.in_game_date_start, plot.in_game_date_end)}
-                </span>
-              </div>
-            )}
+            <ChronicleDate
+              inGameStart={plot.in_game_date_start}
+              inGameEnd={plot.in_game_date_end}
+              prefix="Set in"
+              withIcon
+              as="div"
+              className="text-sm text-muted-foreground"
+            />
 
             {/* Summary */}
             {plot.summary && (
@@ -188,8 +188,8 @@ export function ViewPlotDialog({ plot, open, onOpenChange }: ViewPlotDialogProps
             {/* Metadata */}
             <div className="pt-4 border-t border-border text-xs text-muted-foreground">
               <div className="flex justify-between">
-                <span>Created: {new Date(plot.created_at).toLocaleDateString()}</span>
-                <span>Updated: {new Date(plot.updated_at).toLocaleDateString()}</span>
+                <ChronicleDate value={plot.created_at} prefix="Created" />
+                <ChronicleDate value={plot.updated_at} prefix="Updated" />
               </div>
             </div>
           </div>
