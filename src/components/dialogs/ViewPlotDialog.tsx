@@ -97,14 +97,14 @@ export function ViewPlotDialog({ plot, open, onOpenChange }: ViewPlotDialogProps
             </div>
 
             {/* In-Game Date */}
-            {formatInGameDate(plot.in_game_date_start, plot.in_game_date_end) && (
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  Set in: {formatInGameDate(plot.in_game_date_start, plot.in_game_date_end)}
-                </span>
-              </div>
-            )}
+            <ChronicleDate
+              inGameStart={plot.in_game_date_start}
+              inGameEnd={plot.in_game_date_end}
+              prefix="Set in"
+              withIcon
+              as="div"
+              className="text-sm text-muted-foreground"
+            />
 
             {/* Summary */}
             {plot.summary && (
