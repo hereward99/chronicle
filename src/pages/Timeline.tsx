@@ -11,6 +11,7 @@ import { Scroll, BookOpen, Calendar, Filter, ChevronDown, ChevronUp } from "luci
 import { SessionCardSkeleton } from "@/components/skeletons/CardSkeleton";
 import { cn } from "@/lib/utils";
 import { formatInGameDate } from "@/components/InGameDateInput";
+import { ChronicleDate } from "@/components/ChronicleDate";
 
 interface TimelineEvent {
   id: string;
