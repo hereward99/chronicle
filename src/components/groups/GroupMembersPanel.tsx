@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, X, Users } from "lucide-react";
 import type { Character } from "@/hooks/useCharacters";
+import { undoableAction } from "@/lib/undoableAction";
 
 export interface GroupMember {
   characterId: string;
@@ -88,14 +89,15 @@ export function GroupMembersPanel({
     }
   };
 
-  const handleRemove = async (characterId: string) => {
-    setBusy(true);
-    try {
-      await onRemove(characterId);
-    } finally {
-      setBusy(false);
-    }
+  const handleRemove = (characterId: string) => {
+    const member = characters.find(c => c.id === characterId);
+    const name = member?.name ?? "Member";
+    undoableAction({
+      description: `Removed ${name}`,
+      perform: () => onRemove(characterId),
+    });
   };
+
 
   const isDisabled = disabled || busy;
 
