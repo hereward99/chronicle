@@ -45,6 +45,27 @@
     --parchment: 36 44% 90%;
     --gold: 43 50% 54%;
 
+    /* Semantic status tokens */
+    --success: 142 58% 44%;
+    --success-foreground: 142 60% 95%;
+    --warning: 37 92% 56%;
+    --warning-foreground: 37 92% 10%;
+    --info: 210 78% 60%;
+    --info-foreground: 210 78% 10%;
+    --crit: 45 90% 55%;
+    --crit-foreground: 45 90% 10%;
+    --messy: 20 90% 55%;
+    --messy-foreground: 20 90% 10%;
+
+    /* Mention type tokens */
+    --mention-character: 0 75% 65%;
+    --mention-plot: 280 70% 70%;
+    --mention-session: 210 78% 65%;
+    --mention-note: 45 90% 60%;
+    --mention-faction: 142 55% 55%;
+    --mention-coterie: 20 90% 60%;
+    --mention-location: 190 75% 60%;
+
     --relationship-ally: 142 58% 44%;
     --relationship-enemy: 0 72% 52%;
     --relationship-rival: 37 92% 56%;
