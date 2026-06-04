@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, X, Users } from "lucide-react";
 import type { Character } from "@/hooks/useCharacters";
+import { undoableAction } from "@/lib/undoableAction";
 
 export interface GroupMember {
   characterId: string;
