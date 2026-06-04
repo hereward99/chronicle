@@ -126,9 +126,9 @@ export function DiceRoller({
       case "bestial-failure": return "bg-destructive/10 border-destructive/30";
       case "total-failure": return "bg-destructive/5 border-destructive/20";
       case "failure": return "bg-muted/30 border-border";
-      case "success": return "bg-green-500/10 border-green-500/30";
-      case "messy-critical": return "bg-orange-500/10 border-orange-500/30";
-      case "critical": return "bg-yellow-500/10 border-yellow-500/30";
+      case "success": return "bg-success/10 border-success/30";
+      case "messy-critical": return "bg-messy/10 border-messy/30";
+      case "critical": return "bg-crit/10 border-crit/30";
       default: return "";
     }
   };
@@ -304,12 +304,12 @@ export function DiceRoller({
         <Card className={cn(
           "border-2 transition-all",
           rouseResult.success
-            ? "bg-green-500/5 border-green-500/30"
+            ? "bg-success/5 border-success/30"
             : "bg-destructive/5 border-destructive/30"
         )}>
           <CardContent className="py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Droplet className={cn("h-5 w-5", rouseResult.success ? "text-green-400" : "text-destructive")} />
+              <Droplet className={cn("h-5 w-5", rouseResult.success ? "text-success" : "text-destructive")} />
               <div>
                 <div className="font-semibold">Rouse Check</div>
                 <div className="text-sm text-muted-foreground">
@@ -322,7 +322,7 @@ export function DiceRoller({
             <div className={cn(
               "w-11 h-11 rounded-lg flex items-center justify-center text-lg font-bold border-2",
               rouseResult.success
-                ? "border-green-500 text-green-400 bg-green-500/10"
+                ? "border-success text-success bg-success/10"
                 : "border-destructive text-destructive bg-destructive/10"
             )}>
               {rouseResult.value}
@@ -336,17 +336,17 @@ export function DiceRoller({
         <Card className={cn(
           "border-2 transition-all",
           doubleRouseResult.hungerGain === 0
-            ? "bg-green-500/5 border-green-500/30"
+            ? "bg-success/5 border-success/30"
             : doubleRouseResult.hungerGain === 1
-              ? "bg-orange-500/5 border-orange-500/30"
+              ? "bg-messy/5 border-messy/30"
               : "bg-destructive/5 border-destructive/30"
         )}>
           <CardContent className="py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex">
-                  <Droplet className={cn("h-5 w-5", doubleRouseResult.hungerGain === 0 ? "text-green-400" : "text-destructive")} />
-                  <Droplet className={cn("h-5 w-5 -ml-1", doubleRouseResult.hungerGain === 0 ? "text-green-400" : "text-destructive")} />
+                  <Droplet className={cn("h-5 w-5", doubleRouseResult.hungerGain === 0 ? "text-success" : "text-destructive")} />
+                  <Droplet className={cn("h-5 w-5 -ml-1", doubleRouseResult.hungerGain === 0 ? "text-success" : "text-destructive")} />
                 </div>
                 <div>
                   <div className="font-semibold">Double Rouse Check</div>
@@ -364,7 +364,7 @@ export function DiceRoller({
                   <div key={i} className={cn(
                     "w-11 h-11 rounded-lg flex items-center justify-center text-lg font-bold border-2",
                     die.success
-                      ? "border-green-500 text-green-400 bg-green-500/10"
+                      ? "border-success text-success bg-success/10"
                       : "border-destructive text-destructive bg-destructive/10"
                   )}>
                     {die.value}
@@ -470,12 +470,12 @@ export function DiceRoller({
             <div className="flex flex-wrap gap-2 text-sm">
               <Badge variant="secondary">{result.totalSuccesses} successes</Badge>
               {result.criticalPairs > 0 && (
-                <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                <Badge className="bg-crit/20 text-crit border-crit/30">
                   {result.criticalPairs} critical pair{result.criticalPairs > 1 ? "s" : ""} (+{result.criticalPairs * 2} bonus)
                 </Badge>
               )}
               {result.margin > 0 && (
-                <Badge variant="outline" className="text-green-400 border-green-500/30">
+                <Badge variant="outline" className="text-success border-success/30">
                   +{result.margin} margin
                 </Badge>
               )}

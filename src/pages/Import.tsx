@@ -999,7 +999,7 @@ Return ONLY the completed JSON, maintaining the exact structure.`}
                             Re-import (Update by Name)
                           </Button>
                           {importResults[card.type + "_update"] && (
-                            <p className={`text-xs ${importResults[card.type + "_update"]?.success ? 'text-green-500' : 'text-destructive'}`}>
+                            <p className={`text-xs ${importResults[card.type + "_update"]?.success ? 'text-success' : 'text-destructive'}`}>
                               {importResults[card.type + "_update"]?.message}
                             </p>
                           )}
@@ -1007,7 +1007,7 @@ Return ONLY the completed JSON, maintaining the exact structure.`}
                       )}
                       
                       {result && (
-                        <p className={`text-xs ${result.success ? 'text-green-500' : 'text-destructive'}`}>
+                        <p className={`text-xs ${result.success ? 'text-success' : 'text-destructive'}`}>
                           {result.message}
                         </p>
                       )}

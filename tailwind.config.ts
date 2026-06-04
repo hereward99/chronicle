@@ -61,6 +61,34 @@ export default {
           friend: 'hsl(var(--relationship-friend))',
           contact: 'hsl(var(--relationship-contact))',
         },
+        success: {
+          DEFAULT: 'hsl(var(--success))',
+          foreground: 'hsl(var(--success-foreground))',
+        },
+        warning: {
+          DEFAULT: 'hsl(var(--warning))',
+          foreground: 'hsl(var(--warning-foreground))',
+        },
+        info: {
+          DEFAULT: 'hsl(var(--info))',
+          foreground: 'hsl(var(--info-foreground))',
+        },
+        crit: {
+          DEFAULT: 'hsl(var(--crit))',
+          foreground: 'hsl(var(--crit-foreground))',
+        },
+        messy: {
+          DEFAULT: 'hsl(var(--messy))',
+          foreground: 'hsl(var(--messy-foreground))',
+        },
+        mention: {
+          character: 'hsl(var(--mention-character))',
+          plot: 'hsl(var(--mention-plot))',
+          session: 'hsl(var(--mention-session))',
+          note: 'hsl(var(--mention-note))',
+          faction: 'hsl(var(--mention-faction))',
+          coterie: 'hsl(var(--mention-coterie))',
+          location: 'hsl(var(--mention-location))',
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

@@ -177,9 +177,9 @@ export function getOutcomeColor(outcome: RollOutcome): string {
     case "bestial-failure": return "text-destructive";
     case "total-failure": return "text-destructive";
     case "failure": return "text-muted-foreground";
-    case "success": return "text-green-400";
-    case "messy-critical": return "text-orange-400";
-    case "critical": return "text-yellow-400";
+    case "success": return "text-success";
+    case "messy-critical": return "text-messy";
+    case "critical": return "text-crit";
   }
 }
 

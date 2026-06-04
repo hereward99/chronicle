@@ -8,13 +8,13 @@ interface MentionTextProps {
 }
 
 const typeColors: Record<MentionType, string> = {
-  character: 'text-red-400 hover:text-red-300',
-  plot: 'text-purple-400 hover:text-purple-300',
-  session: 'text-blue-400 hover:text-blue-300',
-  note: 'text-yellow-400 hover:text-yellow-300',
-  faction: 'text-green-400 hover:text-green-300',
-  coterie: 'text-orange-400 hover:text-orange-300',
-   location: 'text-cyan-400 hover:text-cyan-300',
+  character: 'text-destructive hover:text-destructive',
+  plot: 'text-mention-plot hover:text-mention-plot',
+  session: 'text-info hover:text-info',
+  note: 'text-crit hover:text-crit',
+  faction: 'text-success hover:text-success',
+  coterie: 'text-messy hover:text-messy',
+   location: 'text-mention-location hover:text-mention-location',
 };
 
 const typeRoutes: Record<MentionType, string> = {

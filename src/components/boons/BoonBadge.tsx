@@ -8,10 +8,10 @@ interface BoonBadgeProps {
 
 export function BoonBadge({ severity, size = "default" }: BoonBadgeProps) {
   const severityConfig = {
-    trivial: { label: "Trivial", className: "bg-slate-500/20 text-slate-300 border-slate-500/50" },
-    minor: { label: "Minor", className: "bg-blue-500/20 text-blue-300 border-blue-500/50" },
-    major: { label: "Major", className: "bg-amber-500/20 text-amber-300 border-amber-500/50" },
-    life: { label: "Life", className: "bg-red-500/20 text-red-300 border-red-500/50" },
+    trivial: { label: "Trivial", className: "bg-muted/20 text-muted-foreground border-muted/50" },
+    minor: { label: "Minor", className: "bg-info/20 text-info border-info/50" },
+    major: { label: "Major", className: "bg-warning/20 text-warning border-warning/50" },
+    life: { label: "Life", className: "bg-destructive/20 text-destructive border-destructive/50" },
   };
 
   const config = severityConfig[severity];
@@ -34,8 +34,8 @@ interface StatusBadgeProps {
 export function StatusBadge({ status, size = "default" }: StatusBadgeProps) {
   const statusConfig = {
     outstanding: { label: "Outstanding", className: "bg-primary/20 text-primary border-primary/50" },
-    fulfilled: { label: "Fulfilled", className: "bg-green-500/20 text-green-300 border-green-500/50" },
-    forgiven: { label: "Forgiven", className: "bg-purple-500/20 text-purple-300 border-purple-500/50" },
+    fulfilled: { label: "Fulfilled", className: "bg-success/20 text-success border-success/50" },
+    forgiven: { label: "Forgiven", className: "bg-mention-plot/20 text-mention-plot border-mention-plot/50" },
   };
 
   const config = statusConfig[status];

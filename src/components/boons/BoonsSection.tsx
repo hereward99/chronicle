@@ -105,7 +105,7 @@ export function BoonsSection({ character, characters, editable = false }: BoonsS
           <div>
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-sm font-medium flex items-center gap-2">
-                <HandCoins className="h-4 w-4 text-green-400" />
+                <HandCoins className="h-4 w-4 text-success" />
                 Boons Held
                 {boonsHeld.length > 0 && (
                   <Badge variant="secondary" className="text-xs">
@@ -139,7 +139,7 @@ export function BoonsSection({ character, characters, editable = false }: BoonsS
           <div>
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-sm font-medium flex items-center gap-2">
-                <Scale className="h-4 w-4 text-red-400" />
+                <Scale className="h-4 w-4 text-destructive" />
                 Debts Owed
                 {debtsOwed.length > 0 && (
                   <Badge variant="secondary" className="text-xs">
