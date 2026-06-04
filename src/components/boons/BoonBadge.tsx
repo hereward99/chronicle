@@ -35,7 +35,7 @@ export function StatusBadge({ status, size = "default" }: StatusBadgeProps) {
   const statusConfig = {
     outstanding: { label: "Outstanding", className: "bg-primary/20 text-primary border-primary/50" },
     fulfilled: { label: "Fulfilled", className: "bg-success/20 text-success border-success/50" },
-    forgiven: { label: "Forgiven", className: "bg-purple-500/20 text-mention-plot border-purple-500/50" },
+    forgiven: { label: "Forgiven", className: "bg-mention-plot/20 text-mention-plot border-mention-plot/50" },
   };
 
   const config = statusConfig[status];
