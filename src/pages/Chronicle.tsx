@@ -59,8 +59,11 @@ export default function Chronicle() {
     setEditDialogOpen(true);
   };
 
-  const handleDeleteNote = async (id: string) => {
-    await deleteNote(id);
+  const handleDeleteNote = (note: Note) => {
+    undoableAction({
+      description: `Deleted "${note.title}"`,
+      perform: () => deleteNote(note.id),
+    });
   };
 
   return (
