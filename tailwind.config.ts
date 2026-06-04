@@ -89,6 +89,7 @@ export default {
           faction: 'hsl(var(--mention-faction))',
           coterie: 'hsl(var(--mention-coterie))',
           location: 'hsl(var(--mention-location))',
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
