@@ -39,22 +39,22 @@ export default function DiceRollerPage() {
                 </TableHeader>
                 <TableBody>
                   <TableRow>
-                    <TableCell className="font-bold text-green-400">1</TableCell>
+                    <TableCell className="font-bold text-success">1</TableCell>
                     <TableCell className="font-medium text-foreground">Trivial</TableCell>
                     <TableCell className="text-muted-foreground">Climbing a fence, intimidating a mortal, recalling basic Kindred history</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell className="font-bold text-green-400">2</TableCell>
+                    <TableCell className="font-bold text-success">2</TableCell>
                     <TableCell className="font-medium text-foreground">Easy</TableCell>
                     <TableCell className="text-muted-foreground">Tailing someone in a crowd, persuading an ally, picking a simple lock</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell className="font-bold text-yellow-400">3</TableCell>
+                    <TableCell className="font-bold text-crit">3</TableCell>
                     <TableCell className="font-medium text-foreground">Moderate</TableCell>
                     <TableCell className="text-muted-foreground">Hacking a secured terminal, seducing a suspicious target, tracking someone across the city</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell className="font-bold text-orange-400">4</TableCell>
+                    <TableCell className="font-bold text-messy">4</TableCell>
                     <TableCell className="font-medium text-foreground">Challenging</TableCell>
                     <TableCell className="text-muted-foreground">Convincing a hostile elder, forging official documents, disarming a bomb</TableCell>
                   </TableRow>
@@ -89,11 +89,11 @@ export default function DiceRollerPage() {
                 <p>Each die showing 6+ is one success.</p>
               </div>
               <div>
-                <div className="font-semibold text-yellow-400">Critical</div>
+                <div className="font-semibold text-crit">Critical</div>
                 <p>Each pair of 10s generates 4 successes instead of 2.</p>
               </div>
               <div>
-                <div className="font-semibold text-orange-400">Messy Critical</div>
+                <div className="font-semibold text-messy">Messy Critical</div>
                 <p>A critical that includes a hunger die 10. You succeed spectacularly, but the Beast makes its presence felt.</p>
               </div>
               <div>

@@ -931,7 +931,7 @@ export function EditCharacterDialog({
                       const currentBP = formData.blood_potency || 0;
                       if (maxBP !== null && currentBP > maxBP) {
                         return (
-                          <div className="flex items-center gap-1.5 mt-1 text-amber-500">
+                          <div className="flex items-center gap-1.5 mt-1 text-warning">
                             <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                             <span className="text-xs">Blood Potency {currentBP} exceeds the cap of {maxBP} for Generation {formData.generation}</span>
                           </div>

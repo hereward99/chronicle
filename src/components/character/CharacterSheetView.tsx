@@ -86,11 +86,11 @@ const ResonanceDisplay = ({ resonance }: { resonance?: string }) => {
   
   const getResonanceColor = (type: string) => {
     switch(type) {
-      case 'choleric': return 'bg-red-500/20 text-red-400 border-red-500/30';
-      case 'melancholic': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-      case 'phlegmatic': return 'bg-green-500/20 text-green-400 border-green-500/30';
-      case 'sanguine': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-      case 'animal': return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+      case 'choleric': return 'bg-destructive/20 text-destructive border-destructive/30';
+      case 'melancholic': return 'bg-info/20 text-info border-info/30';
+      case 'phlegmatic': return 'bg-success/20 text-success border-success/30';
+      case 'sanguine': return 'bg-crit/20 text-crit border-crit/30';
+      case 'animal': return 'bg-warning/20 text-warning border-warning/30';
       default: return 'bg-muted text-muted-foreground border-border';
     }
   };
@@ -558,7 +558,7 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
                     const currentBP = character.blood_potency || 0;
                     if (maxBP !== null && currentBP > maxBP) {
                       return (
-                        <p className="text-xs text-amber-500 mt-1 flex items-center gap-1">
+                        <p className="text-xs text-warning mt-1 flex items-center gap-1">
                           <span>⚠</span> Exceeds Gen {character.generation} cap of {maxBP}
                         </p>
                       );
@@ -764,13 +764,13 @@ function CharacterSheetContent({ character }: CharacterSheetViewProps) {
 
                   <Collapsible defaultOpen>
                     <CollapsibleTrigger className="flex items-center gap-2 w-full text-left group">
-                      <Brain className="h-4 w-4 text-orange-500" />
-                      <span className="text-sm font-semibold text-orange-500">Compulsion</span>
+                      <Brain className="h-4 w-4 text-messy" />
+                      <span className="text-sm font-semibold text-messy">Compulsion</span>
                       <span className="ml-auto text-xs text-muted-foreground group-data-[state=open]:hidden">Show</span>
                       <span className="ml-auto text-xs text-muted-foreground group-data-[state=closed]:hidden">Hide</span>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
-                      <div className="mt-2 p-3 rounded-md bg-orange-500/10 border border-orange-500/20">
+                      <div className="mt-2 p-3 rounded-md bg-messy/10 border border-messy/20">
                         <p className="text-sm text-muted-foreground">{clanInfo.compulsion}</p>
                       </div>
                     </CollapsibleContent>

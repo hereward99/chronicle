@@ -593,7 +593,7 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 min-w-0">
                         {npc.status === "generating" && <RefreshCw className="h-4 w-4 animate-spin text-primary shrink-0" />}
-                        {npc.status === "done" && <Check className="h-4 w-4 text-emerald-500 shrink-0" />}
+                        {npc.status === "done" && <Check className="h-4 w-4 text-success shrink-0" />}
                         {npc.status === "error" && <X className="h-4 w-4 text-destructive shrink-0" />}
                         {npc.status === "pending" && <div className="h-4 w-4 rounded-full border border-muted-foreground shrink-0" />}
                         {npc.status === "removed" && <Trash2 className="h-4 w-4 text-muted-foreground shrink-0" />}

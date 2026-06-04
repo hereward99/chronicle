@@ -83,8 +83,8 @@ export function CharacterAttachmentsGallery({ attachments }: CharacterAttachment
   };
 
   const getFileIcon = (attachment: FileAttachment) => {
-    if (isPdfFile(attachment)) return <FileText className="h-6 w-6 text-red-500" />;
-    if (isTextFile(attachment)) return <FileText className="h-6 w-6 text-blue-500" />;
+    if (isPdfFile(attachment)) return <FileText className="h-6 w-6 text-destructive" />;
+    if (isTextFile(attachment)) return <FileText className="h-6 w-6 text-info" />;
     return <FileIcon className="h-6 w-6 text-muted-foreground" />;
   };
 

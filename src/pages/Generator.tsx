@@ -483,7 +483,7 @@ export default function Generator() {
                     ) : generatedData?.content && activeTab !== "npc" ? (
                       <div className="space-y-4">
                         {!currentChronicle && generatedData.parsed && (
-                          <div className="text-sm text-amber-500 bg-amber-500/10 p-2 rounded">
+                          <div className="text-sm text-warning bg-warning/10 p-2 rounded">
                             Select a chronicle to save this content.
                           </div>
                         )}

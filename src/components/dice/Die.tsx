@@ -30,7 +30,7 @@ export function Die({ die, index, animate = true, selectable = false, selected =
     }
 
     if (die.isCritical) {
-      return "bg-yellow-500/20 border-yellow-500 text-yellow-400 shadow-[0_0_12px_hsl(45_100%_50%/0.3)]";
+      return "bg-crit/20 border-crit text-crit shadow-[0_0_12px_hsl(45_100%_50%/0.3)]";
     }
     if (die.isSuccess) {
       return "bg-secondary border-border text-foreground";
