@@ -414,26 +414,7 @@ export default function Characters() {
           {/* Character Grid */}
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <Card key={i} className="bg-gradient-subtle border-border">
-                  <CardHeader>
-                    <div className="flex items-center space-x-3">
-                      <Skeleton className="h-12 w-12 rounded-full" />
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-24" />
-                        <Skeleton className="h-3 w-16" />
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <Skeleton className="h-6 w-full" />
-                      <Skeleton className="h-6 w-full" />
-                      <Skeleton className="h-6 w-full" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {[...Array(6)].map((_, i) => <CharacterCardSkeleton key={i} />)}
             </div>
           ) : groupedCharacters ? (
             <div className="space-y-4">

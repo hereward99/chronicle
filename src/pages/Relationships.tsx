@@ -596,11 +596,7 @@ export default function Relationships() {
 
         <TabsContent value="graph" className="space-y-4">
           {loading ? (
-            <Card>
-              <CardContent className="flex items-center justify-center py-12">
-                <p className="text-muted-foreground">Loading graph...</p>
-              </CardContent>
-            </Card>
+            <GraphSkeleton />
           ) : filteredRelationships.length === 0 ? (
             <EmptyState
               icon={<Network className="h-7 w-7" />}
@@ -784,17 +780,7 @@ export default function Relationships() {
 
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[...Array(4)].map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardHeader>
-                    <div className="h-6 bg-muted rounded w-3/4 mb-2"></div>
-                    <div className="h-4 bg-muted rounded w-1/2"></div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-20 bg-muted rounded"></div>
-                  </CardContent>
-                </Card>
-              ))}
+              {[...Array(4)].map((_, i) => <RelationshipCardSkeleton key={i} />)}
             </div>
           ) : filteredRelationships.length === 0 ? (
             <EmptyState
