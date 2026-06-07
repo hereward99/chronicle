@@ -12,6 +12,7 @@ import { SessionCardSkeleton } from "@/components/skeletons/CardSkeleton";
 import { cn } from "@/lib/utils";
 import { formatInGameDate } from "@/components/InGameDateInput";
 import { ChronicleDate } from "@/components/ChronicleDate";
+import { EmptyState } from "@/components/onboarding/EmptyState";
 
 interface TimelineEvent {
   id: string;
