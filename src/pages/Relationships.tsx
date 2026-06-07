@@ -601,19 +601,18 @@ export default function Relationships() {
               </CardContent>
             </Card>
           ) : filteredRelationships.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Network className="w-12 h-12 text-muted-foreground mb-4" />
-                <p className="text-lg font-medium mb-2">No relationships to display</p>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Create relationships to see the network graph
-                </p>
-                <Button onClick={() => setCreateDialogOpen(true)}>
+            <EmptyState
+              icon={<Network className="h-7 w-7" />}
+              title="No relationships to display"
+              description="The relationship map visualises bonds, rivalries, and alliances between your characters."
+              tip="Create at least one relationship to populate the graph."
+              action={
+                <Button onClick={() => setCreateDialogOpen(true)} className="bg-gradient-blood hover:opacity-90 shadow-crimson">
                   <Plus className="w-4 h-4 mr-2" />
                   Create First Relationship
                 </Button>
-              </CardContent>
-            </Card>
+              }
+            />
           ) : (
             <>
               <div
