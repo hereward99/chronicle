@@ -797,19 +797,18 @@ export default function Relationships() {
               ))}
             </div>
           ) : filteredRelationships.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Users className="w-12 h-12 text-muted-foreground mb-4" />
-                <p className="text-lg font-medium mb-2">No relationships found</p>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Start building your character network
-                </p>
-                <Button onClick={() => setCreateDialogOpen(true)}>
+            <EmptyState
+              icon={<Users className="h-7 w-7" />}
+              title="No relationships found"
+              description="Track allies, rivals, sires, childer, and contacts as your chronicle unfolds."
+              tip="Start with the most important bond between two of your characters."
+              action={
+                <Button onClick={() => setCreateDialogOpen(true)} className="bg-gradient-blood hover:opacity-90 shadow-crimson">
                   <Plus className="w-4 h-4 mr-2" />
                   Create First Relationship
                 </Button>
-              </CardContent>
-            </Card>
+              }
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredRelationships.map(relationship => {
