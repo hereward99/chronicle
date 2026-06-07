@@ -12,6 +12,7 @@ import { SessionCardSkeleton } from "@/components/skeletons/CardSkeleton";
 import { cn } from "@/lib/utils";
 import { formatInGameDate } from "@/components/InGameDateInput";
 import { ChronicleDate } from "@/components/ChronicleDate";
+import { EmptyState } from "@/components/onboarding/EmptyState";
 
 interface TimelineEvent {
   id: string;
@@ -196,13 +197,12 @@ export default function Timeline() {
       </div>
 
       {filtered.length === 0 ? (
-        <Card className="p-12 text-center border-dashed">
-          <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold text-foreground mb-2">No events yet</h3>
-          <p className="text-muted-foreground text-sm">
-            Create sessions or stories to see them on the timeline.
-          </p>
-        </Card>
+        <EmptyState
+          icon={<Calendar className="h-7 w-7" />}
+          title="No events yet"
+          description="The timeline weaves together your stories and sessions in chronological order."
+          tip="Create a story or log a session to populate the timeline."
+        />
       ) : (
         <div className="relative">
           {/* Vertical line */}

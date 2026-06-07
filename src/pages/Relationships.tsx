@@ -23,6 +23,7 @@ import { SuggestedRelationships } from '@/components/relationship/SuggestedRelat
 import { getRelationshipBadgeClassName } from '@/lib/relationshipStyles';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { RelationshipLegend } from '@/components/relationship/RelationshipLegend';
+import { EmptyState } from '@/components/onboarding/EmptyState';
 
 
 const RELATIONSHIP_MAP_FILTERS_KEY = 'relationships-map-filters';
@@ -601,19 +602,18 @@ export default function Relationships() {
               </CardContent>
             </Card>
           ) : filteredRelationships.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Network className="w-12 h-12 text-muted-foreground mb-4" />
-                <p className="text-lg font-medium mb-2">No relationships to display</p>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Create relationships to see the network graph
-                </p>
-                <Button onClick={() => setCreateDialogOpen(true)}>
+            <EmptyState
+              icon={<Network className="h-7 w-7" />}
+              title="No relationships to display"
+              description="The relationship map visualises bonds, rivalries, and alliances between your characters."
+              tip="Create at least one relationship to populate the graph."
+              action={
+                <Button onClick={() => setCreateDialogOpen(true)} className="bg-gradient-blood hover:opacity-90 shadow-crimson">
                   <Plus className="w-4 h-4 mr-2" />
                   Create First Relationship
                 </Button>
-              </CardContent>
-            </Card>
+              }
+            />
           ) : (
             <>
               <div
@@ -797,19 +797,18 @@ export default function Relationships() {
               ))}
             </div>
           ) : filteredRelationships.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Users className="w-12 h-12 text-muted-foreground mb-4" />
-                <p className="text-lg font-medium mb-2">No relationships found</p>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Start building your character network
-                </p>
-                <Button onClick={() => setCreateDialogOpen(true)}>
+            <EmptyState
+              icon={<Users className="h-7 w-7" />}
+              title="No relationships found"
+              description="Track allies, rivals, sires, childer, and contacts as your chronicle unfolds."
+              tip="Start with the most important bond between two of your characters."
+              action={
+                <Button onClick={() => setCreateDialogOpen(true)} className="bg-gradient-blood hover:opacity-90 shadow-crimson">
                   <Plus className="w-4 h-4 mr-2" />
                   Create First Relationship
                 </Button>
-              </CardContent>
-            </Card>
+              }
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredRelationships.map(relationship => {
