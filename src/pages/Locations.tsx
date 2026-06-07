@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { EmptyState } from '@/components/onboarding/EmptyState';
+import { LocationCardSkeleton } from '@/components/skeletons/CardSkeleton';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EntityCard, EntityCardContent, EntityCardHeaderBar, CardIconAction } from '@/components/ui/entity-card';

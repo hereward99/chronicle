@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { EmptyState } from "@/components/onboarding/EmptyState";
+import { CharacterCardSkeleton } from "@/components/skeletons/CardSkeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";

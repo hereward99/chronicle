@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { GraphSkeleton, RelationshipCardSkeleton } from '@/components/skeletons/CardSkeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
