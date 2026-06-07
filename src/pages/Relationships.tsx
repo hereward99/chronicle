@@ -23,6 +23,7 @@ import { SuggestedRelationships } from '@/components/relationship/SuggestedRelat
 import { getRelationshipBadgeClassName } from '@/lib/relationshipStyles';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { RelationshipLegend } from '@/components/relationship/RelationshipLegend';
+import { EmptyState } from '@/components/onboarding/EmptyState';
 
 
 const RELATIONSHIP_MAP_FILTERS_KEY = 'relationships-map-filters';
