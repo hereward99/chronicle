@@ -25,6 +25,7 @@ import { CreateNoteDialog } from "@/components/dialogs/CreateNoteDialog";
 import { EditNoteDialog } from "@/components/dialogs/EditNoteDialog";
 import { MentionText } from "@/components/mentions/MentionText";
 import { ChronicleManager } from "@/components/chronicle/ChronicleManager";
+import { EmptyState } from "@/components/onboarding/EmptyState";
 
 export default function Chronicle() {
   const [editingNote, setEditingNote] = useState<Note | null>(null);
