@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { EmptyState } from '@/components/onboarding/EmptyState';
+import { LocationCardSkeleton } from '@/components/skeletons/CardSkeleton';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EntityCard, EntityCardContent, EntityCardHeaderBar, CardIconAction } from '@/components/ui/entity-card';
@@ -188,12 +189,7 @@ export default function Locations() {
 
         {isLoading ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3].map(i => (
-              <Card key={i} className="p-4 animate-pulse">
-                <div className="h-5 bg-muted rounded w-1/2 mb-2" />
-                <div className="h-4 bg-muted rounded w-full" />
-              </Card>
-            ))}
+            {[1, 2, 3, 4, 5, 6].map(i => <LocationCardSkeleton key={i} />)}
           </div>
         ) : filteredLocations.length === 0 ? (
           searchQuery ? (

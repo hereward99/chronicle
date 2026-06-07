@@ -67,3 +67,62 @@ export function SessionGroupSkeleton() {
     </div>
   );
 }
+
+export function CharacterCardSkeleton() {
+  return (
+    <Card className="bg-gradient-subtle border-border">
+      <CardHeader>
+        <div className="flex items-center space-x-3">
+          <Skeleton className="h-12 w-12 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-3 w-16" />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          <Skeleton className="h-6 w-full" />
+          <Skeleton className="h-6 w-full" />
+          <Skeleton className="h-6 w-full" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function LocationCardSkeleton() {
+  return (
+    <Card className="bg-card border-border p-4 space-y-2">
+      <Skeleton className="h-5 w-1/2" />
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-2/3" />
+    </Card>
+  );
+}
+
+export function RelationshipCardSkeleton() {
+  return (
+    <Card className="bg-card border-border">
+      <CardHeader>
+        <Skeleton className="h-6 w-3/4 mb-2" />
+        <Skeleton className="h-4 w-1/2" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-20 w-full" />
+      </CardContent>
+    </Card>
+  );
+}
+
+export function GraphSkeleton() {
+  return (
+    <Card className="bg-card border-border">
+      <CardContent className="p-6">
+        <div className="relative h-[400px] w-full">
+          <Skeleton className="absolute inset-0 rounded-lg" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
