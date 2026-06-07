@@ -321,14 +321,19 @@ export default function Chronicle() {
               ))}
             </div>
           ) : notes.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-sm text-muted-foreground">No notes yet</p>
-              <CreateNoteDialog>
-                <Button size="sm" className="mt-2" variant="outline">
-                  Create your first note
-                </Button>
-              </CreateNoteDialog>
-            </div>
+            <EmptyState
+              icon={<Scroll className="h-7 w-7" />}
+              title="No notes yet"
+              description="Notes capture lore, rumours, NPC quirks, and anything that doesn't belong in a session log."
+              tip="Use @mentions to link a note back to a character, plot, or session."
+              action={
+                <CreateNoteDialog>
+                  <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
+                    <Plus className="h-4 w-4 mr-2" /> Create First Note
+                  </Button>
+                </CreateNoteDialog>
+              }
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {notes.map((note) => (
