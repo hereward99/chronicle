@@ -292,7 +292,7 @@ const TEMPLATES = {
   
   story: {
     title: "Story Title",
-    description: "A detailed description of the plot, including major events, NPCs involved, and the current situation",
+    description: "A detailed description of the story, including major events, NPCs involved, and the current situation",
     status: "Active",
     priority: "High"
   },
@@ -536,7 +536,7 @@ export default function Import() {
       type: "story",
       templateType: "story",
       batchType: "stories",
-      title: "Story/Plot",
+      title: "Story",
       description: "Story arcs, plots, and ongoing narratives",
       icon: Scroll,
       filename: "story-template.json",
@@ -841,20 +841,20 @@ Return ONLY the completed JSON, maintaining the exact structure.`}
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Scroll className="h-5 w-5 text-primary" />
-                    Story/Plot Prompt
+                    Story Prompt
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <pre className="text-xs bg-background p-4 rounded-lg overflow-x-auto whitespace-pre-wrap">
-{`Create a Vampire: The Masquerade 5th Edition story/plot in JSON format.
+{`Create a Vampire: The Masquerade 5th Edition story in JSON format.
 
 FIELD RESTRICTIONS:
 - title: Required, max 200 characters
-- description: Optional, max 10000 characters (use this for the full plot details, NPCs, locations, events)
+- description: Optional, max 10000 characters (use this for the full story details, NPCs, locations, events)
 - status: "Active", "Planned", "Completed", or "Critical" (default "Active")
 - priority: "Low", "Medium", "High", or "Critical" (default "Medium")
 
-[Describe your story - the hook, major NPCs, locations, conflicts, and how it might unfold]
+[Describe your story — the hook, major NPCs, locations, conflicts, and how it might unfold]
 
 Here's the template:
 [Paste the downloaded story template here]
