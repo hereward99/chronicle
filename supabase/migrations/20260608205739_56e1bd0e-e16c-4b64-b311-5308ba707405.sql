@@ -1,0 +1,1 @@
+UPDATE public.notes SET category = 'Story Ideas' WHERE category = 'Plot Ideas';
