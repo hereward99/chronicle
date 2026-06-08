@@ -16,7 +16,7 @@ const noteSchema = z.object({
 });
 
 const categories = [
-  "General", "Session Notes", "Character Notes", "Plot Ideas",
+  "General", "Session Notes", "Character Notes", "Story Ideas",
   "World Building", "NPCs", "Locations", "Rules & Mechanics"
 ];
 

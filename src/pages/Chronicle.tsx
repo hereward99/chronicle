@@ -272,10 +272,10 @@ export default function Chronicle() {
               ))
             ) : plots.filter(p => p.status === 'Active').length === 0 ? (
               <div className="text-center py-4">
-                <p className="text-sm text-muted-foreground">No active plots</p>
+                <p className="text-sm text-muted-foreground">No active stories</p>
                 <CreatePlotDialog>
                   <Button size="sm" className="mt-2" variant="outline">
-                    Create your first plot
+                    Create your first story
                   </Button>
                 </CreatePlotDialog>
               </div>
@@ -326,7 +326,7 @@ export default function Chronicle() {
               icon={<Scroll className="h-7 w-7" />}
               title="No notes yet"
               description="Notes capture lore, rumours, NPC quirks, and anything that doesn't belong in a session log."
-              tip="Use @mentions to link a note back to a character, plot, or session."
+              tip="Use @mentions to link a note back to a character, story, or session."
               action={
                 <CreateNoteDialog>
                   <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">

@@ -23,7 +23,7 @@ const tourSteps: TourStep[] = [
   },
   {
     title: "Stories & Sessions",
-    description: "Stories are your ongoing plotlines. Sessions are the individual game nights. Link sessions to stories to keep everything organized.",
+    description: "Stories are your ongoing storylines. Sessions are the individual game nights. Link sessions to stories to keep everything organized.",
     icon: <Scroll className="h-5 w-5" />,
   },
   {
