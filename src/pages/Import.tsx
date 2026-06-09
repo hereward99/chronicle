@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { notify } from "@/lib/notify";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,6 @@ import { useImport, ImportType, ImportMode } from "@/hooks/useImport";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useChronicles } from "@/hooks/useChronicles";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 // Template structures matching the database schema
 // =============================================================================
 // CHARACTER CREATION METHODS & TEMPLATES
@@ -330,18 +330,13 @@ interface ImportCardConfig {
 export default function Import() {
   const { importing, parseAndImport, currentChronicle } = useImport();
   const { currentChronicle: chronicleForExport } = useChronicles();
-  const { toast } = useToast();
   const [importResults, setImportResults] = useState<Record<string, { success: boolean; message: string } | null>>({});
   const [exporting, setExporting] = useState(false);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const handleExport = async () => {
     if (!chronicleForExport) {
-      toast({
-        title: "No chronicle selected",
-        description: "Please select a chronicle first.",
-        variant: "destructive",
-      });
+      notify.error("No chronicle selected", "Please select a chronicle first.");
       return;
     }
 
@@ -421,17 +416,10 @@ export default function Import() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast({
-        title: "Export successful",
-        description: `Exported ${backupData.characters.length} characters, ${backupData.relationships.length} relationships, and more.`,
-      });
+      notify.success("Export successful", `Exported ${backupData.characters.length} characters, ${backupData.relationships.length} relationships, and more.`);
     } catch (error: any) {
       console.error('Export error:', error);
-      toast({
-        title: "Export failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Export failed", error.message);
     } finally {
       setExporting(false);
     }

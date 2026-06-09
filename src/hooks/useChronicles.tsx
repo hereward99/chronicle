@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
+import { notify } from "@/lib/notify";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-
 export interface Chronicle {
   id: string;
   name: string;
@@ -14,7 +13,6 @@ export interface Chronicle {
 }
 
 export function useChronicles() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: chronicles = [], isLoading: loading } = useQuery({
@@ -75,17 +73,10 @@ export function useChronicles() {
         queryClient.setQueryData<Chronicle | null>(['currentChronicle'], newChronicle);
       }
 
-      toast({
-        title: "Chronicle created",
-        description: `${variables.name} has been created.`,
-      });
+      notify.success("Chronicle created", `${variables.name} has been created.`);
     },
     onError: (error: any) => {
-      toast({
-        title: "Error creating chronicle",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Error creating chronicle", error.message);
     },
   });
 
@@ -118,10 +109,10 @@ export function useChronicles() {
       if (current?.id === updated.id) {
         queryClient.setQueryData<Chronicle | null>(['currentChronicle'], updated);
       }
-      toast({ title: "Chronicle updated", description: `${updated.name} has been updated.` });
+      notify.success("Chronicle updated", `${updated.name} has been updated.`);
     },
     onError: (error: any) => {
-      toast({ title: "Error updating chronicle", description: error.message, variant: "destructive" });
+      notify.error("Error updating chronicle", error.message);
     },
   });
 
@@ -141,10 +132,10 @@ export function useChronicles() {
       if (current?.id === deletedId) {
         queryClient.setQueryData<Chronicle | null>(['currentChronicle'], null);
       }
-      toast({ title: "Chronicle deleted" });
+      notify.success("Chronicle deleted");
     },
     onError: (error: any) => {
-      toast({ title: "Error deleting chronicle", description: error.message, variant: "destructive" });
+      notify.error("Error deleting chronicle", error.message);
     },
   });
 

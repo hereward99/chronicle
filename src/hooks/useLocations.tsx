@@ -1,9 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/integrations/supabase/client';
 import { useChronicles } from './useChronicles';
 import { useAuth } from './useAuth';
-import { useToast } from '@/hooks/use-toast';
-
 export interface Location {
   id: string;
   chronicle_id: string;
@@ -23,8 +22,6 @@ export function useLocations() {
   const queryClient = useQueryClient();
   const { currentChronicle } = useChronicles();
   const { user } = useAuth();
-  const { toast } = useToast();
-
   const { data: locations = [], isLoading, error } = useQuery({
     queryKey: ['locations', currentChronicle?.id],
     queryFn: async () => {
@@ -55,10 +52,10 @@ export function useLocations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['locations'] });
-      toast({ title: 'Location created' });
+      notify.success('Location created');
     },
     onError: (error) => {
-      toast({ title: 'Failed to create location', description: error.message, variant: 'destructive' });
+      notify.error('Failed to create location', error.message);
     },
   });
 
@@ -76,10 +73,10 @@ export function useLocations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['locations'] });
-      toast({ title: 'Location updated' });
+      notify.success('Location updated');
     },
     onError: (error) => {
-      toast({ title: 'Failed to update location', description: error.message, variant: 'destructive' });
+      notify.error('Failed to update location', error.message);
     },
   });
 
@@ -94,10 +91,10 @@ export function useLocations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['locations'] });
-      toast({ title: 'Location deleted' });
+      notify.success('Location deleted');
     },
     onError: (error) => {
-      toast({ title: 'Failed to delete location', description: error.message, variant: 'destructive' });
+      notify.error('Failed to delete location', error.message);
     },
   });
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { notify } from "@/lib/notify";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,6 @@ import { usePlots, Plot } from "@/hooks/usePlots";
 import { useCharacters } from "@/hooks/useCharacters";
 import { usePlotCharacters } from "@/hooks/usePlotCharacters";
 import { z } from "zod";
-import { useToast } from "@/hooks/use-toast";
 import { FileUpload } from "@/components/ui/file-upload";
 import { Trash2 } from "lucide-react";
 import { GroupMembersPanel, type GroupMember } from "@/components/groups/GroupMembersPanel";
@@ -47,8 +47,6 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
   const { updatePlot, deletePlot } = usePlots();
   const { characters } = useCharacters();
   const { plotCharacters, assignCharacter, unassignCharacter } = usePlotCharacters(plot.id);
-  const { toast } = useToast();
-
   const chronicleCharacters = useMemo(
     () => characters.filter(c => c.chronicle_id === plot.chronicle_id),
     [characters, plot.chronicle_id],
@@ -126,11 +124,7 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
       onUpdated?.();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast({
-          title: "Validation error",
-          description: error.issues[0].message,
-          variant: "destructive",
-        });
+        notify.error("Validation error", error.issues[0].message);
       }
     } finally {
       setLoading(false);

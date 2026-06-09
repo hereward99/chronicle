@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import type { TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
 export interface Boon {
@@ -23,7 +23,6 @@ export type BoonSeverity = 'trivial' | 'minor' | 'major' | 'life';
 export type BoonStatus = 'outstanding' | 'fulfilled' | 'forgiven';
 
 export function useBoons(chronicleId?: string) {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: boons = [], isLoading: loading } = useQuery({
@@ -59,10 +58,10 @@ export function useBoons(chronicleId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['boons'] });
-      toast({ title: "Boon created", description: "The boon has been recorded." });
+      notify.success("Boon created", "The boon has been recorded.");
     },
     onError: (error: Error) => {
-      toast({ title: "Error creating boon", description: error.message, variant: "destructive" });
+      notify.error("Error creating boon", error.message);
     },
   });
 
@@ -80,10 +79,10 @@ export function useBoons(chronicleId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['boons'] });
-      toast({ title: "Boon updated", description: "The boon has been updated." });
+      notify.success("Boon updated", "The boon has been updated.");
     },
     onError: (error: Error) => {
-      toast({ title: "Error updating boon", description: error.message, variant: "destructive" });
+      notify.error("Error updating boon", error.message);
     },
   });
 
@@ -98,10 +97,10 @@ export function useBoons(chronicleId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['boons'] });
-      toast({ title: "Boon deleted", description: "The boon has been removed." });
+      notify.success("Boon deleted", "The boon has been removed.");
     },
     onError: (error: Error) => {
-      toast({ title: "Error deleting boon", description: error.message, variant: "destructive" });
+      notify.error("Error deleting boon", error.message);
     },
   });
 

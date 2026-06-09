@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { notify } from "@/lib/notify";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -28,7 +29,6 @@ import { Character, DicePoolConfig, SimpleDicePool, GeneralDicePool, StandardDic
 import { useFiles } from "@/hooks/useFiles";
 import { supabase } from "@/integrations/supabase/client";
 import { DISCIPLINES, DISCIPLINE_POWERS, getPowersForDiscipline, type PowerInfo } from "@/lib/v5/disciplineData";
-import { useToast } from "@/hooks/use-toast";
 import { BoonsSection } from "@/components/boons/BoonsSection";
 import { useCoteries } from "@/hooks/useCoteries";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -100,7 +100,6 @@ export function EditCharacterDialog({
   const [coteriePopoverOpen, setCoteriePopoverOpen] = useState(false);
   const [createCoterieOpen, setCreateCoterieOpen] = useState(false);
   const { uploadFile } = useFiles();
-  const { toast } = useToast();
   const { coteries, allCoterieMembers, addMember, removeMember } = useCoteries(character?.chronicle_id);
   
   const [formData, setFormData] = useState<Partial<Character>>({
@@ -476,18 +475,11 @@ export function EditCharacterDialog({
       
       if (data?.imageUrl) {
         setFormData(prev => ({ ...prev, avatar_url: data.imageUrl }));
-        toast({
-          title: "Portrait generated",
-          description: "AI-generated portrait has been created for your character.",
-        });
+        notify.success("Portrait generated", "AI-generated portrait has been created for your character.");
       }
     } catch (error: any) {
       console.error('Error generating portrait:', error);
-      toast({
-        title: "Error generating portrait",
-        description: error.message || "Failed to generate portrait. Please try again.",
-        variant: "destructive",
-      });
+      notify.error("Error generating portrait", error.message || "Failed to generate portrait. Please try again.");
     } finally {
       setGeneratingPortrait(false);
     }

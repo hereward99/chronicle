@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { notify } from "@/lib/notify";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,6 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useCharacters, DicePoolConfig, SimpleDicePool, GeneralDicePool, StandardDicePool, CombinedDicePool, ExceptionalPool } from "@/hooks/useCharacters";
 import { useChronicles } from "@/hooks/useChronicles";
-import { useToast } from "@/hooks/use-toast";
 import { useFormDraft } from "@/hooks/useFormDraft";
 import { ChevronLeft, ChevronRight, Check, Wand2 } from "lucide-react";
 import { DISCIPLINES as DISCIPLINE_LIST, getDisciplinePowersLegacy } from "@/lib/v5/disciplineData";
@@ -87,8 +87,6 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
   const [loading, setLoading] = useState(false);
   const { createCharacter } = useCharacters();
   const { currentChronicle, createDefaultChronicle } = useChronicles();
-  const { toast } = useToast();
-
   const [characterData, setCharacterData] = useState({
     // Creation Method: "full" | "simple" | "general" | "standard"
     creationMethod: "full" as "full" | "simple" | "general" | "standard",
@@ -344,19 +342,12 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
         blood_potency: characterData.characterType === "vampire" ? 0 : 0,
       });
 
-      toast({
-        title: "Character created!",
-        description: `${characterData.name} has been added to your chronicle.`,
-      });
+      notify.success("Character created!", `${characterData.name} has been added to your chronicle.`);
 
       onOpenChange(false);
       resetWizard();
     } catch (error: any) {
-      toast({
-        title: "Error creating character",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Error creating character", error.message);
     } finally {
       setLoading(false);
     }

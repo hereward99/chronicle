@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { useChronicles } from './useChronicles';
 
 export interface Session {
@@ -21,7 +21,6 @@ export interface Session {
 }
 
 export function useSessions() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { currentChronicle } = useChronicles();
   const chronicleId = currentChronicle?.id;
@@ -62,17 +61,10 @@ export function useSessions() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      toast({
-        title: "Session logged",
-        description: `${variables.title} has been added to your chronicle.`,
-      });
+      notify.success("Session logged", `${variables.title} has been added to your chronicle.`);
     },
     onError: (error: any) => {
-      toast({
-        title: "Error creating session",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Error creating session", error.message);
     },
   });
 
@@ -90,17 +82,10 @@ export function useSessions() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      toast({
-        title: "Session updated",
-        description: "Your session has been updated successfully.",
-      });
+      notify.success("Session updated", "Your session has been updated successfully.");
     },
     onError: (error: any) => {
-      toast({
-        title: "Error updating session",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Error updating session", error.message);
     },
   });
 
@@ -121,17 +106,10 @@ export function useSessions() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       queryClient.invalidateQueries({ queryKey: ['session-characters'] });
-      toast({
-        title: "Session deleted",
-        description: "Session has been successfully deleted.",
-      });
+      notify.success("Session deleted", "Session has been successfully deleted.");
     },
     onError: (error: any) => {
-      toast({
-        title: "Error deleting session",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Error deleting session", error.message);
     },
   });
 
@@ -156,11 +134,7 @@ export function useSessions() {
       await Promise.all(updates);
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
     } catch (error: any) {
-      toast({
-        title: "Error reordering sessions",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Error reordering sessions", error.message);
     }
   };
 

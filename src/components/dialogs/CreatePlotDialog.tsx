@@ -13,7 +13,6 @@ import { useCharacters } from "@/hooks/useCharacters";
 import { usePlotCharacters } from "@/hooks/usePlotCharacters";
 import { BookOpen } from "lucide-react";
 import { z } from "zod";
-import { useToast } from "@/hooks/use-toast";
 import { FileUpload } from "@/components/ui/file-upload";
 
 const plotSchema = z.object({
@@ -49,8 +48,6 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
   const { currentChronicle, createDefaultChronicle } = useChronicles();
   const { characters } = useCharacters();
   const { assignCharacter } = usePlotCharacters();
-  const { toast } = useToast();
-
   const chronicleCharacters = characters.filter(c => c.chronicle_id === currentChronicle?.id);
 
   const clearFieldError = (field: string) => {

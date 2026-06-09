@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { notify } from "@/lib/notify";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +12,6 @@ import { usePlots } from "@/hooks/usePlots";
 import { useCharacters } from "@/hooks/useCharacters";
 import { useSessionCharacters } from "@/hooks/useSessionCharacters";
 import { z } from "zod";
-import { useToast } from "@/hooks/use-toast";
 import { GroupMembersPanel, type GroupMember } from "@/components/groups/GroupMembersPanel";
 
 const sessionSchema = z.object({
@@ -45,8 +45,6 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
   const { plots } = usePlots();
   const { characters } = useCharacters();
   const { characterIds: existingCharacterIds, setSessionCharacters } = useSessionCharacters(session.id);
-  const { toast } = useToast();
-
   const chronicleCharacters = characters.filter(c => c.chronicle_id === session.chronicle_id);
 
   const chroniclePlots = plots.filter(p => p.chronicle_id === session.chronicle_id);
@@ -106,11 +104,7 @@ export function EditSessionDialog({ session, open, onOpenChange }: EditSessionDi
       onOpenChange(false);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast({
-          title: "Validation error",
-          description: error.issues[0].message,
-          variant: "destructive",
-        });
+        notify.error("Validation error", error.issues[0].message);
       }
     } finally {
       setLoading(false);

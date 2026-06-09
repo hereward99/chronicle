@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-
 export interface Coterie {
   id: string;
   chronicle_id: string;
@@ -37,7 +36,6 @@ export interface CoterieMember {
 }
 
 export function useCoteries(chronicleId?: string) {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: coteries = [], isLoading: loading } = useQuery({
@@ -85,10 +83,10 @@ export function useCoteries(chronicleId?: string) {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['coteries'] });
-      toast({ title: "Coterie created", description: `${variables.name} has been created.` });
+      notify.success("Coterie created", `${variables.name} has been created.`);
     },
     onError: (error: any) => {
-      toast({ title: "Error creating coterie", description: error.message, variant: "destructive" });
+      notify.error("Error creating coterie", error.message);
     },
   });
 
@@ -106,10 +104,10 @@ export function useCoteries(chronicleId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coteries'] });
-      toast({ title: "Coterie updated", description: "Coterie has been successfully updated." });
+      notify.success("Coterie updated", "Coterie has been successfully updated.");
     },
     onError: (error: any) => {
-      toast({ title: "Error updating coterie", description: error.message, variant: "destructive" });
+      notify.error("Error updating coterie", error.message);
     },
   });
 
@@ -124,10 +122,10 @@ export function useCoteries(chronicleId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coteries'] });
-      toast({ title: "Coterie deleted", description: "Coterie has been successfully deleted." });
+      notify.success("Coterie deleted", "Coterie has been successfully deleted.");
     },
     onError: (error: any) => {
-      toast({ title: "Error deleting coterie", description: error.message, variant: "destructive" });
+      notify.error("Error deleting coterie", error.message);
     },
   });
 
@@ -141,10 +139,10 @@ export function useCoteries(chronicleId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coterie_members'] });
-      toast({ title: "Member added", description: "Character has been added to the coterie." });
+      notify.success("Member added", "Character has been added to the coterie.");
     },
     onError: (error: any) => {
-      toast({ title: "Error adding member", description: error.message, variant: "destructive" });
+      notify.error("Error adding member", error.message);
     },
   });
 
@@ -160,10 +158,10 @@ export function useCoteries(chronicleId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coterie_members'] });
-      toast({ title: "Member removed", description: "Character has been removed from the coterie." });
+      notify.success("Member removed", "Character has been removed from the coterie.");
     },
     onError: (error: any) => {
-      toast({ title: "Error removing member", description: error.message, variant: "destructive" });
+      notify.error("Error removing member", error.message);
     },
   });
 
@@ -197,7 +195,7 @@ export function useCoteries(chronicleId?: string) {
       if (error) throw error;
       return data.map(m => m.character_id);
     } catch (error: any) {
-      toast({ title: "Error fetching members", description: error.message, variant: "destructive" });
+      notify.error("Error fetching members", error.message);
       return [];
     }
   };
@@ -220,9 +218,9 @@ export function useCoteries(chronicleId?: string) {
         .eq('id', coterieId);
 
       queryClient.invalidateQueries({ queryKey: ['coteries'] });
-      toast({ title: "Primary coterie set", description: "This coterie will appear at the centre of the relationship map." });
+      notify.success("Primary coterie set", "This coterie will appear at the centre of the relationship map.");
     } catch (error: any) {
-      toast({ title: "Error setting primary coterie", description: error.message, variant: "destructive" });
+      notify.error("Error setting primary coterie", error.message);
     }
   };
 

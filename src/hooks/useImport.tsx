@@ -1,6 +1,6 @@
 import { useState } from "react";
+import { notify } from "@/lib/notify";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { useChronicles } from "@/hooks/useChronicles";
 
 export type ImportType = "chronicle" | "character" | "story" | "session";
@@ -15,7 +15,6 @@ interface ImportResult {
 
 export function useImport() {
   const [importing, setImporting] = useState(false);
-  const { toast } = useToast();
   const { currentChronicle, refetch: refetchChronicles } = useChronicles();
 
   const importChronicles = async (data: any[]): Promise<ImportResult> => {
@@ -388,19 +387,12 @@ export function useImport() {
           throw new Error("Unknown import type");
       }
 
-      toast({
-        title: mode === "update" ? "Update successful" : "Import successful",
-        description: result.message,
-      });
+      notify.success(mode === "update" ? "Update successful" : "Import successful", result.message);
 
       return result;
     } catch (error: any) {
       const message = error.message || "Failed to import data";
-      toast({
-        title: mode === "update" ? "Update failed" : "Import failed",
-        description: message,
-        variant: "destructive",
-      });
+      notify.error(mode === "update" ? "Update failed" : "Import failed", message);
       return { success: false, message, count: 0 };
     } finally {
       setImporting(false);

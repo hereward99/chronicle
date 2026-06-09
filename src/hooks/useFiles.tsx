@@ -1,7 +1,6 @@
 import { useState } from 'react';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-
 export interface FileAttachment {
   id: string;
   name: string;
@@ -13,8 +12,6 @@ export interface FileAttachment {
 
 export function useFiles() {
   const [uploading, setUploading] = useState(false);
-  const { toast } = useToast();
-
   const uploadFile = async (
     file: File,
     bucket: string,
@@ -47,11 +44,7 @@ export function useFiles() {
         uploaded_at: new Date().toISOString(),
       };
     } catch (error: any) {
-      toast({
-        title: "Upload failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Upload failed", error.message);
       return null;
     }
   };
@@ -65,11 +58,7 @@ export function useFiles() {
       if (error) throw error;
       return true;
     } catch (error: any) {
-      toast({
-        title: "Delete failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Delete failed", error.message);
       return false;
     }
   };
@@ -83,11 +72,7 @@ export function useFiles() {
       if (error) throw error;
       return data;
     } catch (error: any) {
-      toast({
-        title: "Download failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Download failed", error.message);
       return null;
     }
   };

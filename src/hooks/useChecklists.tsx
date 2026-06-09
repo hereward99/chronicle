@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { useChronicles } from '@/hooks/useChronicles';
 
 export interface ChecklistItem {
@@ -189,7 +189,6 @@ async function fetchChecklists(chronicleId: string): Promise<SessionChecklist[]>
 }
 
 export function useChecklists() {
-  const { toast } = useToast();
   const { currentChronicle } = useChronicles();
   const queryClient = useQueryClient();
   const chronicleId = currentChronicle?.id;
@@ -240,10 +239,10 @@ export function useChecklists() {
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey });
-      toast({ title: "Checklist created", description: `${variables.checklist.title} has been created.` });
+      notify.success("Checklist created", `${variables.checklist.title} has been created.`);
     },
     onError: (error: Error) => {
-      toast({ title: "Error creating checklist", description: error.message, variant: "destructive" });
+      notify.error("Error creating checklist", error.message);
     },
   });
 
@@ -260,10 +259,10 @@ export function useChecklists() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
-      toast({ title: "Checklist updated", description: "Your checklist has been updated." });
+      notify.success("Checklist updated", "Your checklist has been updated.");
     },
     onError: (error: Error) => {
-      toast({ title: "Error updating checklist", description: error.message, variant: "destructive" });
+      notify.error("Error updating checklist", error.message);
     },
   });
 
@@ -277,10 +276,10 @@ export function useChecklists() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
-      toast({ title: "Checklist deleted", description: "The checklist has been deleted." });
+      notify.success("Checklist deleted", "The checklist has been deleted.");
     },
     onError: (error: Error) => {
-      toast({ title: "Error deleting checklist", description: error.message, variant: "destructive" });
+      notify.error("Error deleting checklist", error.message);
     },
   });
 
@@ -307,7 +306,7 @@ export function useChecklists() {
     },
     onError: (error: Error, _vars, context) => {
       if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
-      toast({ title: "Error updating item", description: error.message, variant: "destructive" });
+      notify.error("Error updating item", error.message);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey });
@@ -332,7 +331,7 @@ export function useChecklists() {
       queryClient.invalidateQueries({ queryKey });
     },
     onError: (error: Error) => {
-      toast({ title: "Error adding item", description: error.message, variant: "destructive" });
+      notify.error("Error adding item", error.message);
     },
   });
 
@@ -348,7 +347,7 @@ export function useChecklists() {
       queryClient.invalidateQueries({ queryKey });
     },
     onError: (error: Error) => {
-      toast({ title: "Error updating item", description: error.message, variant: "destructive" });
+      notify.error("Error updating item", error.message);
     },
   });
 
@@ -364,7 +363,7 @@ export function useChecklists() {
       queryClient.invalidateQueries({ queryKey });
     },
     onError: (error: Error) => {
-      toast({ title: "Error deleting item", description: error.message, variant: "destructive" });
+      notify.error("Error deleting item", error.message);
     },
   });
 
@@ -374,7 +373,7 @@ export function useChecklists() {
     items: string[]
   ) => {
     if (!chronicleId) {
-      toast({ title: "No chronicle selected", description: "Please select a chronicle first.", variant: "destructive" });
+      notify.error("No chronicle selected", "Please select a chronicle first.");
       return null;
     }
     try {

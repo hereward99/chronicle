@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { notify } from "@/lib/notify";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,6 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sparkles, RefreshCw, ArrowRight, ArrowLeft, Users, Check, X, Trash2, Edit, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { useChronicles } from "@/hooks/useChronicles";
 import { useCharacters } from "@/hooks/useCharacters";
 import { useCoteries } from "@/hooks/useCoteries";
@@ -42,7 +42,6 @@ interface BulkNPCDialogProps {
 }
 
 export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
-  const { toast } = useToast();
   const { currentChronicle } = useChronicles();
   const { createCharacter } = useCharacters();
   const { coteries, createCoterie, addMember } = useCoteries(currentChronicle?.id);
@@ -236,15 +235,15 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
 
   const handleAcceptAll = async () => {
     if (!currentChronicle) {
-      toast({ title: "No chronicle selected", description: "Please select a chronicle first.", variant: "destructive" });
+      notify.error("No chronicle selected", "Please select a chronicle first.");
       return;
     }
     if (createAsCoterie && !coterieName.trim()) {
-      toast({ title: "Coterie name required", description: "Please enter a name for the coterie.", variant: "destructive" });
+      notify.error("Coterie name required", "Please enter a name for the coterie.");
       return;
     }
     if (createAsFaction && !factionName.trim()) {
-      toast({ title: "Faction name required", description: "Please enter a name for the faction.", variant: "destructive" });
+      notify.error("Faction name required", "Please enter a name for the faction.");
       return;
     }
 
@@ -376,16 +375,13 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
         extras.push(`added to faction "${fac?.name}"`);
       }
 
-      toast({
-        title: `${savedIds.length} NPCs saved`,
-        description: extras.length > 0
+      notify.success(`${savedIds.length} NPCs saved`, extras.length > 0
           ? `Added to chronicle. ${extras.join("; ")}.`
-          : "All NPCs added to your chronicle.",
-      });
+          : "All NPCs added to your chronicle.");
 
       handleClose();
     } catch (err: any) {
-      toast({ title: "Save failed", description: err.message, variant: "destructive" });
+      notify.error("Save failed", err.message);
     } finally {
       setIsSaving(false);
     }

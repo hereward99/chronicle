@@ -8,7 +8,6 @@ import { useCharacters, SimpleDicePool, DicePoolConfig } from "@/hooks/useCharac
 import { useChronicles } from "@/hooks/useChronicles";
 import { Plus } from "lucide-react";
 import { z } from "zod";
-import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import { PortraitGenerator } from "@/components/character/PortraitGenerator";
 
@@ -61,8 +60,6 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
   
   const { createCharacter } = useCharacters();
   const { currentChronicle, createDefaultChronicle } = useChronicles();
-  const { toast } = useToast();
-
   const clearFieldError = (field: string) => {
     setErrors(prev => {
       const next = { ...prev };

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { notify } from "@/lib/notify";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,8 +10,6 @@ import { useNotes } from "@/hooks/useNotes";
 import { useChronicles } from "@/hooks/useChronicles";
 import { Scroll } from "lucide-react";
 import { z } from "zod";
-import { useToast } from "@/hooks/use-toast";
-
 const noteSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
   content: z.string().max(5000, "Content must be less than 5000 characters").optional(),
@@ -37,8 +36,6 @@ export function CreateNoteDialog({ children }: CreateNoteDialogProps) {
   
   const { createNote } = useNotes();
   const { currentChronicle, createDefaultChronicle } = useChronicles();
-  const { toast } = useToast();
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -75,11 +72,7 @@ export function CreateNoteDialog({ children }: CreateNoteDialogProps) {
       setOpen(false);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast({
-          title: "Validation error",
-          description: error.issues[0].message,
-          variant: "destructive",
-        });
+        notify.error("Validation error", error.issues[0].message);
       }
     } finally {
       setLoading(false);

@@ -1,8 +1,8 @@
 import { useState } from "react";
+import { notify } from "@/lib/notify";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { Sparkles, Loader2, X, RefreshCw } from "lucide-react";
 
 export interface PortraitCharacterDetails {
@@ -158,8 +158,6 @@ export function PortraitGenerator({
   size = "lg",
 }: PortraitGeneratorProps) {
   const [generating, setGenerating] = useState(false);
-  const { toast } = useToast();
-
   const handleGenerate = async () => {
     setGenerating(true);
     try {
@@ -191,14 +189,10 @@ export function PortraitGenerator({
           .getPublicUrl(fileName);
 
         onPortraitGenerated(urlData.publicUrl);
-        toast({ title: "Portrait generated!", description: "Your character's portrait is ready." });
+        notify.success("Portrait generated!", "Your character's portrait is ready.");
       }
     } catch (err: any) {
-      toast({
-        title: "Portrait generation failed",
-        description: err.message || "Please try again later.",
-        variant: "destructive",
-      });
+      notify.error("Portrait generation failed", err.message || "Please try again later.");
     } finally {
       setGenerating(false);
     }

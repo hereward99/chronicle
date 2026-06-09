@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+
 import { useGeneratorSettings } from '@/hooks/useGeneratorSettings';
 import { Bot, AtSign, ClipboardList, Plus, X, Check, RotateCcw } from 'lucide-react';
 import { GuidedTour } from '@/components/onboarding/GuidedTour';
@@ -15,8 +15,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 
 export default function Settings() {
-  const { toast } = useToast();
-  
   const { settings: generatorSettings, updateSettings: updateGeneratorSettings } = useGeneratorSettings();
   const [showTour, setShowTour] = useState(false);
 

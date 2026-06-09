@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { notify } from "@/lib/notify";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,8 +13,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronLeft, ChevronRight, Check, Wand2, Plus, X } from "lucide-react";
 import { useCharacters, DicePoolConfig, SimpleDicePool, GeneralDicePool, StandardDicePool, ExceptionalPool } from "@/hooks/useCharacters";
 import { useChronicles } from "@/hooks/useChronicles";
-import { useToast } from "@/hooks/use-toast";
-
 type CreationMethod = "full" | "simple" | "general" | "standard";
 type CreatureType = "vampire" | "human" | "ghoul";
 
@@ -50,8 +49,6 @@ export function NPCWizardDialog({ open, onOpenChange, generatedData, creationMet
   const [loading, setLoading] = useState(false);
   const { createCharacter } = useCharacters();
   const { currentChronicle, createDefaultChronicle } = useChronicles();
-  const { toast } = useToast();
-
   // Determine steps based on creation method
   const getSteps = () => {
     if (creationMethod === "full") return FULL_STEPS;
@@ -318,18 +315,11 @@ export function NPCWizardDialog({ open, onOpenChange, generatedData, creationMet
         resonance: isVampire ? characterData.resonance : null,
       });
 
-      toast({
-        title: "NPC Created!",
-        description: `${characterData.name} has been added to your chronicle.`,
-      });
+      notify.success("NPC Created!", `${characterData.name} has been added to your chronicle.`);
 
       onOpenChange(false);
     } catch (error: any) {
-      toast({
-        title: "Error creating NPC",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Error creating NPC", error.message);
     } finally {
       setLoading(false);
     }

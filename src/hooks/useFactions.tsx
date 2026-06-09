@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-
 export interface Faction {
   id: string;
   chronicle_id: string;
@@ -22,7 +21,6 @@ export interface CharacterFaction {
 }
 
 export function useFactions(chronicleId?: string) {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: factions = [], isLoading: loading } = useQuery({
@@ -73,10 +71,10 @@ export function useFactions(chronicleId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['factions'] });
-      toast({ title: "Faction created", description: "New faction has been added." });
+      notify.success("Faction created", "New faction has been added.");
     },
     onError: (error: any) => {
-      toast({ title: "Error creating faction", description: error.message, variant: "destructive" });
+      notify.error("Error creating faction", error.message);
     },
   });
 
@@ -94,10 +92,10 @@ export function useFactions(chronicleId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['factions'] });
-      toast({ title: "Faction updated", description: "Faction has been successfully updated." });
+      notify.success("Faction updated", "Faction has been successfully updated.");
     },
     onError: (error: any) => {
-      toast({ title: "Error updating faction", description: error.message, variant: "destructive" });
+      notify.error("Error updating faction", error.message);
     },
   });
 
@@ -112,10 +110,10 @@ export function useFactions(chronicleId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['factions'] });
-      toast({ title: "Faction deleted", description: "Faction has been successfully deleted." });
+      notify.success("Faction deleted", "Faction has been successfully deleted.");
     },
     onError: (error: any) => {
-      toast({ title: "Error deleting faction", description: error.message, variant: "destructive" });
+      notify.error("Error deleting faction", error.message);
     },
   });
 
@@ -132,10 +130,10 @@ export function useFactions(chronicleId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['characterFactions'] });
-      toast({ title: "Character added to faction", description: "Character has been added to the faction." });
+      notify.success("Character added to faction", "Character has been added to the faction.");
     },
     onError: (error: any) => {
-      toast({ title: "Error adding character to faction", description: error.message, variant: "destructive" });
+      notify.error("Error adding character to faction", error.message);
     },
   });
 
@@ -151,10 +149,10 @@ export function useFactions(chronicleId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['characterFactions'] });
-      toast({ title: "Character removed from faction", description: "Character has been removed from the faction." });
+      notify.success("Character removed from faction", "Character has been removed from the faction.");
     },
     onError: (error: any) => {
-      toast({ title: "Error removing character from faction", description: error.message, variant: "destructive" });
+      notify.error("Error removing character from faction", error.message);
     },
   });
 

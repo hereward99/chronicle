@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { useChronicles } from './useChronicles';
 
 export interface Plot {
@@ -20,7 +20,6 @@ export interface Plot {
 }
 
 export function usePlots() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { currentChronicle } = useChronicles();
   const chronicleId = currentChronicle?.id;
@@ -60,17 +59,10 @@ export function usePlots() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['plots'] });
-      toast({
-        title: "Story created",
-        description: `${variables.title} has been added to your chronicle.`,
-      });
+      notify.success("Story created", `${variables.title} has been added to your chronicle.`);
     },
     onError: (error: any) => {
-      toast({
-        title: "Error creating story",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Error creating story", error.message);
     },
   });
 
@@ -88,17 +80,10 @@ export function usePlots() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['plots'] });
-      toast({
-        title: "Story updated",
-        description: "Your story has been updated successfully.",
-      });
+      notify.success("Story updated", "Your story has been updated successfully.");
     },
     onError: (error: any) => {
-      toast({
-        title: "Error updating story",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Error updating story", error.message);
     },
   });
 
@@ -113,17 +98,10 @@ export function usePlots() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['plots'] });
-      toast({
-        title: "Story deleted",
-        description: "The story has been removed from your chronicle.",
-      });
+      notify.success("Story deleted", "The story has been removed from your chronicle.");
     },
     onError: (error: any) => {
-      toast({
-        title: "Error deleting story",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Error deleting story", error.message);
     },
   });
 

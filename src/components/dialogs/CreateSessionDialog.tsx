@@ -13,7 +13,6 @@ import { usePlots } from "@/hooks/usePlots";
 import { useCharacters } from "@/hooks/useCharacters";
 import { useSessionCharacters } from "@/hooks/useSessionCharacters";
 import { z } from "zod";
-import { useToast } from "@/hooks/use-toast";
 import { useFormDraft } from "@/hooks/useFormDraft";
 
 const sessionSchema = z.object({
@@ -48,8 +47,6 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
   const { plots } = usePlots();
   const { characters } = useCharacters();
   const { setSessionCharacters } = useSessionCharacters();
-  const { toast } = useToast();
-
   const { clearDraft, hasDraft } = useFormDraft(
     'create-session',
     formData,

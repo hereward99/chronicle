@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react';
+import { notify } from "@/lib/notify";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { Upload, File, Image, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -43,17 +43,11 @@ export function FileUpload({
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
-
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
     if (attachments.length + files.length > maxFiles) {
-      toast({
-        title: "Too many files",
-        description: `Maximum ${maxFiles} files allowed`,
-        variant: "destructive",
-      });
+      notify.error("Too many files", `Maximum ${maxFiles} files allowed`);
       return;
     }
 
@@ -66,11 +60,7 @@ export function FileUpload({
 
       for (const file of Array.from(files)) {
         if (file.size > maxSize * 1024 * 1024) {
-          toast({
-            title: "File too large",
-            description: `${file.name} exceeds ${maxSize}MB limit`,
-            variant: "destructive",
-          });
+          notify.error("File too large", `${file.name} exceeds ${maxSize}MB limit`);
           continue;
         }
 
@@ -106,17 +96,10 @@ export function FileUpload({
       onAttachmentsChange([...attachments, ...newAttachments]);
       
       if (newAttachments.length > 0) {
-        toast({
-          title: "Files uploaded",
-          description: `${newAttachments.length} file(s) uploaded successfully`,
-        });
+        notify.success("Files uploaded", `${newAttachments.length} file(s) uploaded successfully`);
       }
     } catch (error: any) {
-      toast({
-        title: "Upload failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Upload failed", error.message);
     } finally {
       setUploading(false);
     }
@@ -132,16 +115,9 @@ export function FileUpload({
 
       onAttachmentsChange(attachments.filter(a => a.id !== attachment.id));
       
-      toast({
-        title: "File removed",
-        description: `${attachment.name} has been removed`,
-      });
+      notify.success("File removed", `${attachment.name} has been removed`);
     } catch (error: any) {
-      toast({
-        title: "Remove failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Remove failed", error.message);
     }
   };
 
