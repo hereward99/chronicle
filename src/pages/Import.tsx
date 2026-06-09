@@ -337,11 +337,7 @@ export default function Import() {
 
   const handleExport = async () => {
     if (!chronicleForExport) {
-      toast({
-        title: "No chronicle selected",
-        description: "Please select a chronicle first.",
-        variant: "destructive",
-      });
+      notify.error("No chronicle selected", "Please select a chronicle first.");
       return;
     }
 
@@ -421,17 +417,10 @@ export default function Import() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast({
-        title: "Export successful",
-        description: `Exported ${backupData.characters.length} characters, ${backupData.relationships.length} relationships, and more.`,
-      });
+      notify.success("Export successful", `Exported ${backupData.characters.length} characters, ${backupData.relationships.length} relationships, and more.`);
     } catch (error: any) {
       console.error('Export error:', error);
-      toast({
-        title: "Export failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Export failed", error.message);
     } finally {
       setExporting(false);
     }

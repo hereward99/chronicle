@@ -106,11 +106,7 @@ export default function Generator() {
         description = "Cannot connect to Ollama. Make sure it's running with CORS enabled: OLLAMA_ORIGINS=* ollama serve";
       }
       
-      toast({
-        title: "Generation Failed",
-        description,
-        variant: "destructive"
-      });
+      notify.error("Generation Failed", description);
     } finally {
       setIsGenerating(false);
     }
@@ -118,11 +114,7 @@ export default function Generator() {
 
   const saveToChronicle = async () => {
     if (!generatedData?.parsed || !currentChronicle) {
-      toast({
-        title: "Cannot Save",
-        description: currentChronicle ? "No valid content to save." : "Please select a chronicle first.",
-        variant: "destructive"
-      });
+      notify.error("Cannot Save", currentChronicle ? "No valid content to save." : "Please select a chronicle first.");
       return;
     }
 
@@ -176,10 +168,7 @@ export default function Generator() {
           willpower_max: (parsed.composure || 2) + (parsed.resolve || 2),
         });
 
-        toast({
-          title: "NPC Saved",
-          description: `${parsed.name} has been added to your characters.`
-        });
+        notify.success("NPC Saved", `${parsed.name} has been added to your characters.`);
       } else {
         // Save as plot/story (scene, story, location)
         await createPlot({
@@ -191,20 +180,13 @@ export default function Generator() {
           priority: parsed.priority || "Medium"
         });
 
-        toast({
-          title: "Story Saved",
-          description: `"${parsed.title}" has been added to your stories.`
-        });
+        notify.success("Story Saved", `"${parsed.title}" has been added to your stories.`);
       }
 
       setSaved(true);
     } catch (error) {
       console.error('Save error:', error);
-      toast({
-        title: "Save Failed",
-        description: error instanceof Error ? error.message : "Failed to save content.",
-        variant: "destructive"
-      });
+      notify.error("Save Failed", error instanceof Error ? error.message : "Failed to save content.");
     } finally {
       setIsSaving(false);
     }
@@ -213,10 +195,7 @@ export default function Generator() {
   const copyToClipboard = () => {
     if (generatedData?.content) {
       navigator.clipboard.writeText(generatedData.content);
-      toast({
-        title: "Copied",
-        description: "Content copied to clipboard."
-      });
+      notify.success("Copied", "Content copied to clipboard.");
     }
   };
 

@@ -145,17 +145,10 @@ export function useCharacters() {
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['characters'] });
-      toast({
-        title: "Character created",
-        description: `${variables.name} has been added to your chronicle.`,
-      });
+      notify.success("Character created", `${variables.name} has been added to your chronicle.`);
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error creating character",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Error creating character", error.message);
     },
   });
 
@@ -173,17 +166,10 @@ export function useCharacters() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['characters'] });
-      toast({
-        title: "Character updated",
-        description: "Character has been successfully updated.",
-      });
+      notify.success("Character updated", "Character has been successfully updated.");
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error updating character",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Error updating character", error.message);
     },
   });
 
@@ -198,17 +184,10 @@ export function useCharacters() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['characters'] });
-      toast({
-        title: "Character deleted",
-        description: "Character has been successfully deleted.",
-      });
+      notify.success("Character deleted", "Character has been successfully deleted.");
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error deleting character",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Error deleting character", error.message);
     },
   });
 

@@ -191,14 +191,10 @@ export function PortraitGenerator({
           .getPublicUrl(fileName);
 
         onPortraitGenerated(urlData.publicUrl);
-        toast({ title: "Portrait generated!", description: "Your character's portrait is ready." });
+        notify.success("Portrait generated!", "Your character's portrait is ready.");
       }
     } catch (err: any) {
-      toast({
-        title: "Portrait generation failed",
-        description: err.message || "Please try again later.",
-        variant: "destructive",
-      });
+      notify.error("Portrait generation failed", err.message || "Please try again later.");
     } finally {
       setGenerating(false);
     }

@@ -126,11 +126,7 @@ export function EditPlotDialog({ plot, open, onOpenChange, onUpdated }: EditPlot
       onUpdated?.();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast({
-          title: "Validation error",
-          description: error.issues[0].message,
-          variant: "destructive",
-        });
+        notify.error("Validation error", error.issues[0].message);
       }
     } finally {
       setLoading(false);

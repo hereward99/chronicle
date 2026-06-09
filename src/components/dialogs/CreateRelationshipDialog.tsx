@@ -242,22 +242,14 @@ export function CreateRelationshipDialog({
     e.preventDefault();
     
     if (!formData.character_id) {
-      toast({
-        title: "Validation error",
-        description: "Please select a source character",
-        variant: "destructive",
-      });
+      notify.error("Validation error", "Please select a source character");
       return;
     }
 
     if (bulkMode) {
       const targets = targetIds.filter((id) => id !== formData.character_id);
       if (targets.length === 0) {
-        toast({
-          title: "Validation error",
-          description: "Select at least one target character",
-          variant: "destructive",
-        });
+        notify.error("Validation error", "Select at least one target character");
         return;
       }
 
@@ -282,11 +274,7 @@ export function CreateRelationshipDialog({
             failed++;
           }
         }
-        toast({
-          title: failed === 0 ? "Relationships created" : "Partially created",
-          description: `${success} created${failed > 0 ? `, ${failed} failed` : ''}.`,
-          variant: failed > 0 ? "destructive" : "default",
-        });
+        notify.success(failed === 0 ? "Relationships created" : "Partially created", `${success} created${failed > 0 ? `, ${failed} failed` : ''}.`);
         resetForm();
         onOpenChange(false);
       } finally {
@@ -296,20 +284,12 @@ export function CreateRelationshipDialog({
     }
 
     if (!formData.related_character_id) {
-      toast({
-        title: "Validation error",
-        description: "Please select both characters",
-        variant: "destructive",
-      });
+      notify.error("Validation error", "Please select both characters");
       return;
     }
 
     if (formData.character_id === formData.related_character_id) {
-      toast({
-        title: "Validation error",
-        description: "A character cannot have a relationship with themselves",
-        variant: "destructive",
-      });
+      notify.error("Validation error", "A character cannot have a relationship with themselves");
       return;
     }
     

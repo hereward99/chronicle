@@ -55,10 +55,10 @@ export function useLocations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['locations'] });
-      toast({ title: 'Location created' });
+      notify.success('Location created');
     },
     onError: (error) => {
-      toast({ title: 'Failed to create location', description: error.message, variant: 'destructive' });
+      notify.error('Failed to create location', error.message);
     },
   });
 
@@ -76,10 +76,10 @@ export function useLocations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['locations'] });
-      toast({ title: 'Location updated' });
+      notify.success('Location updated');
     },
     onError: (error) => {
-      toast({ title: 'Failed to update location', description: error.message, variant: 'destructive' });
+      notify.error('Failed to update location', error.message);
     },
   });
 
@@ -94,10 +94,10 @@ export function useLocations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['locations'] });
-      toast({ title: 'Location deleted' });
+      notify.success('Location deleted');
     },
     onError: (error) => {
-      toast({ title: 'Failed to delete location', description: error.message, variant: 'destructive' });
+      notify.error('Failed to delete location', error.message);
     },
   });
 

@@ -49,11 +49,7 @@ export function FileUpload({
     if (!files || files.length === 0) return;
 
     if (attachments.length + files.length > maxFiles) {
-      toast({
-        title: "Too many files",
-        description: `Maximum ${maxFiles} files allowed`,
-        variant: "destructive",
-      });
+      notify.error("Too many files", `Maximum ${maxFiles} files allowed`);
       return;
     }
 
@@ -66,11 +62,7 @@ export function FileUpload({
 
       for (const file of Array.from(files)) {
         if (file.size > maxSize * 1024 * 1024) {
-          toast({
-            title: "File too large",
-            description: `${file.name} exceeds ${maxSize}MB limit`,
-            variant: "destructive",
-          });
+          notify.error("File too large", `${file.name} exceeds ${maxSize}MB limit`);
           continue;
         }
 
@@ -106,17 +98,10 @@ export function FileUpload({
       onAttachmentsChange([...attachments, ...newAttachments]);
       
       if (newAttachments.length > 0) {
-        toast({
-          title: "Files uploaded",
-          description: `${newAttachments.length} file(s) uploaded successfully`,
-        });
+        notify.success("Files uploaded", `${newAttachments.length} file(s) uploaded successfully`);
       }
     } catch (error: any) {
-      toast({
-        title: "Upload failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Upload failed", error.message);
     } finally {
       setUploading(false);
     }
@@ -132,16 +117,9 @@ export function FileUpload({
 
       onAttachmentsChange(attachments.filter(a => a.id !== attachment.id));
       
-      toast({
-        title: "File removed",
-        description: `${attachment.name} has been removed`,
-      });
+      notify.success("File removed", `${attachment.name} has been removed`);
     } catch (error: any) {
-      toast({
-        title: "Remove failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Remove failed", error.message);
     }
   };
 

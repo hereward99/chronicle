@@ -388,19 +388,12 @@ export function useImport() {
           throw new Error("Unknown import type");
       }
 
-      toast({
-        title: mode === "update" ? "Update successful" : "Import successful",
-        description: result.message,
-      });
+      notify.success(mode === "update" ? "Update successful" : "Import successful", result.message);
 
       return result;
     } catch (error: any) {
       const message = error.message || "Failed to import data";
-      toast({
-        title: mode === "update" ? "Update failed" : "Import failed",
-        description: message,
-        variant: "destructive",
-      });
+      notify.error(mode === "update" ? "Update failed" : "Import failed", message);
       return { success: false, message, count: 0 };
     } finally {
       setImporting(false);

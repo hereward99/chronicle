@@ -42,11 +42,7 @@ export function usePlotCharacters(plotId?: string) {
       queryClient.invalidateQueries({ queryKey: ['plot_characters'] });
     },
     onError: (error: any) => {
-      toast({
-        title: "Error assigning character",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Error assigning character", error.message);
     },
   });
 
@@ -63,11 +59,7 @@ export function usePlotCharacters(plotId?: string) {
       queryClient.invalidateQueries({ queryKey: ['plot_characters'] });
     },
     onError: (error: any) => {
-      toast({
-        title: "Error unassigning character",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Error unassigning character", error.message);
     },
   });
 

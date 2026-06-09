@@ -47,11 +47,7 @@ export function useFiles() {
         uploaded_at: new Date().toISOString(),
       };
     } catch (error: any) {
-      toast({
-        title: "Upload failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Upload failed", error.message);
       return null;
     }
   };
@@ -65,11 +61,7 @@ export function useFiles() {
       if (error) throw error;
       return true;
     } catch (error: any) {
-      toast({
-        title: "Delete failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Delete failed", error.message);
       return false;
     }
   };
@@ -83,11 +75,7 @@ export function useFiles() {
       if (error) throw error;
       return data;
     } catch (error: any) {
-      toast({
-        title: "Download failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Download failed", error.message);
       return null;
     }
   };

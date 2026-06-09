@@ -68,10 +68,10 @@ export function useRelationships(characterId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['relationships'] });
-      toast({ title: "Relationship created", description: "New relationship has been added." });
+      notify.success("Relationship created", "New relationship has been added.");
     },
     onError: (error: any) => {
-      toast({ title: "Error creating relationship", description: error.message, variant: "destructive" });
+      notify.error("Error creating relationship", error.message);
     },
   });
 
@@ -89,10 +89,10 @@ export function useRelationships(characterId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['relationships'] });
-      toast({ title: "Relationship updated", description: "Relationship has been successfully updated." });
+      notify.success("Relationship updated", "Relationship has been successfully updated.");
     },
     onError: (error: any) => {
-      toast({ title: "Error updating relationship", description: error.message, variant: "destructive" });
+      notify.error("Error updating relationship", error.message);
     },
   });
 
@@ -107,10 +107,10 @@ export function useRelationships(characterId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['relationships'] });
-      toast({ title: "Relationship deleted", description: "Relationship has been successfully deleted." });
+      notify.success("Relationship deleted", "Relationship has been successfully deleted.");
     },
     onError: (error: any) => {
-      toast({ title: "Error deleting relationship", description: error.message, variant: "destructive" });
+      notify.error("Error deleting relationship", error.message);
     },
   });
 

@@ -476,18 +476,11 @@ export function EditCharacterDialog({
       
       if (data?.imageUrl) {
         setFormData(prev => ({ ...prev, avatar_url: data.imageUrl }));
-        toast({
-          title: "Portrait generated",
-          description: "AI-generated portrait has been created for your character.",
-        });
+        notify.success("Portrait generated", "AI-generated portrait has been created for your character.");
       }
     } catch (error: any) {
       console.error('Error generating portrait:', error);
-      toast({
-        title: "Error generating portrait",
-        description: error.message || "Failed to generate portrait. Please try again.",
-        variant: "destructive",
-      });
+      notify.error("Error generating portrait", error.message || "Failed to generate portrait. Please try again.");
     } finally {
       setGeneratingPortrait(false);
     }

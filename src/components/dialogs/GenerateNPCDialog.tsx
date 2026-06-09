@@ -160,11 +160,7 @@ export function GenerateNPCDialog({ open, onOpenChange, onComplete }: GenerateNP
         description = "Cannot connect to Ollama. Make sure it's running with CORS enabled: OLLAMA_ORIGINS=* ollama serve";
       }
       
-      toast({
-        title: "Generation Failed",
-        description,
-        variant: "destructive"
-      });
+      notify.error("Generation Failed", description);
       setStep("prompt");
     } finally {
       setIsGenerating(false);

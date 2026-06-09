@@ -318,18 +318,11 @@ export function NPCWizardDialog({ open, onOpenChange, generatedData, creationMet
         resonance: isVampire ? characterData.resonance : null,
       });
 
-      toast({
-        title: "NPC Created!",
-        description: `${characterData.name} has been added to your chronicle.`,
-      });
+      notify.success("NPC Created!", `${characterData.name} has been added to your chronicle.`);
 
       onOpenChange(false);
     } catch (error: any) {
-      toast({
-        title: "Error creating NPC",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Error creating NPC", error.message);
     } finally {
       setLoading(false);
     }

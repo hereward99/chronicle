@@ -52,17 +52,10 @@ export function useNotes() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
-      toast({
-        title: "Note created",
-        description: `${variables.title} has been added to your chronicle.`,
-      });
+      notify.success("Note created", `${variables.title} has been added to your chronicle.`);
     },
     onError: (error: any) => {
-      toast({
-        title: "Error creating note",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Error creating note", error.message);
     },
   });
 
@@ -83,10 +76,10 @@ export function useNotes() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
-      toast({ title: "Note updated" });
+      notify.success("Note updated");
     },
     onError: (error: any) => {
-      toast({ title: "Error updating note", description: error.message, variant: "destructive" });
+      notify.error("Error updating note", error.message);
     },
   });
 
@@ -97,10 +90,10 @@ export function useNotes() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
-      toast({ title: "Note deleted" });
+      notify.success("Note deleted");
     },
     onError: (error: any) => {
-      toast({ title: "Error deleting note", description: error.message, variant: "destructive" });
+      notify.error("Error deleting note", error.message);
     },
   });
 

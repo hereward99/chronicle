@@ -69,17 +69,9 @@ export default function Auth() {
       authSchema.parse({ email: cleanEmail, password: cleanPassword });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast({
-          title: "Validation error",
-          description: error.issues[0].message,
-          variant: "destructive",
-        });
+        notify.error("Validation error", error.issues[0].message);
       } else {
-        toast({
-          title: "Validation error",
-          description: "Please check your email and password.",
-          variant: "destructive",
-        });
+        notify.error("Validation error", "Please check your email and password.");
       }
       return;
     }
@@ -95,39 +87,20 @@ export default function Auth() {
 
       if (error) {
         if (error.message.includes("Invalid login credentials")) {
-          toast({
-            title: "Login failed",
-            description: "Invalid email or password. Please check your credentials.",
-            variant: "destructive",
-          });
+          notify.error("Login failed", "Invalid email or password. Please check your credentials.");
         } else if (error.message.toLowerCase().includes("email not confirmed")) {
-          toast({
-            title: "Email not confirmed",
-            description: "Please check your inbox for a confirmation link, or use a magic link to sign in.",
-            variant: "destructive",
-          });
+          notify.error("Email not confirmed", "Please check your inbox for a confirmation link, or use a magic link to sign in.");
         } else {
-          toast({
-            title: "Login failed",
-            description: error.message,
-            variant: "destructive",
-          });
+          notify.error("Login failed", error.message);
         }
         return;
       }
 
-      toast({
-        title: "Welcome back!",
-        description: "You have been successfully logged in.",
-      });
+      notify.success("Welcome back!", "You have been successfully logged in.");
       navigate("/");
     } catch (error) {
       console.error("[Auth] signInWithPassword threw", error);
-      toast({
-        title: "Login failed",
-        description: error instanceof Error ? error.message : "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
+      notify.error("Login failed", error instanceof Error ? error.message : "An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -138,11 +111,7 @@ export default function Auth() {
     try {
       emailOnlySchema.parse({ email: cleanEmail });
     } catch (error) {
-      toast({
-        title: "Email required",
-        description: error instanceof z.ZodError ? error.issues[0].message : "Enter a valid email.",
-        variant: "destructive",
-      });
+      notify.error("Email required", error instanceof z.ZodError ? error.issues[0].message : "Enter a valid email.");
       return;
     }
 
@@ -153,17 +122,10 @@ export default function Auth() {
         options: { emailRedirectTo: getRedirectUrl() },
       });
       if (error) throw error;
-      toast({
-        title: "Magic link sent",
-        description: `Check ${cleanEmail} for a sign-in link.`,
-      });
+      notify.success("Magic link sent", `Check ${cleanEmail} for a sign-in link.`);
     } catch (error) {
       console.error("[Auth] signInWithOtp threw", error);
-      toast({
-        title: "Could not send magic link",
-        description: error instanceof Error ? error.message : "Please try again.",
-        variant: "destructive",
-      });
+      notify.error("Could not send magic link", error instanceof Error ? error.message : "Please try again.");
     } finally {
       setLoading(false);
     }
@@ -174,11 +136,7 @@ export default function Auth() {
     try {
       emailOnlySchema.parse({ email: cleanEmail });
     } catch (error) {
-      toast({
-        title: "Email required",
-        description: "Enter your email above, then click 'Forgot password?' again.",
-        variant: "destructive",
-      });
+      notify.error("Email required", "Enter your email above, then click 'Forgot password?' again.");
       return;
     }
 
@@ -188,17 +146,10 @@ export default function Auth() {
         redirectTo: getRedirectUrl(),
       });
       if (error) throw error;
-      toast({
-        title: "Reset email sent",
-        description: `Check ${cleanEmail} for a password reset link.`,
-      });
+      notify.success("Reset email sent", `Check ${cleanEmail} for a password reset link.`);
     } catch (error) {
       console.error("[Auth] resetPasswordForEmail threw", error);
-      toast({
-        title: "Could not send reset email",
-        description: error instanceof Error ? error.message : "Please try again.",
-        variant: "destructive",
-      });
+      notify.error("Could not send reset email", error instanceof Error ? error.message : "Please try again.");
     } finally {
       setLoading(false);
     }
@@ -213,11 +164,7 @@ export default function Auth() {
       authSchema.parse({ email: cleanEmail, password: cleanPassword });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast({
-          title: "Validation error",
-          description: error.issues[0].message,
-          variant: "destructive",
-        });
+        notify.error("Validation error", error.issues[0].message);
       }
       return;
     }
@@ -232,18 +179,10 @@ export default function Auth() {
 
       if (error) {
         if (error.message.includes("User already registered")) {
-          toast({
-            title: "Account exists",
-            description: "An account with this email already exists. Please sign in instead.",
-            variant: "destructive",
-          });
+          notify.error("Account exists", "An account with this email already exists. Please sign in instead.");
           setActiveTab("login");
         } else {
-          toast({
-            title: "Sign up failed",
-            description: error.message,
-            variant: "destructive",
-          });
+          notify.error("Sign up failed", error.message);
         }
         return;
       }
@@ -251,29 +190,18 @@ export default function Auth() {
       const isExistingAccount = !data.user?.identities || data.user.identities.length === 0;
 
       if (isExistingAccount) {
-        toast({
-          title: "Account already exists",
-          description: "Use Sign In, send a magic link, or reset your password instead of creating a new account.",
-          variant: "destructive",
-        });
+        notify.error("Account already exists", "Use Sign In, send a magic link, or reset your password instead of creating a new account.");
         setActiveTab("login");
         setPassword("");
         return;
       }
 
-      toast({
-        title: "Account created!",
-        description: "Check your email for the confirmation link. If it doesn't arrive, use the magic link option from Sign In.",
-      });
+      notify.success("Account created!", "Check your email for the confirmation link. If it doesn't arrive, use the magic link option from Sign In.");
       setActiveTab("login");
       setPassword("");
     } catch (error) {
       console.error("[Auth] signUp threw", error);
-      toast({
-        title: "Sign up failed",
-        description: error instanceof Error ? error.message : "An unexpected error occurred.",
-        variant: "destructive",
-      });
+      notify.error("Sign up failed", error instanceof Error ? error.message : "An unexpected error occurred.");
     } finally {
       setLoading(false);
     }
@@ -284,19 +212,11 @@ export default function Auth() {
     try {
       passwordOnlySchema.parse({ password: newPassword });
     } catch (error) {
-      toast({
-        title: "Validation error",
-        description: error instanceof z.ZodError ? error.issues[0].message : "Invalid password.",
-        variant: "destructive",
-      });
+      notify.error("Validation error", error instanceof z.ZodError ? error.issues[0].message : "Invalid password.");
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast({
-        title: "Passwords don't match",
-        description: "Please confirm your new password.",
-        variant: "destructive",
-      });
+      notify.error("Passwords don't match", "Please confirm your new password.");
       return;
     }
 
@@ -304,19 +224,12 @@ export default function Auth() {
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
-      toast({
-        title: "Password updated",
-        description: "You're now signed in with your new password.",
-      });
+      notify.success("Password updated", "You're now signed in with your new password.");
       setMode("auth");
       navigate("/");
     } catch (error) {
       console.error("[Auth] updateUser threw", error);
-      toast({
-        title: "Could not update password",
-        description: error instanceof Error ? error.message : "Please try again.",
-        variant: "destructive",
-      });
+      notify.error("Could not update password", error instanceof Error ? error.message : "Please try again.");
     } finally {
       setLoading(false);
     }

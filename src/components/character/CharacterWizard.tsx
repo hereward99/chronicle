@@ -344,19 +344,12 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
         blood_potency: characterData.characterType === "vampire" ? 0 : 0,
       });
 
-      toast({
-        title: "Character created!",
-        description: `${characterData.name} has been added to your chronicle.`,
-      });
+      notify.success("Character created!", `${characterData.name} has been added to your chronicle.`);
 
       onOpenChange(false);
       resetWizard();
     } catch (error: any) {
-      toast({
-        title: "Error creating character",
-        description: error.message,
-        variant: "destructive",
-      });
+      notify.error("Error creating character", error.message);
     } finally {
       setLoading(false);
     }
