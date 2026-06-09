@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { toast } from "@/hooks/use-toast";
+import { notify } from "@/lib/notify";
 
 export function useOnlineStatus() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -7,19 +7,12 @@ export function useOnlineStatus() {
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
-      toast({
-        title: "Back online",
-        description: "Your connection has been restored.",
-      });
+      notify.success("Back online", "Your connection has been restored.");
     };
 
     const handleOffline = () => {
       setIsOnline(false);
-      toast({
-        title: "You're offline",
-        description: "Some features are unavailable without a connection.",
-        variant: "destructive",
-      });
+      notify.offline("Saving changes");
     };
 
     window.addEventListener("online", handleOnline);
@@ -34,11 +27,7 @@ export function useOnlineStatus() {
   const requireOnline = useCallback(
     (actionName: string): boolean => {
       if (!isOnline) {
-        toast({
-          title: "Offline",
-          description: `"${actionName}" requires an internet connection.`,
-          variant: "destructive",
-        });
+        notify.offline(actionName);
         return false;
       }
       return true;
