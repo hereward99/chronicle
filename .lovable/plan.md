@@ -1,94 +1,48 @@
-# Issue 1: Unified Entity Card Pattern
-
-## The problem
-
-List/grid cards across the app look related but drift in small, visible ways. Sample:
-
-| Card | Surface | Hover | Status badge source |
-|---|---|---|---|
-| CharacterCard | `bg-gradient-subtle shadow-gothic` | `shadow-deep` | hardcoded Tailwind (`bg-emerald-600`, `bg-red-600`…) |
-| CoterieCard | plain `bg-card` | `shadow-lg` | n/a |
-| Session card (in Sessions.tsx) | `bg-card shadow-gothic` | `shadow-crimson` | inline |
-| Story card (in Stories.tsx) | `bg-card shadow-gothic` | `shadow-crimson` | inline |
-| Chronicle dashboard cards | `bg-gradient-subtle shadow-gothic` | none | n/a |
-| Note card (in Chronicle.tsx) | plain `border-border` | none | n/a |
-| LocationCard | custom | custom | inline |
-
-Three different surface styles, three different hover shadows, and status-color logic duplicated with slightly different palettes in 4+ places.
-
-## Goal
-
-One shared shell + one shared status-badge helper so every list/grid card on the app reads as part of the same family. No behavioral changes, no layout rewrites of card *contents* — just the wrapper, hover state, and status colors.
-
-## Scope (this step only)
-
-In scope:
-- New `src/components/ui/entity-card.tsx` — thin wrapper over shadcn `Card` with two variants (`list` for grid items, `panel` for dashboard sections) and a `highlighted` prop for the primary/ring state.
-- New `src/lib/statusColors.ts` — single source for `character.status`, `plot.status`, `session.status` → semantic Tailwind classes (using existing tokens; no new HSL).
-- Migrate the obvious offenders to use both:
-  - `CharacterCard`, `CoterieCard`, `LocationCard` (Locations.tsx inline), session card (Sessions.tsx `renderSessionCard`), story card (Stories.tsx `renderStoryCard`), note card (Chronicle.tsx).
-- Chronicle dashboard section cards → `EntityCard variant="panel"` so the gradient + shadow is defined in one place.
-
-Out of scope (later issues will handle these):
-- Restructuring card *contents* or actions placement.
-- Touching dialogs, forms, or PDF export.
-- Replacing hardcoded mention colors (that's issue #4).
-- Detail-page redesigns.
-
-## Technical details
-
-**`EntityCard` API**
-
-```tsx
-type Variant = "list" | "panel";
-interface EntityCardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: Variant;        // default "list"
-  highlighted?: boolean;    // ring-2 ring-primary (e.g. primary coterie)
-  interactive?: boolean;    // adds hover shadow + cursor (default true for list)
-  entityId?: string;        // sets data-entity-id for search highlight
-}
-```
-
-Resolved classes:
-- `list`: `bg-card border-border shadow-gothic` + (interactive ? `hover:shadow-crimson transition-shadow` : "")
-- `panel`: `bg-gradient-subtle border-border shadow-gothic`
-- `highlighted`: append `ring-2 ring-primary`
-
-Re-exports `CardHeader/Content/Footer/Title/Description` unchanged so call sites only change the outer element name.
-
-**`statusColors.ts`**
+You're right — it's mechanical, not hard. ~150 call sites across ~22 files, and ~95% follow one of two patterns:
 
 ```ts
-export type EntityStatusKind = "character" | "plot" | "session";
-export function statusBadgeClass(kind, status): string
+toast({ title: "X", description: "Y" })                          → notify.success("X", "Y")
+toast({ title: "X", description: e.message, variant: "destructive" }) → notify.error("X", e.message)
 ```
 
-Returns classes built from semantic tokens where possible (`bg-primary`, `bg-muted`, `bg-destructive`, `text-*-foreground`) and falls back to a small fixed palette for distinct states (Ally=blue, Rival=amber). All HSL values added to `index.css` as `--status-*` tokens if not already present — no raw Tailwind color literals in components.
+## Scope
 
-**Migrations** are mechanical: replace `<Card className="bg-gradient-subtle …">` with `<EntityCard variant="panel">`, replace inline status switch with `statusBadgeClass(...)`.
+| Area | Files | Approx call sites |
+|---|---|---|
+| Data hooks | useSessions, useCoteries, useRelationships, useChronicles, useChecklists, useCharacters, useBoons, usePlots, usePlotCharacters, useNotes, useLocations, useFiles, useFactions, useImport | ~95 |
+| Pages | Auth, Import, Generator | ~35 |
+| Components | CharacterWizard, PortraitGenerator, EditCharacterDialog, EditSessionDialog, CreateNoteDialog, EditNoteDialog, CreateRelationshipDialog, NPCWizardDialog, file-upload | ~20 |
+| **Already done** | App.tsx, useOnlineStatus | — |
 
-## Files
+## Migration rules
 
-New:
-- `src/components/ui/entity-card.tsx`
-- `src/lib/statusColors.ts`
+1. **Success** — `toast({ title, description })` → `notify.success(title, description)`
+2. **Error** — anything with `variant: "destructive"` that's a failure → `notify.error(title, description)`
+3. **Offline** — destructive toasts whose message is "requires an internet connection" / "you're offline" → `notify.offline(actionName)` (very few; mostly Auth's network errors stay as `notify.error`)
+4. **Undo opportunities** — out of scope for this pass. We're standardising shapes, not changing behaviour. (I'll flag candidates like "Note deleted" / "Relationship deleted" in a follow-up so we can convert to `notify.undo` deliberately.)
+5. Remove the now-unused `import { toast } from "@/hooks/use-toast"` from each migrated file; replace with `import { notify } from "@/lib/notify"`.
+6. Leave `src/hooks/use-toast.ts` and `src/components/ui/toaster.tsx` in place — `notify` is built on them.
 
-Edited:
-- `src/components/characters/CharacterCard.tsx`
-- `src/components/characters/CoterieCard.tsx`
-- `src/pages/Locations.tsx` (the inline `LocationCard`)
-- `src/pages/Sessions.tsx` (the `renderSessionCard` shell only)
-- `src/pages/Stories.tsx` (the `renderStoryCard` shell only)
-- `src/pages/Chronicle.tsx` (dashboard section cards + the inline note card)
-- `src/index.css` (only if new status tokens are needed)
+## Edge cases I'll handle explicitly
+
+- **Auth.tsx** has a long sign-in/sign-up flow with conditional titles. Each branch maps 1:1 to success/error — no logic changes.
+- **Generator.tsx** has a "Generation cancelled" info-style toast (no variant). That doesn't fit success/error cleanly — I'll map it to `notify.success("Generation cancelled")` (neutral title, no destructive styling) unless you prefer I add a 5th `notify.info` shape.
+- **useChecklists.tsx** line 377 ("No chronicle selected") is a validation guard, not an action failure. Still `notify.error` — same visual, same intent.
+- **useFiles.tsx** upload progress toasts (line 50/68/86) — straightforward success/error.
 
 ## Verification
 
-- Build passes.
-- Visually re-check Characters grid, Coteries grid, Stories list, Sessions list, Locations grid, Chronicle dashboard, and note list — all cards should share the same border, surface gradient, and hover shadow.
-- Primary coterie still shows its ring.
-- Character status badges still render with appropriate colors for Active / Ally / Enemy / Dead / Missing / Inactive / Unknown.
+After migration:
+- `rg "from \"@/hooks/use-toast\"" src` should return only `src/lib/notify.ts` (and `src/components/ui/toaster.tsx`).
+- `rg "^\s*toast\(" src` should be empty outside `src/lib/notify.ts` and `src/hooks/use-toast.ts` itself.
+- Build passes; smoke-test create/edit/delete on one entity to confirm toasts render.
 
-## After this step
+## One question before I start
 
-I'll stop and confirm with you before moving on to issue #2 (standardized dialog sizes & layout).
+Generator's "Generation cancelled" toast — neutral info, not a success or error. Pick one:
+
+- **(a) Map to `notify.success`** — slight semantic stretch but no new API surface. *My recommendation.*
+- **(b) Add a 5th `notify.info` shape** — breaks the "4 canonical shapes" goal of taxonomy #10.
+- **(c) Leave that one call as raw `toast(...)`** — single exception, defeats the lint-it-out goal.
+
+Tell me which, and I'll do the full sweep in one pass.
