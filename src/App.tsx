@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import Import from "./pages/Import";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider, MutationCache } from "@tanstack/react-query";
@@ -18,7 +19,7 @@ import NotFound from "./pages/NotFound";
 import Locations from "./pages/Locations";
 import Timeline from "./pages/Timeline";
 import DiceRollerPage from "./pages/DiceRoller";
-import { toast } from "@/hooks/use-toast";
+import { notify } from "@/lib/notify";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,11 +31,7 @@ const queryClient = new QueryClient({
   mutationCache: new MutationCache({
     onMutate: () => {
       if (!navigator.onLine) {
-        toast({
-          title: "You're offline",
-          description: "Data changes are not available without an internet connection.",
-          variant: "destructive",
-        });
+        notify.offline("Saving changes");
         throw new Error("Offline: mutation blocked");
       }
     },
@@ -46,6 +43,7 @@ const App = () => (
     <AuthProvider>
       <TooltipProvider>
         <Toaster />
+        <SonnerToaster />
         <BrowserRouter basename={import.meta.env.BASE_URL}>
           <Routes>
             <Route path="/auth" element={<Auth />} />
