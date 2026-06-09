@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
+import { notify } from "@/lib/notify";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-
 export interface Chronicle {
   id: string;
   name: string;
@@ -14,7 +13,6 @@ export interface Chronicle {
 }
 
 export function useChronicles() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: chronicles = [], isLoading: loading } = useQuery({

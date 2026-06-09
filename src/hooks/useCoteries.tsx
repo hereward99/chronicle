@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-
 export interface Coterie {
   id: string;
   chronicle_id: string;
@@ -37,7 +36,6 @@ export interface CoterieMember {
 }
 
 export function useCoteries(chronicleId?: string) {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: coteries = [], isLoading: loading } = useQuery({

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { useChronicles } from './useChronicles';
 import { useCharacters } from './useCharacters';
 
@@ -19,7 +19,6 @@ export interface Relationship {
 }
 
 export function useRelationships(characterId?: string) {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { characters } = useCharacters();
 

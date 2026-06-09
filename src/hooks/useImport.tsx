@@ -1,6 +1,6 @@
 import { useState } from "react";
+import { notify } from "@/lib/notify";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { useChronicles } from "@/hooks/useChronicles";
 
 export type ImportType = "chronicle" | "character" | "story" | "session";
@@ -15,7 +15,6 @@ interface ImportResult {
 
 export function useImport() {
   const [importing, setImporting] = useState(false);
-  const { toast } = useToast();
   const { currentChronicle, refetch: refetchChronicles } = useChronicles();
 
   const importChronicles = async (data: any[]): Promise<ImportResult> => {

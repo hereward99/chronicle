@@ -1,7 +1,6 @@
 import { useState } from 'react';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-
 export interface FileAttachment {
   id: string;
   name: string;
@@ -13,8 +12,6 @@ export interface FileAttachment {
 
 export function useFiles() {
   const [uploading, setUploading] = useState(false);
-  const { toast } = useToast();
-
   const uploadFile = async (
     file: File,
     bucket: string,

@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react';
+import { notify } from "@/lib/notify";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { Upload, File, Image, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -43,8 +43,6 @@ export function FileUpload({
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
-
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
 

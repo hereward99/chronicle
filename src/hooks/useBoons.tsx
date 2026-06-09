@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import type { TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
 export interface Boon {
@@ -23,7 +23,6 @@ export type BoonSeverity = 'trivial' | 'minor' | 'major' | 'life';
 export type BoonStatus = 'outstanding' | 'fulfilled' | 'forgiven';
 
 export function useBoons(chronicleId?: string) {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: boons = [], isLoading: loading } = useQuery({

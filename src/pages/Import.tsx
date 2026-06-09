@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { notify } from "@/lib/notify";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,6 @@ import { useImport, ImportType, ImportMode } from "@/hooks/useImport";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useChronicles } from "@/hooks/useChronicles";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 // Template structures matching the database schema
 // =============================================================================
 // CHARACTER CREATION METHODS & TEMPLATES
@@ -330,7 +330,6 @@ interface ImportCardConfig {
 export default function Import() {
   const { importing, parseAndImport, currentChronicle } = useImport();
   const { currentChronicle: chronicleForExport } = useChronicles();
-  const { toast } = useToast();
   const [importResults, setImportResults] = useState<Record<string, { success: boolean; message: string } | null>>({});
   const [exporting, setExporting] = useState(false);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});

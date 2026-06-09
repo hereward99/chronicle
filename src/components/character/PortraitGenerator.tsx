@@ -1,8 +1,8 @@
 import { useState } from "react";
+import { notify } from "@/lib/notify";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { Sparkles, Loader2, X, RefreshCw } from "lucide-react";
 
 export interface PortraitCharacterDetails {
@@ -158,8 +158,6 @@ export function PortraitGenerator({
   size = "lg",
 }: PortraitGeneratorProps) {
   const [generating, setGenerating] = useState(false);
-  const { toast } = useToast();
-
   const handleGenerate = async () => {
     setGenerating(true);
     try {

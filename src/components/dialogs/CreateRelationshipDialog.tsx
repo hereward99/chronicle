@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { notify } from "@/lib/notify";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -9,7 +10,6 @@ import { MentionInput } from "@/components/mentions/MentionInput";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
 import { Relationship } from "@/hooks/useRelationships";
 import { Character } from "@/hooks/useCharacters";
 import { Check, ChevronsUpDown, X } from "lucide-react";
@@ -189,8 +189,6 @@ export function CreateRelationshipDialog({
   const [loading, setLoading] = useState(false);
   const [bulkMode, setBulkMode] = useState(false);
   const [targetIds, setTargetIds] = useState<string[]>([]);
-  const { toast } = useToast();
-  
   const [formData, setFormData] = useState({
     character_id: "",
     related_character_id: "",

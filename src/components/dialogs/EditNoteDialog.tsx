@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { notify } from "@/lib/notify";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,8 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MentionInput } from "@/components/mentions/MentionInput";
 import { useNotes, Note } from "@/hooks/useNotes";
 import { z } from "zod";
-import { useToast } from "@/hooks/use-toast";
-
 const noteSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
   content: z.string().max(5000, "Content must be less than 5000 characters").optional(),
@@ -30,8 +29,6 @@ export function EditNoteDialog({ note, open, onOpenChange }: EditNoteDialogProps
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ title: "", content: "", category: "General" });
   const { updateNote } = useNotes();
-  const { toast } = useToast();
-
   useEffect(() => {
     if (note) {
       setFormData({

@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { notify } from "@/lib/notify";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,6 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sparkles, RefreshCw, ArrowRight, ArrowLeft, Users, Check, X, Trash2, Edit, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { useChronicles } from "@/hooks/useChronicles";
 import { useCharacters } from "@/hooks/useCharacters";
 import { useCoteries } from "@/hooks/useCoteries";
@@ -42,7 +42,6 @@ interface BulkNPCDialogProps {
 }
 
 export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
-  const { toast } = useToast();
   const { currentChronicle } = useChronicles();
   const { createCharacter } = useCharacters();
   const { coteries, createCoterie, addMember } = useCoteries(currentChronicle?.id);

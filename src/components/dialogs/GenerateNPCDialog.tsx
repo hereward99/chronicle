@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { notify } from "@/lib/notify";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,7 +8,6 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, RefreshCw, ArrowRight, Bot, Cloud } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { useGeneratorSettings } from "@/hooks/useGeneratorSettings";
 import { generateWithOllama } from "@/lib/ollama";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
@@ -74,7 +74,6 @@ export function GenerateNPCDialog({ open, onOpenChange, onComplete }: GenerateNP
   const [creatureType, setCreatureType] = useState<CreatureType>("vampire");
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const { toast } = useToast();
   const { settings: generatorSettings } = useGeneratorSettings();
   const { requireOnline } = useOnlineStatus();
 

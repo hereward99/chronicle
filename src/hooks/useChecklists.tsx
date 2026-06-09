@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { notify } from "@/lib/notify";
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { useChronicles } from '@/hooks/useChronicles';
 
 export interface ChecklistItem {
@@ -189,7 +189,6 @@ async function fetchChecklists(chronicleId: string): Promise<SessionChecklist[]>
 }
 
 export function useChecklists() {
-  const { toast } = useToast();
   const { currentChronicle } = useChronicles();
   const queryClient = useQueryClient();
   const chronicleId = currentChronicle?.id;
