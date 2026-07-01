@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useCharacters, DicePoolConfig, SimpleDicePool, GeneralDicePool, StandardDicePool, CombinedDicePool, ExceptionalPool } from "@/hooks/useCharacters";
 import { useChronicles } from "@/hooks/useChronicles";
 import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftSavedIndicator } from "@/components/DraftSavedIndicator";
 import { ChevronLeft, ChevronRight, Check, Wand2 } from "lucide-react";
 import { DISCIPLINES as DISCIPLINE_LIST, getDisciplinePowersLegacy } from "@/lib/v5/disciplineData";
 import { getPredatorTypeData } from "@/lib/v5/predatorTypeData";
@@ -152,7 +153,7 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
     willpower_max: 3,
   });
 
-  const { clearDraft } = useFormDraft(
+  const { clearDraft, status: draftStatus, lastSavedAt: draftSavedAt } = useFormDraft(
     'character-wizard',
     characterData,
     setCharacterData,
@@ -1759,8 +1760,11 @@ export function CharacterWizard({ open, onOpenChange }: CharacterWizardProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="mb-4">
+        <div className="mb-4 space-y-2">
           <Progress value={progress} className="h-2" />
+          <div className="flex justify-end">
+            <DraftSavedIndicator status={draftStatus} lastSavedAt={draftSavedAt} />
+          </div>
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto pr-4">
