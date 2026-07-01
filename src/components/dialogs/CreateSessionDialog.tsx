@@ -14,6 +14,7 @@ import { useCharacters } from "@/hooks/useCharacters";
 import { useSessionCharacters } from "@/hooks/useSessionCharacters";
 import { z } from "zod";
 import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftSavedIndicator } from "@/components/DraftSavedIndicator";
 
 const sessionSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
@@ -47,7 +48,7 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
   const { plots } = usePlots();
   const { characters } = useCharacters();
   const { setSessionCharacters } = useSessionCharacters();
-  const { clearDraft, hasDraft } = useFormDraft(
+  const { clearDraft, hasDraft, status: draftStatus, lastSavedAt: draftSavedAt } = useFormDraft(
     'create-session',
     formData,
     setFormData,
@@ -248,13 +249,16 @@ export function CreateSessionDialog({ children }: CreateSessionDialogProps) {
             <p className="text-xs text-muted-foreground">Type @ to mention characters, stories, etc.</p>
           </div>
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
-              Cancel
-            </Button>
-            <Button type="submit" className="bg-gradient-blood hover:opacity-90" disabled={loading}>
-              {loading ? "Logging..." : "Log Session"}
-            </Button>
+          <div className="flex items-center justify-between pt-4 gap-2">
+            <DraftSavedIndicator status={draftStatus} lastSavedAt={draftSavedAt} />
+            <div className="flex space-x-2">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-gradient-blood hover:opacity-90" disabled={loading}>
+                {loading ? "Logging..." : "Log Session"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>

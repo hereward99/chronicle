@@ -1,12 +1,17 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 
 const DRAFT_PREFIX = 'form-draft:';
 const DEBOUNCE_MS = 1500;
+
+export type DraftStatus = 'idle' | 'saving' | 'saved';
 
 /**
  * Auto-saves form data to localStorage with debounce.
  * Restores draft on mount if available.
  * Clears draft on successful submission.
+ *
+ * Also exposes a canonical `status` and `lastSavedAt` so consumers can render
+ * a uniform "Draft saved" stamp via <DraftSavedIndicator />.
  */
 export function useFormDraft<T>(
   key: string,
@@ -18,6 +23,8 @@ export function useFormDraft<T>(
   const storageKey = `${DRAFT_PREFIX}${key}`;
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
   const initializedRef = useRef(false);
+  const [status, setStatus] = useState<DraftStatus>('idle');
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
 
   // Restore draft on mount (once)
   useEffect(() => {
@@ -29,6 +36,8 @@ export function useFormDraft<T>(
       if (saved) {
         const parsed = JSON.parse(saved);
         setFormData(parsed);
+        setLastSavedAt(new Date());
+        setStatus('saved');
       }
     } catch {
       // Ignore parse errors
@@ -39,11 +48,14 @@ export function useFormDraft<T>(
   useEffect(() => {
     if (!enabled || !initializedRef.current) return;
 
+    setStatus('saving');
     timerRef.current = setTimeout(() => {
       try {
         localStorage.setItem(storageKey, JSON.stringify(formData));
+        setLastSavedAt(new Date());
+        setStatus('saved');
       } catch {
-        // Storage full or unavailable
+        // Storage full or unavailable — leave status as-is
       }
     }, DEBOUNCE_MS);
 
@@ -54,11 +66,13 @@ export function useFormDraft<T>(
 
   const clearDraft = useCallback(() => {
     localStorage.removeItem(storageKey);
+    setLastSavedAt(null);
+    setStatus('idle');
   }, [storageKey]);
 
   const hasDraft = useCallback(() => {
     return localStorage.getItem(storageKey) !== null;
   }, [storageKey]);
 
-  return { clearDraft, hasDraft };
+  return { clearDraft, hasDraft, status, lastSavedAt };
 }
