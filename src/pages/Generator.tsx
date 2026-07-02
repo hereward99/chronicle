@@ -216,10 +216,10 @@ export default function Generator() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
+        <div className="min-w-0">
           <h1 className="text-3xl font-bold text-foreground">Content Generator</h1>
-          <p className="text-muted-foreground flex items-center gap-2">
-            Generate scenes, NPCs, and stories for your chronicle
+          <p className="text-muted-foreground flex flex-wrap items-center gap-2">
+            <span>Generate scenes, NPCs, and stories for your chronicle</span>
             <Badge variant="outline" className="text-xs">
               {generatorSettings.useLocalLLM ? (
                 <>
@@ -236,6 +236,7 @@ export default function Generator() {
           </p>
         </div>
       </div>
+
 
       {/* Generator Tabs */}
       <Tabs value={activeTab} onValueChange={(tab) => { setActiveTab(tab); setSaved(false); }}>

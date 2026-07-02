@@ -267,11 +267,12 @@ export default function Characters() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Characters & Groups</h1>
+        <div className="min-w-0">
+          <h1 className="text-3xl font-bold text-foreground break-words">Characters & Groups</h1>
           <p className="text-muted-foreground">Manage your chronicle's characters, coteries, and factions</p>
         </div>
       </div>
+
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
@@ -283,7 +284,7 @@ export default function Characters() {
         {/* ===== Characters Tab ===== */}
         <TabsContent value="characters" className="space-y-6">
           {/* Actions */}
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-wrap justify-end gap-2">
             <Button variant="outline" onClick={() => setWizardOpen(true)} className="border-primary/50 hover:bg-primary/10">
               <Wand2 className="w-4 h-4 mr-2" /> Wizard
             </Button>
@@ -296,6 +297,7 @@ export default function Characters() {
               <UsersRound className="w-4 h-4 mr-2" /> Generate Group
             </Button>
           </div>
+
 
           {/* Search */}
           <div className="relative">

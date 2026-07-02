@@ -71,19 +71,19 @@ export default function Chronicle() {
     <div className="space-y-8">{/* Header */}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div 
-          className="group cursor-pointer flex items-start gap-3"
+          className="group cursor-pointer flex items-start gap-3 min-w-0"
           onClick={openHeaderEdit}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => e.key === 'Enter' && openHeaderEdit()}
         >
-          <div>
-            <h1 className="text-4xl font-bold text-foreground mb-2 group-hover:text-primary/80 transition-colors">
+          <div className="min-w-0">
+            <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2 group-hover:text-primary/80 transition-colors break-words">
               {currentChronicle?.name || "Chronicle Dashboard"}
             </h1>
-            <p className="text-lg text-muted-foreground group-hover:text-foreground/70 transition-colors">
+            <p className="text-base sm:text-lg text-muted-foreground group-hover:text-foreground/70 transition-colors break-words">
               {currentChronicle?.description || "Your Vampire: The Masquerade tabletop roleplaying game chronicle"}
             </p>
           </div>
@@ -95,12 +95,13 @@ export default function Chronicle() {
           </Tooltip>
         </div>
         <CreateNoteDialog>
-          <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
+          <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson shrink-0 self-start sm:self-auto">
             <Plus className="w-4 h-4 mr-2" />
             New Note
           </Button>
         </CreateNoteDialog>
       </div>
+
 
       {/* Edit Chronicle Header Dialog */}
       <Dialog open={headerEditOpen} onOpenChange={setHeaderEditOpen}>
