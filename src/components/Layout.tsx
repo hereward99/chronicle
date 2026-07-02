@@ -57,11 +57,12 @@ export function Layout({ children }: LayoutProps) {
         Skip to content
       </a>
       <Navigation />
-      <main id="main-content" role="main" className="md:ml-64 min-h-screen pb-20 md:pb-0">
-        <div className="p-6 md:p-8">
+      <main id="main-content" role="main" className="md:ml-64 min-h-screen pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
+        <div className="p-4 sm:p-6 md:p-8">
           {children}
         </div>
       </main>
+
       <MobileBottomNav />
 
       <ChronicleSetupDialog open={showSetup} onComplete={handleSetupComplete} />

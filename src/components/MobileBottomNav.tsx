@@ -83,8 +83,9 @@ export function MobileBottomNav() {
       )}
 
       {/* Bottom nav bar */}
-      <nav aria-label="Mobile navigation" className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-border bg-card/95 backdrop-blur-sm">
-        <div className="flex items-center justify-around h-16 px-2 pb-[env(safe-area-inset-bottom)]">
+      <nav aria-label="Mobile navigation" className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-border bg-card/95 backdrop-blur-sm pb-[env(safe-area-inset-bottom)]">
+        <div className="flex items-center justify-around h-16 px-2">
+
           {primaryItems.map((item) => {
             const isActive = location.pathname === item.href;
             const Icon = item.icon;
