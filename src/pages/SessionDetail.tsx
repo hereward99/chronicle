@@ -8,6 +8,7 @@ import { useSessions } from "@/hooks/useSessions";
 import { usePlots } from "@/hooks/usePlots";
 import { useCharacters } from "@/hooks/useCharacters";
 import { useSessionCharacters } from "@/hooks/useSessionCharacters";
+
 import { EditSessionDialog } from "@/components/dialogs/EditSessionDialog";
 import { MentionText } from "@/components/mentions/MentionText";
 import { ChronicleDate } from "@/components/ChronicleDate";
@@ -18,7 +19,7 @@ export default function SessionDetail() {
   const { sessions, loading } = useSessions();
   const { plots } = usePlots();
   const { characters } = useCharacters();
-  const { getCharactersForSession } = useSessionCharacters(id);
+  const { characterIds: participantIds } = useSessionCharacters(id);
   const [editOpen, setEditOpen] = useState(false);
 
   const session = sessions.find(s => s.id === id);
@@ -26,7 +27,6 @@ export default function SessionDetail() {
   if (!session) return <DetailNotFound label="Session" backTo="/sessions" />;
 
   const plot = plots.find(p => p.id === session.plot_id);
-  const participantIds = getCharactersForSession(session.id);
   const participants = characters.filter(c => participantIds.includes(c.id));
 
   const images = (session.attachments || []).filter(a => a.type?.startsWith("image/"));
