@@ -20,6 +20,12 @@ import Locations from "./pages/Locations";
 import Timeline from "./pages/Timeline";
 import DiceRollerPage from "./pages/DiceRoller";
 import { notify } from "@/lib/notify";
+import CharacterDetail from "./pages/CharacterDetail";
+import PlotDetail from "./pages/PlotDetail";
+import SessionDetail from "./pages/SessionDetail";
+import LocationDetail from "./pages/LocationDetail";
+import CoterieDetail from "./pages/CoterieDetail";
+import FactionDetail from "./pages/FactionDetail";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -157,6 +163,12 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/characters/:id" element={<ProtectedRoute><Layout><CharacterDetail /></Layout></ProtectedRoute>} />
+            <Route path="/stories/:id" element={<ProtectedRoute><Layout><PlotDetail /></Layout></ProtectedRoute>} />
+            <Route path="/sessions/:id" element={<ProtectedRoute><Layout><SessionDetail /></Layout></ProtectedRoute>} />
+            <Route path="/locations/:id" element={<ProtectedRoute><Layout><LocationDetail /></Layout></ProtectedRoute>} />
+            <Route path="/coteries/:id" element={<ProtectedRoute><Layout><CoterieDetail /></Layout></ProtectedRoute>} />
+            <Route path="/factions/:id" element={<ProtectedRoute><Layout><FactionDetail /></Layout></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
