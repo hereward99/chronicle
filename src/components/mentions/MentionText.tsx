@@ -17,14 +17,14 @@ const typeColors: Record<MentionType, string> = {
    location: 'text-mention-location hover:text-mention-location',
 };
 
-const typeRoutes: Record<MentionType, string> = {
+const typeRoutes: Record<MentionType, string | null> = {
   character: '/characters',
   plot: '/stories',
   session: '/sessions',
-  note: '/chronicle',
-  faction: '/relationships',
-  coterie: '/characters',
-   location: '/locations',
+  note: null,
+  faction: '/factions',
+  coterie: '/coteries',
+  location: '/locations',
 };
 
 export function MentionText({ text, className }: MentionTextProps) {
@@ -34,7 +34,7 @@ export function MentionText({ text, className }: MentionTextProps) {
   const handleMentionClick = (mention: Mention) => {
     const route = typeRoutes[mention.type];
     if (route) {
-      navigate(`${route}?highlight=${mention.id}&q=${encodeURIComponent(mention.name)}`);
+      navigate(`${route}/${mention.id}`);
     }
   };
 

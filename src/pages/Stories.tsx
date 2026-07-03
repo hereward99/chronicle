@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { EmptyState } from "@/components/onboarding/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +30,7 @@ import { useSearchHighlight } from "@/hooks/useSearchHighlight";
 const Stories = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewingPlot, setViewingPlot] = useState<Plot | null>(null);
+  const navigate = useNavigate();
   const [editingPlot, setEditingPlot] = useState<Plot | null>(null);
   const { plots, loading, refetch } = usePlots();
   const { searchQuery: highlightQuery } = useSearchHighlight();
@@ -99,7 +101,7 @@ const Stories = () => {
         }
         actions={
           <>
-            <CardIconAction label="View story" onClick={() => setViewingPlot(story)}>
+            <CardIconAction label="View story" onClick={() => navigate(`/stories/${story.id}`)}>
               <Eye className="h-4 w-4" />
             </CardIconAction>
             <CardIconAction label="Edit story" onClick={() => setEditingPlot(story)}>

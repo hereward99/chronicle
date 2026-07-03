@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { EmptyState } from '@/components/onboarding/EmptyState';
 import { LocationCardSkeleton } from '@/components/skeletons/CardSkeleton';
 import { Button } from '@/components/ui/button';
@@ -120,6 +121,7 @@ export default function Locations() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editLocation, setEditLocation] = useState<Location | null>(null);
   const [viewLocation, setViewLocation] = useState<Location | null>(null);
+  const navigate = useNavigate();
   const [deleteTarget, setDeleteTarget] = useState<Location | null>(null);
 
   const filteredLocations = locations.filter(loc =>
@@ -156,7 +158,7 @@ export default function Locations() {
 
   const cardProps = {
     highlightQuery,
-    onView: setViewLocation,
+    onView: (l: Location) => navigate(`/locations/${l.id}`),
     onEdit: setEditLocation,
     onDelete: setDeleteTarget,
   };
