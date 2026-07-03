@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { EmptyState } from "@/components/onboarding/EmptyState";
 import { CharacterCardSkeleton } from "@/components/skeletons/CardSkeleton";
 import { Button } from "@/components/ui/button";
@@ -76,6 +77,9 @@ export default function Characters() {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewCharacter, setViewCharacter] = useState<Character | null>(null);
   const [editCharacter, setEditCharacter] = useState<Character | null>(null);
+  const navigate = useNavigate();
+  const goToCharacter = useCallback((c: Character) => navigate(`/characters/${c.id}`), [navigate]);
+  const goToCoterie = useCallback((c: Coterie) => navigate(`/coteries/${c.id}`), [navigate]);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [toolbar, setToolbar] = useState<ToolbarState>(loadToolbarState);
   const [activeTab, setActiveTab] = useState("characters");
@@ -431,7 +435,7 @@ export default function Characters() {
                   <CollapsibleContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-3">
                       {chars.map(character => (
-                        <CharacterCard key={character.id} character={character} highlightQuery={highlightQuery} onView={setViewCharacter} onEdit={setEditCharacter} />
+                        <CharacterCard key={character.id} character={character} highlightQuery={highlightQuery} onView={goToCharacter} onEdit={setEditCharacter} />
                       ))}
                     </div>
                   </CollapsibleContent>
@@ -441,7 +445,7 @@ export default function Characters() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {sortedCharacters.map(character => (
-                <CharacterCard key={character.id} character={character} highlightQuery={highlightQuery} onView={setViewCharacter} onEdit={setEditCharacter} />
+                <CharacterCard key={character.id} character={character} highlightQuery={highlightQuery} onView={goToCharacter} onEdit={setEditCharacter} />
               ))}
             </div>
           )}
