@@ -1,48 +1,82 @@
-You're right — it's mechanical, not hard. ~150 call sites across ~22 files, and ~95% follow one of two patterns:
 
-```ts
-toast({ title: "X", description: "Y" })                          → notify.success("X", "Y")
-toast({ title: "X", description: e.message, variant: "destructive" }) → notify.error("X", e.message)
+# Detail Page vs. Dialog Policy
+
+## Policy (locked in)
+
+- **View = route.** Character, Coterie, Plot, Session, Location, Faction each get their own `/entity/:id` page.
+- **Create & Edit = dialog.** No `/new` or `/:id/edit` routes. Existing Create*/Edit* dialogs stay as-is and continue to be opened from list pages and detail pages.
+- **@Mentions and global search navigate to the detail route** instead of opening a view dialog.
+- **Small/associative entities stay dialog-only:** Note, Relationship, Boon/Debt, Checklist item.
+
+## New routes
+
+```text
+/characters/:id     -> CharacterDetail
+/coteries/:id       -> CoterieDetail
+/stories/:id        -> PlotDetail        (matches existing /stories list)
+/sessions/:id       -> SessionDetail
+/locations/:id      -> LocationDetail
+/factions/:id       -> FactionDetail     (new; factions currently have no list page — accessed only via characters/coteries)
 ```
 
-## Scope
+All routes wrapped in `<ProtectedRoute><Layout>...` like today's pages. Registered above the `*` catch-all in `src/App.tsx`.
 
-| Area | Files | Approx call sites |
-|---|---|---|
-| Data hooks | useSessions, useCoteries, useRelationships, useChronicles, useChecklists, useCharacters, useBoons, usePlots, usePlotCharacters, useNotes, useLocations, useFiles, useFactions, useImport | ~95 |
-| Pages | Auth, Import, Generator | ~35 |
-| Components | CharacterWizard, PortraitGenerator, EditCharacterDialog, EditSessionDialog, CreateNoteDialog, EditNoteDialog, CreateRelationshipDialog, NPCWizardDialog, file-upload | ~20 |
-| **Already done** | App.tsx, useOnlineStatus | — |
+## Detail pages
 
-## Migration rules
+Each detail page is a thin wrapper that:
 
-1. **Success** — `toast({ title, description })` → `notify.success(title, description)`
-2. **Error** — anything with `variant: "destructive"` that's a failure → `notify.error(title, description)`
-3. **Offline** — destructive toasts whose message is "requires an internet connection" / "you're offline" → `notify.offline(actionName)` (very few; mostly Auth's network errors stay as `notify.error`)
-4. **Undo opportunities** — out of scope for this pass. We're standardising shapes, not changing behaviour. (I'll flag candidates like "Note deleted" / "Relationship deleted" in a follow-up so we can convert to `notify.undo` deliberately.)
-5. Remove the now-unused `import { toast } from "@/hooks/use-toast"` from each migrated file; replace with `import { notify } from "@/lib/notify"`.
-6. Leave `src/hooks/use-toast.ts` and `src/components/ui/toaster.tsx` in place — `notify` is built on them.
+1. Reads `:id` from `useParams`.
+2. Uses the existing hook (`useCharacters`, `usePlots`, etc.) to find the entity in the active chronicle's cached list — no new fetch-by-id hooks needed for v1.
+3. If not found (bad id, wrong chronicle, still loading) → skeleton, then a "Not found" state with a Back button.
+4. Renders the same content the current View*Dialog renders, but full-page:
+   - Reuses `CharacterSheetView` for `/characters/:id`.
+   - Reuses the JSX bodies of `ViewPlotDialog`, `ViewLocationDialog`, etc. — extracted into `*View` components so both the dialog (if kept anywhere) and the page can render them.
+5. Page header includes:
+   - Back button (`navigate(-1)` with a list-page fallback).
+   - Title + status badges.
+   - Edit button → opens the existing Edit dialog inline on the page.
+   - PDF export where applicable (reuse `PdfExportButton`).
 
-## Edge cases I'll handle explicitly
+## Wiring existing entry points
 
-- **Auth.tsx** has a long sign-in/sign-up flow with conditional titles. Each branch maps 1:1 to success/error — no logic changes.
-- **Generator.tsx** has a "Generation cancelled" info-style toast (no variant). That doesn't fit success/error cleanly — I'll map it to `notify.success("Generation cancelled")` (neutral title, no destructive styling) unless you prefer I add a 5th `notify.info` shape.
-- **useChecklists.tsx** line 377 ("No chronicle selected") is a validation guard, not an action failure. Still `notify.error` — same visual, same intent.
-- **useFiles.tsx** upload progress toasts (line 50/68/86) — straightforward success/error.
+- **List cards** (`CharacterCard`, `CoterieCard`, plot cards on `Stories`, session cards, location cards, faction chips): clicking the card body navigates to the detail route. Explicit "Edit" / "Delete" buttons on the card still open the dialog / confirm.
+- **@Mentions** (`src/components/mentions/MentionText.tsx` + `src/lib/mentions.ts`): resolve `type:id` to the matching route and `navigate()` on click. Types with no route (note, relationship, boon) keep current dialog/no-op behavior.
+- **Global search** (`src/components/CommandPalette.tsx` + `useGlobalSearch`): selecting a result navigates to the detail route instead of setting a "view" dialog id.
+- **Recent activity** and dashboard links: same treatment where they currently open dialogs.
 
-## Verification
+## Migration approach (per entity, in order)
 
-After migration:
-- `rg "from \"@/hooks/use-toast\"" src` should return only `src/lib/notify.ts` (and `src/components/ui/toaster.tsx`).
-- `rg "^\s*toast\(" src` should be empty outside `src/lib/notify.ts` and `src/hooks/use-toast.ts` itself.
-- Build passes; smoke-test create/edit/delete on one entity to confirm toasts render.
+Ship one entity at a time so each PR is reviewable and reversible:
 
-## One question before I start
+1. Character (biggest win — mentions/search use it most)
+2. Plot
+3. Session
+4. Location
+5. Coterie
+6. Faction
 
-Generator's "Generation cancelled" toast — neutral info, not a success or error. Pick one:
+For each: add route + page → extract `*View` component from the dialog → repoint cards/mentions/search → keep the old View dialog file until nothing imports it, then delete.
 
-- **(a) Map to `notify.success`** — slight semantic stretch but no new API surface. *My recommendation.*
-- **(b) Add a 5th `notify.info` shape** — breaks the "4 canonical shapes" goal of taxonomy #10.
-- **(c) Leave that one call as raw `toast(...)`** — single exception, defeats the lint-it-out goal.
+## Out of scope
 
-Tell me which, and I'll do the full sweep in one pass.
+- No fetch-by-id hooks / server-side 404s (rely on cached chronicle lists for now; can add later if we want shareable links across users).
+- No URL params for open dialogs.
+- No changes to Create/Edit dialogs or their validation.
+- No changes to the mobile bottom nav.
+
+## Technical notes
+
+- `stories` route already lives at `/stories`; the plot detail lives at `/stories/:id` to stay consistent with the label users see.
+- `Factions` has no list page today; `/factions/:id` is reachable only via links from characters and coteries. That's fine — no new list page in this pass.
+- Reusing hooks means detail pages inherit the active-chronicle filter automatically. If the user switches chronicle while on a detail page, we show the "Not found" state with a Back button (acceptable for v1).
+- No route-level code splitting changes; pages are small.
+
+## Deliverables checklist
+
+- [ ] 6 new route files under `src/pages/` (`CharacterDetail.tsx`, etc.)
+- [ ] 6 route registrations in `src/App.tsx`
+- [ ] 6 extracted `*View` components (from existing View dialogs)
+- [ ] `MentionText` navigates on click for supported types
+- [ ] `CommandPalette` / `useGlobalSearch` navigates on select
+- [ ] List card click handlers navigate; Edit/Delete buttons unchanged
+- [ ] Old View*Dialog files removed once unreferenced
