@@ -72,13 +72,9 @@ export function CommandPalette() {
 
   const handleSelect = useCallback((result: SearchResult) => {
     setOpen(false);
-    const currentQuery = query;
     setQuery('');
-    const params = new URLSearchParams();
-    params.set('highlight', result.id);
-    if (currentQuery.trim()) params.set('q', currentQuery.trim());
-    navigate(`${result.route}?${params.toString()}`);
-  }, [navigate, query]);
+    navigate(result.route);
+  }, [navigate]);
 
   // Group results by type
   const grouped = results.reduce<Record<string, SearchResult[]>>((acc, r) => {
