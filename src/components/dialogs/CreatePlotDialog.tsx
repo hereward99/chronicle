@@ -51,6 +51,12 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
   const { characters } = useCharacters();
   const { assignCharacter } = usePlotCharacters();
   const chronicleCharacters = characters.filter(c => c.chronicle_id === currentChronicle?.id);
+  const { clearDraft, status: draftStatus, lastSavedAt: draftSavedAt } = useFormDraft(
+    'create-plot',
+    formData,
+    setFormData,
+    { enabled: open }
+  );
 
   const clearFieldError = (field: string) => {
     setErrors(prev => {
