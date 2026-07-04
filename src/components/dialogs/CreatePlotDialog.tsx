@@ -14,6 +14,8 @@ import { usePlotCharacters } from "@/hooks/usePlotCharacters";
 import { BookOpen } from "lucide-react";
 import { z } from "zod";
 import { FileUpload } from "@/components/ui/file-upload";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftSavedIndicator } from "@/components/DraftSavedIndicator";
 
 const plotSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
