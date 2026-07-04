@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MentionInput } from '@/components/mentions/MentionInput';
 import { Faction } from '@/hooks/useFactions';
+import { useFormDraft } from '@/hooks/useFormDraft';
+import { DraftSavedIndicator } from '@/components/DraftSavedIndicator';
 
 interface CreateFactionDialogProps {
   open: boolean;
