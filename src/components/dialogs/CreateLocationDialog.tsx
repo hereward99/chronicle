@@ -141,13 +141,16 @@
              maxSize={10}
            />
 
-           <DialogFooter>
-             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-               Cancel
-             </Button>
-            <Button type="submit" disabled={!formData.name}>
-              Create Location
-             </Button>
+           <DialogFooter className="sm:justify-between gap-2">
+             <DraftSavedIndicator status={draftStatus} lastSavedAt={draftSavedAt} />
+             <div className="flex gap-2">
+               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                 Cancel
+               </Button>
+               <Button type="submit" disabled={!formData.name}>
+                 Create Location
+               </Button>
+             </div>
            </DialogFooter>
          </form>
        </DialogContent>
