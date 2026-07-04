@@ -119,13 +119,16 @@ export function CreateFactionDialog({
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading || !formData.name.trim()}>
-              {loading ? "Creating..." : "Create Faction"}
-            </Button>
+          <div className="flex items-center justify-between gap-2 pt-4">
+            <DraftSavedIndicator status={draftStatus} lastSavedAt={draftSavedAt} />
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading || !formData.name.trim()}>
+                {loading ? "Creating..." : "Create Faction"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
