@@ -12,6 +12,8 @@
  import { MentionInput } from '@/components/mentions/MentionInput';
  import { FileUpload } from '@/components/ui/file-upload';
  import { useLocations } from '@/hooks/useLocations';
+ import { useFormDraft } from '@/hooks/useFormDraft';
+ import { DraftSavedIndicator } from '@/components/DraftSavedIndicator';
 
  interface CreateLocationDialogProps {
    open: boolean;
