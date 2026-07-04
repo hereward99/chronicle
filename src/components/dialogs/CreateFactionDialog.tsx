@@ -59,6 +59,7 @@ export function CreateFactionDialog({
         color: formData.color,
       });
       setFormData({ name: '', description: '', color: '#3b82f6' });
+      clearDraft();
       onOpenChange(false);
     } catch (error) {
       // Error handled by hook
