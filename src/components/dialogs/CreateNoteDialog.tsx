@@ -10,6 +10,8 @@ import { useNotes } from "@/hooks/useNotes";
 import { useChronicles } from "@/hooks/useChronicles";
 import { Scroll } from "lucide-react";
 import { z } from "zod";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftSavedIndicator } from "@/components/DraftSavedIndicator";
 const noteSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
   content: z.string().max(5000, "Content must be less than 5000 characters").optional(),
