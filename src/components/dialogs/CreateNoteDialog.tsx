@@ -38,6 +38,12 @@ export function CreateNoteDialog({ children }: CreateNoteDialogProps) {
   
   const { createNote } = useNotes();
   const { currentChronicle, createDefaultChronicle } = useChronicles();
+  const { clearDraft, status: draftStatus, lastSavedAt: draftSavedAt } = useFormDraft(
+    'create-note',
+    formData,
+    setFormData,
+    { enabled: open }
+  );
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
