@@ -266,13 +266,16 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
             maxSize={10}
           />
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
-              Cancel
-            </Button>
-            <Button type="submit" className="bg-gradient-blood hover:opacity-90" disabled={loading}>
-              {loading ? "Creating..." : "Create Story"}
-            </Button>
+          <div className="flex items-center justify-between pt-4 gap-2">
+            <DraftSavedIndicator status={draftStatus} lastSavedAt={draftSavedAt} />
+            <div className="flex space-x-2">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-gradient-blood hover:opacity-90" disabled={loading}>
+                {loading ? "Creating..." : "Create Story"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
