@@ -117,7 +117,8 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
         in_game_date_end: "",
       });
       setSelectedCharacterIds([]);
-      
+      clearDraft();
+
       setOpen(false);
       onCreated?.();
     } catch (error) {
