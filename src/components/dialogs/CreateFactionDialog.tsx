@@ -39,6 +39,12 @@ export function CreateFactionDialog({
     color: '#3b82f6',
   });
   const [loading, setLoading] = useState(false);
+  const { clearDraft, status: draftStatus, lastSavedAt: draftSavedAt } = useFormDraft(
+    'create-faction',
+    formData,
+    setFormData,
+    { enabled: open }
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
