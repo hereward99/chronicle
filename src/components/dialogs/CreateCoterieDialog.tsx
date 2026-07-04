@@ -42,6 +42,39 @@ export function CreateCoterieDialog({ open, onOpenChange }: CreateCoterieDialogP
   const { createCoterie } = useCoteries();
   const { chronicles } = useChronicles();
 
+  // Aggregate text/scalar fields into a single object so useFormDraft can persist them.
+  // File attachments intentionally excluded (uploaded blobs shouldn't live in localStorage).
+  const draftData = {
+    name, description, domain, coterieType, city,
+    chasse, portillon, lien, domainResonance, havenLocation,
+    coterieAdvantagesAndFlaws, coterieBoonsAndDebts, chronicleTenets, coterieGoals,
+    domainMerits, havenMeritsAndFlaws,
+  };
+  const setDraftData = (d: typeof draftData) => {
+    setName(d.name ?? "");
+    setDescription(d.description ?? "");
+    setDomain(d.domain ?? "");
+    setCoterieType(d.coterieType ?? "");
+    setCity(d.city ?? "");
+    setChasse(d.chasse ?? 0);
+    setPortillon(d.portillon ?? 0);
+    setLien(d.lien ?? 0);
+    setDomainResonance(d.domainResonance ?? "");
+    setHavenLocation(d.havenLocation ?? "");
+    setCoterieAdvantagesAndFlaws(d.coterieAdvantagesAndFlaws ?? "");
+    setCoterieBoonsAndDebts(d.coterieBoonsAndDebts ?? "");
+    setChronicleTenets(d.chronicleTenets ?? "");
+    setCoterieGoals(d.coterieGoals ?? "");
+    setDomainMerits(d.domainMerits ?? []);
+    setHavenMeritsAndFlaws(d.havenMeritsAndFlaws ?? []);
+  };
+  const { clearDraft, status: draftStatus, lastSavedAt: draftSavedAt } = useFormDraft(
+    'create-coterie',
+    draftData,
+    setDraftData,
+    { enabled: open }
+  );
+
   const resetForm = () => {
     setName(""); setDescription(""); setDomain(""); setCoterieType(""); setCity("");
     setChasse(0); setPortillon(0); setLien(0); setDomainMerits([]); setDomainResonance("");
