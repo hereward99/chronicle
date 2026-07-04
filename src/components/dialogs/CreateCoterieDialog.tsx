@@ -11,6 +11,8 @@ import { DotRatedList, DotRatedItem, serializeDotRatedItems } from "@/components
 import { FileUpload } from "@/components/ui/file-upload";
 import { useCoteries } from "@/hooks/useCoteries";
 import { useChronicles } from "@/hooks/useChronicles";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftSavedIndicator } from "@/components/DraftSavedIndicator";
 
 interface CreateCoterieDialogProps {
   open: boolean;
