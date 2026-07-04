@@ -76,7 +76,8 @@ export function CreateNoteDialog({ children }: CreateNoteDialogProps) {
         content: "",
         category: "General",
       });
-      
+      clearDraft();
+
       setOpen(false);
     } catch (error) {
       if (error instanceof z.ZodError) {
