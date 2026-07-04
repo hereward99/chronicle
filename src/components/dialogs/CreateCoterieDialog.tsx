@@ -210,9 +210,12 @@ export function CreateCoterieDialog({ open, onOpenChange }: CreateCoterieDialogP
               onAttachmentsChange={setAttachments}
             />
 
-            <div className="flex justify-end gap-2 pt-2">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-              <Button type="submit">Create Coterie</Button>
+            <div className="flex items-center justify-between gap-2 pt-2">
+              <DraftSavedIndicator status={draftStatus} lastSavedAt={draftSavedAt} />
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+                <Button type="submit">Create Coterie</Button>
+              </div>
             </div>
           </form>
         </ScrollArea>
