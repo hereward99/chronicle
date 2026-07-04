@@ -109,6 +109,7 @@ export function CreateCoterieDialog({ open, onOpenChange }: CreateCoterieDialogP
         attachments,
       });
       resetForm();
+      clearDraft();
       onOpenChange(false);
     } catch (error) {
       console.error("Error creating coterie:", error);
