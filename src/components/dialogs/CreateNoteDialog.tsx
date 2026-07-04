@@ -10,6 +10,8 @@ import { useNotes } from "@/hooks/useNotes";
 import { useChronicles } from "@/hooks/useChronicles";
 import { Scroll } from "lucide-react";
 import { z } from "zod";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftSavedIndicator } from "@/components/DraftSavedIndicator";
 const noteSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
   content: z.string().max(5000, "Content must be less than 5000 characters").optional(),
@@ -36,6 +38,12 @@ export function CreateNoteDialog({ children }: CreateNoteDialogProps) {
   
   const { createNote } = useNotes();
   const { currentChronicle, createDefaultChronicle } = useChronicles();
+  const { clearDraft, status: draftStatus, lastSavedAt: draftSavedAt } = useFormDraft(
+    'create-note',
+    formData,
+    setFormData,
+    { enabled: open }
+  );
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -68,7 +76,8 @@ export function CreateNoteDialog({ children }: CreateNoteDialogProps) {
         content: "",
         category: "General",
       });
-      
+      clearDraft();
+
       setOpen(false);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -132,13 +141,16 @@ export function CreateNoteDialog({ children }: CreateNoteDialogProps) {
             <p className="text-xs text-muted-foreground">Type @ to mention characters, stories, sessions, etc.</p>
           </div>
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
-              Cancel
-            </Button>
-            <Button type="submit" className="bg-gradient-blood hover:opacity-90" disabled={loading}>
-              {loading ? "Creating..." : "Create Note"}
-            </Button>
+          <div className="flex items-center justify-between pt-4 gap-2">
+            <DraftSavedIndicator status={draftStatus} lastSavedAt={draftSavedAt} />
+            <div className="flex space-x-2">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-gradient-blood hover:opacity-90" disabled={loading}>
+                {loading ? "Creating..." : "Create Note"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>

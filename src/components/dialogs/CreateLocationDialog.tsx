@@ -12,6 +12,8 @@
  import { MentionInput } from '@/components/mentions/MentionInput';
  import { FileUpload } from '@/components/ui/file-upload';
  import { useLocations } from '@/hooks/useLocations';
+ import { useFormDraft } from '@/hooks/useFormDraft';
+ import { DraftSavedIndicator } from '@/components/DraftSavedIndicator';
 
  interface CreateLocationDialogProps {
    open: boolean;
@@ -30,6 +32,13 @@
        attachments: [] as Array<{ id: string; name: string; url: string; type: string; size: number; uploaded_at: string }>,
      });
 
+   const { clearDraft, status: draftStatus, lastSavedAt: draftSavedAt } = useFormDraft(
+     'create-location',
+     formData,
+     setFormData,
+     { enabled: open }
+   );
+
    const handleSubmit = async (e: React.FormEvent) => {
      e.preventDefault();
      if (!chronicleId || !userId) return;
@@ -41,6 +50,7 @@
       });
 
      setFormData({ name: '', description: '', notes: '', coordinates: '', country: '', city_region: '', attachments: [] });
+     clearDraft();
      onOpenChange(false);
    };
 
@@ -131,13 +141,16 @@
              maxSize={10}
            />
 
-           <DialogFooter>
-             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-               Cancel
-             </Button>
-            <Button type="submit" disabled={!formData.name}>
-              Create Location
-             </Button>
+           <DialogFooter className="sm:justify-between gap-2">
+             <DraftSavedIndicator status={draftStatus} lastSavedAt={draftSavedAt} />
+             <div className="flex gap-2">
+               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                 Cancel
+               </Button>
+               <Button type="submit" disabled={!formData.name}>
+                 Create Location
+               </Button>
+             </div>
            </DialogFooter>
          </form>
        </DialogContent>

@@ -11,6 +11,8 @@ import { DotRatedList, DotRatedItem, serializeDotRatedItems } from "@/components
 import { FileUpload } from "@/components/ui/file-upload";
 import { useCoteries } from "@/hooks/useCoteries";
 import { useChronicles } from "@/hooks/useChronicles";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftSavedIndicator } from "@/components/DraftSavedIndicator";
 
 interface CreateCoterieDialogProps {
   open: boolean;
@@ -39,6 +41,39 @@ export function CreateCoterieDialog({ open, onOpenChange }: CreateCoterieDialogP
 
   const { createCoterie } = useCoteries();
   const { chronicles } = useChronicles();
+
+  // Aggregate text/scalar fields into a single object so useFormDraft can persist them.
+  // File attachments intentionally excluded (uploaded blobs shouldn't live in localStorage).
+  const draftData = {
+    name, description, domain, coterieType, city,
+    chasse, portillon, lien, domainResonance, havenLocation,
+    coterieAdvantagesAndFlaws, coterieBoonsAndDebts, chronicleTenets, coterieGoals,
+    domainMerits, havenMeritsAndFlaws,
+  };
+  const setDraftData = (d: typeof draftData) => {
+    setName(d.name ?? "");
+    setDescription(d.description ?? "");
+    setDomain(d.domain ?? "");
+    setCoterieType(d.coterieType ?? "");
+    setCity(d.city ?? "");
+    setChasse(d.chasse ?? 0);
+    setPortillon(d.portillon ?? 0);
+    setLien(d.lien ?? 0);
+    setDomainResonance(d.domainResonance ?? "");
+    setHavenLocation(d.havenLocation ?? "");
+    setCoterieAdvantagesAndFlaws(d.coterieAdvantagesAndFlaws ?? "");
+    setCoterieBoonsAndDebts(d.coterieBoonsAndDebts ?? "");
+    setChronicleTenets(d.chronicleTenets ?? "");
+    setCoterieGoals(d.coterieGoals ?? "");
+    setDomainMerits(d.domainMerits ?? []);
+    setHavenMeritsAndFlaws(d.havenMeritsAndFlaws ?? []);
+  };
+  const { clearDraft, status: draftStatus, lastSavedAt: draftSavedAt } = useFormDraft(
+    'create-coterie',
+    draftData,
+    setDraftData,
+    { enabled: open }
+  );
 
   const resetForm = () => {
     setName(""); setDescription(""); setDomain(""); setCoterieType(""); setCity("");
@@ -74,6 +109,7 @@ export function CreateCoterieDialog({ open, onOpenChange }: CreateCoterieDialogP
         attachments,
       });
       resetForm();
+      clearDraft();
       onOpenChange(false);
     } catch (error) {
       console.error("Error creating coterie:", error);
@@ -174,9 +210,12 @@ export function CreateCoterieDialog({ open, onOpenChange }: CreateCoterieDialogP
               onAttachmentsChange={setAttachments}
             />
 
-            <div className="flex justify-end gap-2 pt-2">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-              <Button type="submit">Create Coterie</Button>
+            <div className="flex items-center justify-between gap-2 pt-2">
+              <DraftSavedIndicator status={draftStatus} lastSavedAt={draftSavedAt} />
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+                <Button type="submit">Create Coterie</Button>
+              </div>
             </div>
           </form>
         </ScrollArea>

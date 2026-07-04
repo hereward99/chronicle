@@ -14,6 +14,8 @@ import { usePlotCharacters } from "@/hooks/usePlotCharacters";
 import { BookOpen } from "lucide-react";
 import { z } from "zod";
 import { FileUpload } from "@/components/ui/file-upload";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftSavedIndicator } from "@/components/DraftSavedIndicator";
 
 const plotSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
@@ -49,6 +51,12 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
   const { characters } = useCharacters();
   const { assignCharacter } = usePlotCharacters();
   const chronicleCharacters = characters.filter(c => c.chronicle_id === currentChronicle?.id);
+  const { clearDraft, status: draftStatus, lastSavedAt: draftSavedAt } = useFormDraft(
+    'create-plot',
+    formData,
+    setFormData,
+    { enabled: open }
+  );
 
   const clearFieldError = (field: string) => {
     setErrors(prev => {
@@ -109,7 +117,8 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
         in_game_date_end: "",
       });
       setSelectedCharacterIds([]);
-      
+      clearDraft();
+
       setOpen(false);
       onCreated?.();
     } catch (error) {
@@ -257,13 +266,16 @@ export function CreatePlotDialog({ children, onCreated }: CreatePlotDialogProps)
             maxSize={10}
           />
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
-              Cancel
-            </Button>
-            <Button type="submit" className="bg-gradient-blood hover:opacity-90" disabled={loading}>
-              {loading ? "Creating..." : "Create Story"}
-            </Button>
+          <div className="flex items-center justify-between pt-4 gap-2">
+            <DraftSavedIndicator status={draftStatus} lastSavedAt={draftSavedAt} />
+            <div className="flex space-x-2">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-gradient-blood hover:opacity-90" disabled={loading}>
+                {loading ? "Creating..." : "Create Story"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>

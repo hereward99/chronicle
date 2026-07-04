@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MentionInput } from '@/components/mentions/MentionInput';
 import { Faction } from '@/hooks/useFactions';
+import { useFormDraft } from '@/hooks/useFormDraft';
+import { DraftSavedIndicator } from '@/components/DraftSavedIndicator';
 
 interface CreateFactionDialogProps {
   open: boolean;
@@ -37,6 +39,12 @@ export function CreateFactionDialog({
     color: '#3b82f6',
   });
   const [loading, setLoading] = useState(false);
+  const { clearDraft, status: draftStatus, lastSavedAt: draftSavedAt } = useFormDraft(
+    'create-faction',
+    formData,
+    setFormData,
+    { enabled: open }
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +59,7 @@ export function CreateFactionDialog({
         color: formData.color,
       });
       setFormData({ name: '', description: '', color: '#3b82f6' });
+      clearDraft();
       onOpenChange(false);
     } catch (error) {
       // Error handled by hook
@@ -110,13 +119,16 @@ export function CreateFactionDialog({
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading || !formData.name.trim()}>
-              {loading ? "Creating..." : "Create Faction"}
-            </Button>
+          <div className="flex items-center justify-between gap-2 pt-4">
+            <DraftSavedIndicator status={draftStatus} lastSavedAt={draftSavedAt} />
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading || !formData.name.trim()}>
+                {loading ? "Creating..." : "Create Faction"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
