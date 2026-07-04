@@ -32,6 +32,13 @@
        attachments: [] as Array<{ id: string; name: string; url: string; type: string; size: number; uploaded_at: string }>,
      });
 
+   const { clearDraft, status: draftStatus, lastSavedAt: draftSavedAt } = useFormDraft(
+     'create-location',
+     formData,
+     setFormData,
+     { enabled: open }
+   );
+
    const handleSubmit = async (e: React.FormEvent) => {
      e.preventDefault();
      if (!chronicleId || !userId) return;
