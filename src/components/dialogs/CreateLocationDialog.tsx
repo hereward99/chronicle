@@ -50,6 +50,7 @@
       });
 
      setFormData({ name: '', description: '', notes: '', coordinates: '', country: '', city_region: '', attachments: [] });
+     clearDraft();
      onOpenChange(false);
    };
 
