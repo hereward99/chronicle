@@ -28,6 +28,7 @@ export default function FactionDetail() {
       <DetailPageHeader
         title={faction.name}
         backTo="/relationships"
+        parentLabel="Factions"
         subtitle={
           <span className="inline-flex items-center gap-2">
             <span className="w-3 h-3 rounded-full border" style={{ background: faction.color }} />
