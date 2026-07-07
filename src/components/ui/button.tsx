@@ -50,7 +50,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const { isOnline } = useOnlineStatus();
 
     const shouldGuardOffline =
-      offlineDisabled ?? (type === "submit" && variant !== "outline" && variant !== "ghost" && variant !== "link");
+      offlineDisabled ??
+      (variant === "destructive" ||
+        (type === "submit" && variant !== "outline" && variant !== "ghost" && variant !== "link"));
 
     const offlineBlocked = shouldGuardOffline && !isOnline;
     const finalDisabled = disabled || offlineBlocked;
