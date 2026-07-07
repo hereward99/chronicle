@@ -49,6 +49,7 @@ export default function CoterieDetail() {
       <DetailPageHeader
         title={coterie.name}
         backTo="/characters"
+        parentLabel="Coteries"
         subtitle={
           <div className="flex flex-wrap gap-2 items-center">
             {coterie.is_primary && <Badge variant="default">Primary</Badge>}
