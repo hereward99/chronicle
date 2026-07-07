@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useDevNotes } from '@/hooks/useDevNotes';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ChronicleDate } from '@/components/ChronicleDate';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function Settings() {
   const { settings: generatorSettings, updateSettings: updateGeneratorSettings } = useGeneratorSettings();
+  const { requireOnline } = useOnlineStatus();
   const [showTour, setShowTour] = useState(false);
 
   // Dev notes (Supabase-backed)
@@ -26,16 +28,19 @@ export default function Settings() {
 
   const addDevNote = () => {
     if (!newNoteText.trim()) return;
+    if (!requireOnline('Add note')) return;
     addNote.mutate({ text: newNoteText.trim(), category: newNoteCategory });
     setNewNoteText('');
   };
 
   const toggleDevNote = (id: string) => {
+    if (!requireOnline('Toggle note')) return;
     const note = devNotes.find(n => n.id === id);
     if (note) toggleNote.mutate({ id, done: !note.done });
   };
 
   const removeDevNote = (id: string) => {
+    if (!requireOnline('Remove note')) return;
     removeNote.mutate(id);
   };
 
