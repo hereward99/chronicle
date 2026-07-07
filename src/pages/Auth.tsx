@@ -138,6 +138,10 @@ export default function Auth() {
       notify.error("Email required", "Enter your email above, then click 'Forgot password?' again.");
       return;
     }
+    if (!navigator.onLine) {
+      notify.offline("Password reset");
+      return;
+    }
 
     setLoading(true);
     try {

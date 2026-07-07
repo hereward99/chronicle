@@ -92,7 +92,7 @@ export function ChronicleManager({ title = "Chronicle" }: { title?: string }) {
                     <Pencil className="h-3.5 w-3.5" />
                   </Button>
                   {chronicles.length > 1 && (
-                    <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(currentChronicle)}>
+                    <Button size="icon" variant="ghost" offlineDisabled className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(currentChronicle)}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   )}
