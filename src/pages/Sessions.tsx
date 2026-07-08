@@ -251,7 +251,7 @@ const Sessions = () => {
             </Button>
           </CreateChecklistDialog>
           <CreateSessionDialog>
-            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-crimson">
+            <Button data-shortcut="new" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-crimson">
               <Plus className="h-4 w-4 mr-2" />
               Log New Session
             </Button>
