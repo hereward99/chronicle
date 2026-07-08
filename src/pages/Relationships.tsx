@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useRestorableState, useScrollRestore } from '@/hooks/useRestorableState';
 import { GraphSkeleton, RelationshipCardSkeleton } from '@/components/skeletons/CardSkeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
