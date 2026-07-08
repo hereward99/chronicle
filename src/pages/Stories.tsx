@@ -200,7 +200,7 @@ const Stories = () => {
           </p>
         </div>
         <CreatePlotDialog onCreated={refetch}>
-          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-crimson">
+          <Button data-shortcut="new" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-crimson">
             <Plus className="h-4 w-4 mr-2" />
             New Story
           </Button>
