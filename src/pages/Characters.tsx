@@ -31,6 +31,7 @@ import { CreateFactionDialog } from "@/components/dialogs/CreateFactionDialog";
 import { EditFactionDialog } from "@/components/dialogs/EditFactionDialog";
 import { ManageFactionMembersDialog } from "@/components/dialogs/ManageFactionMembersDialog";
 import { useSearchHighlight } from "@/hooks/useSearchHighlight";
+import { useRestorableState, useScrollRestore } from "@/hooks/useRestorableState";
 import type { Coterie } from "@/hooks/useCoteries";
 
 const STORAGE_KEY = "characters-toolbar-state";
