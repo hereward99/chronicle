@@ -70,10 +70,13 @@ export function KeyboardShortcuts() {
         return;
       }
 
-      // `N` = new on current page
+      // `N` = new on current page (clicks the marked trigger, if any)
       if ((e.key === "n" || e.key === "N") && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault();
-        window.dispatchEvent(new CustomEvent(SHORTCUT_NEW_EVENT));
+        const trigger = document.querySelector<HTMLElement>(SHORTCUT_NEW_SELECTOR);
+        if (trigger) {
+          e.preventDefault();
+          trigger.click();
+        }
         return;
       }
     };
