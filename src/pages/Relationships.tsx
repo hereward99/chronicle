@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useRestorableState, useScrollRestore } from '@/hooks/useRestorableState';
 import { GraphSkeleton, RelationshipCardSkeleton } from '@/components/skeletons/CardSkeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -111,7 +112,8 @@ export default function Relationships() {
   }, [coteries, allCoterieMembers]);
 
   // Filter states
-  const [searchQuery, setSearchQuery] = useState('');
+  useScrollRestore('/relationships');
+  const [searchQuery, setSearchQuery] = useRestorableState('relationships:search', '');
   const [filterOpen, setFilterOpen] = useState(false);
   const [mapFiltersOpen, setMapFiltersOpen] = useState(true);
   const [selectedRelTypes, setSelectedRelTypes] = useState<string[]>(persistedMapFilters.selectedRelTypes);

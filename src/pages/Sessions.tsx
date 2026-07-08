@@ -37,9 +37,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { SessionGroupSkeleton } from "@/components/skeletons/CardSkeleton";
+import { useRestorableState, useScrollRestore } from "@/hooks/useRestorableState";
 
 const Sessions = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  useScrollRestore("/sessions");
+  const [searchTerm, setSearchTerm] = useRestorableState("sessions:search", "");
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(["ungrouped", "checklists-ungrouped"]));
   const [editingSession, setEditingSession] = useState<Session | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Session | null>(null);

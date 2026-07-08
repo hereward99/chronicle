@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useRestorableState, useScrollRestore } from '@/hooks/useRestorableState';
 import { useNavigate } from 'react-router-dom';
 import { EmptyState } from '@/components/onboarding/EmptyState';
 import { LocationCardSkeleton } from '@/components/skeletons/CardSkeleton';
@@ -115,8 +116,9 @@ function LocationCard({
 
 
 export default function Locations() {
+  useScrollRestore("/locations");
   const { locations, isLoading, deleteLocation } = useLocations();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useRestorableState('locations:search', '');
   const { searchQuery: highlightQuery } = useSearchHighlight();
   const [createOpen, setCreateOpen] = useState(false);
   const [editLocation, setEditLocation] = useState<Location | null>(null);
