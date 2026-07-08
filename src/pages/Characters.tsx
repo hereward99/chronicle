@@ -75,7 +75,8 @@ function saveToolbarState(state: ToolbarState) {
 }
 
 export default function Characters() {
-  const [searchTerm, setSearchTerm] = useState("");
+  useScrollRestore("/characters");
+  const [searchTerm, setSearchTerm] = useRestorableState("characters:search", "");
   const [viewCharacter, setViewCharacter] = useState<Character | null>(null);
   const [editCharacter, setEditCharacter] = useState<Character | null>(null);
   const navigate = useNavigate();
@@ -83,7 +84,7 @@ export default function Characters() {
   const goToCoterie = useCallback((c: Coterie) => navigate(`/coteries/${c.id}`), [navigate]);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [toolbar, setToolbar] = useState<ToolbarState>(loadToolbarState);
-  const [activeTab, setActiveTab] = useState("characters");
+  const [activeTab, setActiveTab] = useRestorableState("characters:tab", "characters");
   const [showCreateCoterie, setShowCreateCoterie] = useState(false);
   const [selectedCoterie, setSelectedCoterie] = useState<Coterie | null>(null);
   const [showBulkNPCDialog, setShowBulkNPCDialog] = useState(false);
