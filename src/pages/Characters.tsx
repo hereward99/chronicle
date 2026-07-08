@@ -295,7 +295,7 @@ export default function Characters() {
               <Wand2 className="w-4 h-4 mr-2" /> Wizard
             </Button>
             <CreateCharacterDialog>
-              <Button className="bg-gradient-blood hover:opacity-90 shadow-crimson">
+              <Button data-shortcut="new" className="bg-gradient-blood hover:opacity-90 shadow-crimson">
                 <Plus className="w-4 h-4 mr-2" /> Quick Create
               </Button>
             </CreateCharacterDialog>
