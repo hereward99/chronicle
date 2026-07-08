@@ -26,9 +26,11 @@ import { useSessions } from "@/hooks/useSessions";
 import { MentionText } from "@/components/mentions/MentionText";
 import { TextHighlight } from "@/components/ui/text-highlight";
 import { useSearchHighlight } from "@/hooks/useSearchHighlight";
+import { useRestorableState, useScrollRestore } from "@/hooks/useRestorableState";
 
 const Stories = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  useScrollRestore("/stories");
+  const [searchTerm, setSearchTerm] = useRestorableState("stories:search", "");
   const [viewingPlot, setViewingPlot] = useState<Plot | null>(null);
   const navigate = useNavigate();
   const [editingPlot, setEditingPlot] = useState<Plot | null>(null);
