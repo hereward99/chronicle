@@ -8,8 +8,11 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-/** Fires when the user presses `N` outside of any input; list pages listen and open their create dialog. */
-export const SHORTCUT_NEW_EVENT = "shortcut:new";
+/**
+ * The active list page marks its primary "new" trigger with data-shortcut="new".
+ * Pressing `N` outside inputs finds that element and clicks it.
+ */
+export const SHORTCUT_NEW_SELECTOR = '[data-shortcut="new"]';
 
 const isEditableTarget = (el: EventTarget | null) => {
   if (!(el instanceof HTMLElement)) return false;
