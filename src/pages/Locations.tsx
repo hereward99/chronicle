@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useRestorableState, useScrollRestore } from '@/hooks/useRestorableState';
 import { useNavigate } from 'react-router-dom';
 import { EmptyState } from '@/components/onboarding/EmptyState';
 import { LocationCardSkeleton } from '@/components/skeletons/CardSkeleton';
