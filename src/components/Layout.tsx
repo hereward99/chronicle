@@ -2,6 +2,7 @@ import { Navigation } from "./Navigation";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { OfflineBanner } from "./OfflineBanner";
 import { CommandPalette } from "./CommandPalette";
+import { KeyboardShortcuts } from "./KeyboardShortcuts";
 import { useChronicles } from "@/hooks/useChronicles";
 import { useEffect, useRef, useState } from "react";
 import { ChronicleSetupDialog } from "./onboarding/ChronicleSetupDialog";
