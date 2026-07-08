@@ -175,7 +175,7 @@ export default function Locations() {
               Manage places in your chronicle
             </p>
           </div>
-          <Button onClick={() => setCreateOpen(true)}>
+          <Button data-shortcut="new" onClick={() => setCreateOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Add Location
           </Button>
