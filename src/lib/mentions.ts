@@ -114,3 +114,27 @@ export function stripMentions(text: string | null | undefined): string {
   if (!text) return '';
   return text.replace(MENTION_REGEX, (_m, name) => `@${name}`);
 }
+
+/**
+ * Recursively normalize mention syntax in any JSON-serializable value.
+ * Used for plain-text export surfaces (JSON backups, clipboard payloads)
+ * where raw @[Name](type:uuid) codes are unreadable and the embedded IDs
+ * no longer resolve once data is re-imported under new IDs.
+ */
+export function stripMentionsDeep<T>(value: T): T {
+  if (typeof value === 'string') {
+    return (hasMentions(value) ? stripMentions(value) : value) as unknown as T;
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => stripMentionsDeep(item)) as unknown as T;
+  }
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
+      out[key] = stripMentionsDeep(val);
+    }
+    return out as unknown as T;
+  }
+  return value;
+}
+
