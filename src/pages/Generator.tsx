@@ -16,6 +16,7 @@ import { GenerateNPCDialog } from "@/components/dialogs/GenerateNPCDialog";
 import { NPCWizardDialog } from "@/components/dialogs/NPCWizardDialog";
 import { BulkNPCDialog } from "@/components/dialogs/BulkNPCDialog";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { copyText } from "@/lib/clipboard";
 
 type CreationMethod = "full" | "simple" | "general" | "standard";
 type CreatureType = "vampire" | "human" | "ghoul";
