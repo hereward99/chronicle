@@ -404,7 +404,7 @@ export default function Import() {
         notes: notesRes.data || [],
       };
 
-      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+      const blob = new Blob([JSON.stringify(stripMentionsDeep(backupData), null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

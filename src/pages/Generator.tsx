@@ -193,10 +193,10 @@ export default function Generator() {
 
   const copyToClipboard = () => {
     if (generatedData?.content) {
-      navigator.clipboard.writeText(generatedData.content);
-      notify.success("Copied", "Content copied to clipboard.");
+      copyText(generatedData.content, "Content");
     }
   };
+
 
   const generatorTypes = [
     { id: "scene", label: "Scene", icon: MapPin },
