@@ -172,7 +172,8 @@ export function useEntityCrud<T = unknown>(config: EntityCrudConfig<T>) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [config.queryKey] });
       config.extraInvalidate?.forEach(key => queryClient.invalidateQueries({ queryKey: key }));
-      notify.success(config.updateMessage || `${config.label} updated`);
+      const msg = resolveMessage(config.updateMessage, `${config.label} updated`);
+      notify.success(msg.title, msg.description);
     },
     onError: (error: any) => {
       notify.error(`Failed to update ${config.label.toLowerCase()}`, error.message);
@@ -188,7 +189,8 @@ export function useEntityCrud<T = unknown>(config: EntityCrudConfig<T>) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [config.queryKey] });
       config.extraInvalidate?.forEach(key => queryClient.invalidateQueries({ queryKey: key }));
-      notify.success(config.deleteMessage || `${config.label} deleted`);
+      const msg = resolveMessage(config.deleteMessage, `${config.label} deleted`);
+      notify.success(msg.title, msg.description);
     },
     onError: (error: any) => {
       notify.error(`Failed to delete ${config.label.toLowerCase()}`, error.message);
