@@ -72,7 +72,7 @@ export function useFactions(chronicleId?: string) {
       queryClient.invalidateQueries({ queryKey: ['characterFactions'] });
       notify.success("Character added to faction", "Character has been added to the faction.");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       notify.error("Error adding character to faction", error.message);
     },
   });
@@ -91,7 +91,7 @@ export function useFactions(chronicleId?: string) {
       queryClient.invalidateQueries({ queryKey: ['characterFactions'] });
       notify.success("Character removed from faction", "Character has been removed from the faction.");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       notify.error("Error removing character from faction", error.message);
     },
   });

@@ -77,8 +77,8 @@ export function useSessions() {
       );
       await Promise.all(updates);
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
-    } catch (error: any) {
-      notify.error("Error reordering sessions", error.message);
+    } catch (error) {
+      notify.error("Error reordering sessions", (error as Error).message);
     }
   };
 
