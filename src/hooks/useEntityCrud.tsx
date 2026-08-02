@@ -91,7 +91,7 @@ export function useEntityCrud<T = unknown>(config: EntityCrudConfig<T>) {
   const { data: items = [], isLoading: loading, error } = useQuery({
     queryKey: [config.queryKey, activeChronicleId],
     queryFn: async () => {
-      // Cast to any to avoid excessive PostgREST type instantiation when chaining.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let query: any = supabase
         .from(config.table)
         .select(config.select ?? '*');
