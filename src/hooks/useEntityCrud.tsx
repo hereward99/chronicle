@@ -37,10 +37,10 @@ export interface EntityCrudConfig<T = unknown> {
   undoDelete?: boolean;
   /** Override the create success toast. */
   createMessage?: MessageOverride;
-  /** Override the update success toast title. */
-  updateMessage?: string;
-  /** Override the delete success toast title. */
-  deleteMessage?: string;
+  /** Override the update success toast. */
+  updateMessage?: MessageOverride;
+  /** Override the delete success toast. */
+  deleteMessage?: MessageOverride;
 }
 
 function getEntityName(variables: Record<string, unknown>): string | undefined {
