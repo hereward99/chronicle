@@ -106,7 +106,10 @@ export function useCharacters() {
     queryKey: 'characters',
     label: 'Character',
     orderBy: { column: 'created_at', ascending: false },
-    transform: (row: any) => ({ ...row, attachments: row.attachments || [] }),
+    transform: (row: Record<string, unknown>) => ({
+      ...(row as Character),
+      attachments: (row.attachments as Character['attachments']) || [],
+    }),
   });
 
   const createCharacter = async (character: Omit<Character, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {

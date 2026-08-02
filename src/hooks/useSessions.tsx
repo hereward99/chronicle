@@ -37,7 +37,10 @@ export function useSessions() {
       { column: 'sort_order', ascending: true },
       { column: 'date_played', ascending: false },
     ],
-    transform: (row: any) => ({ ...row, attachments: row.attachments || [] }),
+    transform: (row: Record<string, unknown>) => ({
+      ...(row as Session),
+      attachments: (row.attachments as Session['attachments']) || [],
+    }),
     extraInvalidate: [['session-characters']],
     preDelete: async (id) => {
       const { error } = await supabase

@@ -23,7 +23,10 @@ export function usePlots() {
     label: 'Story',
     labelPlural: 'Stories',
     orderBy: { column: 'created_at', ascending: false },
-    transform: (row: any) => ({ ...row, attachments: row.attachments || [] }),
+    transform: (row: Record<string, unknown>) => ({
+      ...(row as Plot),
+      attachments: (row.attachments as Plot['attachments']) || [],
+    }),
     createMessage: (variables) => ({
       title: 'Story created',
       description: `${variables.title} has been added to your chronicle.`,
