@@ -38,8 +38,8 @@ export function useSessions() {
       { column: 'date_played', ascending: false },
     ],
     transform: (row: Record<string, unknown>) => ({
-      ...(row as Session),
-      attachments: (row.attachments as Session['attachments']) || [],
+      ...((row as unknown) as Session),
+      attachments: ((row.attachments as unknown) as Session['attachments']) || [],
     }),
     extraInvalidate: [['session-characters']],
     preDelete: async (id) => {

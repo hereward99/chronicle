@@ -24,8 +24,8 @@ export function usePlots() {
     labelPlural: 'Stories',
     orderBy: { column: 'created_at', ascending: false },
     transform: (row: Record<string, unknown>) => ({
-      ...(row as Plot),
-      attachments: (row.attachments as Plot['attachments']) || [],
+      ...((row as unknown) as Plot),
+      attachments: ((row.attachments as unknown) as Plot['attachments']) || [],
     }),
     createMessage: (variables) => ({
       title: 'Story created',

@@ -107,8 +107,8 @@ export function useCharacters() {
     label: 'Character',
     orderBy: { column: 'created_at', ascending: false },
     transform: (row: Record<string, unknown>) => ({
-      ...(row as Character),
-      attachments: (row.attachments as Character['attachments']) || [],
+      ...((row as unknown) as Character),
+      attachments: ((row.attachments as unknown) as Character['attachments']) || [],
     }),
   });
 
