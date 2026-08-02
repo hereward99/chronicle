@@ -1,7 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { notify } from "@/lib/notify";
-import { supabase } from '@/integrations/supabase/client';
-import { useChronicles } from './useChronicles';
+import { useEntityCrud } from './useEntityCrud';
 
 export interface Note {
   id: string;
@@ -15,93 +12,23 @@ export interface Note {
 }
 
 export function useNotes() {
-  const queryClient = useQueryClient();
-  const { currentChronicle } = useChronicles();
-  const chronicleId = currentChronicle?.id;
-
-  const { data: notes = [], isLoading: loading } = useQuery({
-    queryKey: ['notes', chronicleId],
-    queryFn: async () => {
-      if (!chronicleId) return [];
-      const { data, error } = await supabase
-        .from('notes')
-        .select('*')
-        .eq('chronicle_id', chronicleId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data as Note[] || [];
-    },
-    enabled: !!chronicleId,
-  });
-
-  const createNoteMutation = useMutation({
-    mutationFn: async (note: Omit<Note, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      const { data, error } = await supabase
-        .from('notes')
-        .insert([{ ...note, user_id: user.id }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['notes'] });
-      notify.success("Note created", `${variables.title} has been added to your chronicle.`);
-    },
-    onError: (error: any) => {
-      notify.error("Error creating note", error.message);
-    },
+  const { items: notes, loading, create, update, remove, refetch } = useEntityCrud<Note>({
+    table: 'notes',
+    queryKey: 'notes',
+    label: 'Note',
+    orderBy: { column: 'created_at', ascending: false },
   });
 
   const createNote = async (note: Omit<Note, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    return createNoteMutation.mutateAsync(note);
+    return create(note);
   };
 
-  const updateNoteMutation = useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; title?: string; content?: string | null; category?: string | null }) => {
-      const { data, error } = await supabase
-        .from('notes')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notes'] });
-      notify.success("Note updated");
-    },
-    onError: (error: any) => {
-      notify.error("Error updating note", error.message);
-    },
-  });
-
-  const deleteNoteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from('notes').delete().eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notes'] });
-      notify.success("Note deleted");
-    },
-    onError: (error: any) => {
-      notify.error("Error deleting note", error.message);
-    },
-  });
-
   const updateNote = async (id: string, updates: { title?: string; content?: string | null; category?: string | null }) => {
-    return updateNoteMutation.mutateAsync({ id, ...updates });
+    return update(id, updates);
   };
 
   const deleteNote = async (id: string) => {
-    return deleteNoteMutation.mutateAsync(id);
+    return remove(id);
   };
 
   return {
@@ -110,6 +37,6 @@ export function useNotes() {
     createNote,
     updateNote,
     deleteNote,
-    refetch: () => queryClient.invalidateQueries({ queryKey: ['notes'] }),
+    refetch,
   };
 }

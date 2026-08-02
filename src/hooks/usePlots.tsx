@@ -1,7 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { notify } from "@/lib/notify";
-import { supabase } from '@/integrations/supabase/client';
-import { useChronicles } from './useChronicles';
+import { useEntityCrud } from './useEntityCrud';
 
 export interface Plot {
   id: string;
@@ -20,102 +17,35 @@ export interface Plot {
 }
 
 export function usePlots() {
-  const queryClient = useQueryClient();
-  const { currentChronicle } = useChronicles();
-  const chronicleId = currentChronicle?.id;
-
-  const { data: plots = [], isLoading: loading } = useQuery({
-    queryKey: ['plots', chronicleId],
-    queryFn: async () => {
-      if (!chronicleId) return [];
-      const { data, error } = await supabase
-        .from('plots')
-        .select('*')
-        .eq('chronicle_id', chronicleId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return (data || []).map(plot => ({
-        ...plot,
-        attachments: plot.attachments || []
-      })) as Plot[];
-    },
-    enabled: !!chronicleId,
-  });
-
-  const createPlotMutation = useMutation({
-    mutationFn: async (plot: Omit<Plot, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      const { data, error } = await supabase
-        .from('plots')
-        .insert([{ ...plot, user_id: user.id }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['plots'] });
-      notify.success("Story created", `${variables.title} has been added to your chronicle.`);
-    },
-    onError: (error: any) => {
-      notify.error("Error creating story", error.message);
-    },
-  });
-
-  const updatePlotMutation = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Plot> }) => {
-      const { data, error } = await supabase
-        .from('plots')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['plots'] });
-      notify.success("Story updated", "Your story has been updated successfully.");
-    },
-    onError: (error: any) => {
-      notify.error("Error updating story", error.message);
-    },
-  });
-
-  const deletePlotMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('plots')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['plots'] });
-      notify.success("Story deleted", "The story has been removed from your chronicle.");
-    },
-    onError: (error: any) => {
-      notify.error("Error deleting story", error.message);
-    },
+  const { items: plots, loading, create, update, remove, refetch } = useEntityCrud<Plot>({
+    table: 'plots',
+    queryKey: 'plots',
+    label: 'Story',
+    labelPlural: 'Stories',
+    orderBy: { column: 'created_at', ascending: false },
+    transform: (row: any) => ({ ...row, attachments: row.attachments || [] }),
+    createMessage: (variables) => ({
+      title: 'Story created',
+      description: `${variables.title} has been added to your chronicle.`,
+    }),
+    updateMessage: 'Story updated',
+    deleteMessage: () => ({
+      title: 'Story deleted',
+      description: 'The story has been removed from your chronicle.',
+    }),
   });
 
   const createPlot = async (plot: Omit<Plot, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    return createPlotMutation.mutateAsync(plot);
+    return create(plot);
   };
 
   const updatePlot = async (id: string, updates: Partial<Plot>) => {
-    return updatePlotMutation.mutateAsync({ id, updates });
+    return update(id, updates);
   };
 
   const deletePlot = async (id: string) => {
-    return deletePlotMutation.mutateAsync(id);
+    return remove(id);
   };
 
-  return { plots, loading, createPlot, updatePlot, deletePlot, refetch: () => queryClient.invalidateQueries({ queryKey: ['plots'] }) };
+  return { plots, loading, createPlot, updatePlot, deletePlot, refetch };
 }

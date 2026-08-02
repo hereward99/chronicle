@@ -1,7 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { notify } from "@/lib/notify";
-import { supabase } from '@/integrations/supabase/client';
-import type { TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { useEntityCrud } from './useEntityCrud';
 
 export interface Boon {
   id: string;
@@ -23,97 +20,27 @@ export type BoonSeverity = 'trivial' | 'minor' | 'major' | 'life';
 export type BoonStatus = 'outstanding' | 'fulfilled' | 'forgiven';
 
 export function useBoons(chronicleId?: string) {
-  const queryClient = useQueryClient();
-
-  const { data: boons = [], isLoading: loading } = useQuery({
-    queryKey: ['boons', chronicleId],
-    queryFn: async () => {
-      if (!chronicleId) return [];
-
-      const { data, error } = await supabase
-        .from('boons')
-        .select('*')
-        .eq('chronicle_id', chronicleId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return (data as unknown as Boon[]) || [];
-    },
-    enabled: !!chronicleId,
-  });
-
-  const createBoonMutation = useMutation({
-    mutationFn: async (boon: Omit<Boon, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      const { data, error } = await supabase
-        .from('boons')
-        .insert([{ ...boon, user_id: user.id } as unknown as TablesInsert<'boons'>])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['boons'] });
-      notify.success("Boon created", "The boon has been recorded.");
-    },
-    onError: (error: Error) => {
-      notify.error("Error creating boon", error.message);
-    },
-  });
-
-  const updateBoonMutation = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Boon> }) => {
-      const { data, error } = await supabase
-        .from('boons')
-        .update(updates as unknown as TablesUpdate<'boons'>)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['boons'] });
-      notify.success("Boon updated", "The boon has been updated.");
-    },
-    onError: (error: Error) => {
-      notify.error("Error updating boon", error.message);
-    },
-  });
-
-  const deleteBoonMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('boons')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['boons'] });
-      notify.success("Boon deleted", "The boon has been removed.");
-    },
-    onError: (error: Error) => {
-      notify.error("Error deleting boon", error.message);
-    },
+  const { items: boons, loading, create, update, remove, refetch } = useEntityCrud<Boon>({
+    table: 'boons',
+    queryKey: 'boons',
+    label: 'Boon',
+    chronicleId,
+    orderBy: { column: 'created_at', ascending: false },
+    createMessage: 'Boon created',
+    updateMessage: 'Boon updated',
+    deleteMessage: 'Boon deleted',
   });
 
   const createBoon = async (boon: Omit<Boon, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    return createBoonMutation.mutateAsync(boon);
+    return create(boon);
   };
 
   const updateBoon = async (id: string, updates: Partial<Boon>) => {
-    return updateBoonMutation.mutateAsync({ id, updates });
+    return update(id, updates);
   };
 
   const deleteBoon = async (id: string) => {
-    return deleteBoonMutation.mutateAsync(id);
+    return remove(id);
   };
 
   const getBoonsHeld = (characterId: string) => {
@@ -137,6 +64,6 @@ export function useBoons(chronicleId?: string) {
     getBoonsHeld,
     getDebtsOwed,
     getBoonsForCharacter,
-    refetch: () => queryClient.invalidateQueries({ queryKey: ['boons'] }),
+    refetch,
   };
 }
