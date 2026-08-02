@@ -59,6 +59,19 @@ function buildDescription(
     : `A new ${plural.toLowerCase()} has been added to your chronicle.`;
 }
 
+function resolveMessage(
+  override: MessageOverride | undefined,
+  defaultTitle: string
+): { title: string; description?: string } {
+  if (typeof override === 'function') {
+    return override({});
+  }
+  if (typeof override === 'string') {
+    return { title: override };
+  }
+  return { title: defaultTitle };
+}
+
 /**
  * Shared CRUD factory for chronicle-scoped entities.
  *
