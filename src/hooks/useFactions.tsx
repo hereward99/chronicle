@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notify } from "@/lib/notify";
 import { supabase } from '@/integrations/supabase/client';
+import { useEntityCrud } from './useEntityCrud';
+
 export interface Faction {
   id: string;
   chronicle_id: string;
@@ -23,19 +25,19 @@ export interface CharacterFaction {
 export function useFactions(chronicleId?: string) {
   const queryClient = useQueryClient();
 
-  const { data: factions = [], isLoading: loading } = useQuery({
-    queryKey: ['factions', chronicleId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('factions')
-        .select('*')
-        .eq('chronicle_id', chronicleId!)
-        .order('name', { ascending: true });
-
-      if (error) throw error;
-      return data as Faction[] || [];
-    },
-    enabled: !!chronicleId,
+  const {
+    items: factions,
+    loading,
+    create,
+    update,
+    remove,
+    refetch,
+  } = useEntityCrud<Faction>({
+    table: 'factions',
+    queryKey: 'factions',
+    label: 'Faction',
+    chronicleId,
+    orderBy: { column: 'name', ascending: true },
   });
 
   const factionIds = factions.map(f => f.id);
@@ -55,68 +57,6 @@ export function useFactions(chronicleId?: string) {
     enabled: !!chronicleId && factionIds.length > 0,
   });
 
-  const createFactionMutation = useMutation({
-    mutationFn: async (faction: Omit<Faction, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      const { data, error } = await supabase
-        .from('factions')
-        .insert([{ ...faction, user_id: user.id }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['factions'] });
-      notify.success("Faction created", "New faction has been added.");
-    },
-    onError: (error: any) => {
-      notify.error("Error creating faction", error.message);
-    },
-  });
-
-  const updateFactionMutation = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Faction> }) => {
-      const { data, error } = await supabase
-        .from('factions')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['factions'] });
-      notify.success("Faction updated", "Faction has been successfully updated.");
-    },
-    onError: (error: any) => {
-      notify.error("Error updating faction", error.message);
-    },
-  });
-
-  const deleteFactionMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('factions')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['factions'] });
-      notify.success("Faction deleted", "Faction has been successfully deleted.");
-    },
-    onError: (error: any) => {
-      notify.error("Error deleting faction", error.message);
-    },
-  });
-
   const addCharacterToFactionMutation = useMutation({
     mutationFn: async ({ characterId, factionId, role }: { characterId: string; factionId: string; role?: string }) => {
       const { data, error } = await supabase
@@ -132,7 +72,7 @@ export function useFactions(chronicleId?: string) {
       queryClient.invalidateQueries({ queryKey: ['characterFactions'] });
       notify.success("Character added to faction", "Character has been added to the faction.");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       notify.error("Error adding character to faction", error.message);
     },
   });
@@ -151,21 +91,21 @@ export function useFactions(chronicleId?: string) {
       queryClient.invalidateQueries({ queryKey: ['characterFactions'] });
       notify.success("Character removed from faction", "Character has been removed from the faction.");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       notify.error("Error removing character from faction", error.message);
     },
   });
 
   const createFaction = async (faction: Omit<Faction, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    return createFactionMutation.mutateAsync(faction);
+    return create(faction);
   };
 
   const updateFaction = async (id: string, updates: Partial<Faction>) => {
-    return updateFactionMutation.mutateAsync({ id, updates });
+    return update(id, updates);
   };
 
   const deleteFaction = async (id: string) => {
-    return deleteFactionMutation.mutateAsync(id);
+    return remove(id);
   };
 
   const addCharacterToFaction = async (characterId: string, factionId: string, role?: string) => {
