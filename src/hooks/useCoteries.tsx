@@ -79,7 +79,7 @@ export function useCoteries(chronicleId?: string) {
       queryClient.invalidateQueries({ queryKey: ['coterie_members'] });
       notify.success("Member added", "Character has been added to the coterie.");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       notify.error("Error adding member", error.message);
     },
   });
@@ -98,7 +98,7 @@ export function useCoteries(chronicleId?: string) {
       queryClient.invalidateQueries({ queryKey: ['coterie_members'] });
       notify.success("Member removed", "Character has been removed from the coterie.");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       notify.error("Error removing member", error.message);
     },
   });
@@ -132,8 +132,8 @@ export function useCoteries(chronicleId?: string) {
 
       if (error) throw error;
       return data.map(m => m.character_id);
-    } catch (error: any) {
-      notify.error("Error fetching members", error.message);
+    } catch (error) {
+      notify.error("Error fetching members", (error as Error).message);
       return [];
     }
   };
@@ -155,8 +155,8 @@ export function useCoteries(chronicleId?: string) {
 
       queryClient.invalidateQueries({ queryKey: ['coteries'] });
       notify.success("Primary coterie set", "This coterie will appear at the centre of the relationship map.");
-    } catch (error: any) {
-      notify.error("Error setting primary coterie", error.message);
+    } catch (error) {
+      notify.error("Error setting primary coterie", (error as Error).message);
     }
   };
 
