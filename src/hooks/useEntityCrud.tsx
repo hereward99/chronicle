@@ -214,7 +214,7 @@ export function useEntityCrud<T = unknown>(config: EntityCrudConfig<T>) {
             }
           },
           onUndo: () => resolve(),
-          successMessage: config.deleteMessage || `${config.label} deleted`,
+          successMessage: resolveMessage(config.deleteMessage, `${config.label} deleted`).title,
           errorMessage: `Failed to delete ${config.label.toLowerCase()}`,
         });
       });
