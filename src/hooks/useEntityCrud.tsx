@@ -133,7 +133,7 @@ export function useEntityCrud<T = unknown>(config: EntityCrudConfig<T>) {
       }
       const { data, error } = await supabase
         .from(config.table)
-        .insert(payload as any)
+        .insert(payload as Record<string, unknown>)
         .select()
         .single();
       if (error) throw error;
@@ -162,7 +162,7 @@ export function useEntityCrud<T = unknown>(config: EntityCrudConfig<T>) {
     mutationFn: async ({ id, updates }: { id: string; updates: Record<string, unknown> }) => {
       const { data, error } = await supabase
         .from(config.table)
-        .update(updates as any)
+        .update(updates as Record<string, unknown>)
         .eq('id', id)
         .select()
         .single();
