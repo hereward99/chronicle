@@ -153,7 +153,7 @@ export function useEntityCrud<T = unknown>(config: EntityCrudConfig<T>) {
         );
       }
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       notify.error(`Failed to create ${config.label.toLowerCase()}`, error.message);
     },
   });
@@ -175,7 +175,7 @@ export function useEntityCrud<T = unknown>(config: EntityCrudConfig<T>) {
       const msg = resolveMessage(config.updateMessage, `${config.label} updated`);
       notify.success(msg.title, msg.description);
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       notify.error(`Failed to update ${config.label.toLowerCase()}`, error.message);
     },
   });
@@ -192,7 +192,7 @@ export function useEntityCrud<T = unknown>(config: EntityCrudConfig<T>) {
       const msg = resolveMessage(config.deleteMessage, `${config.label} deleted`);
       notify.success(msg.title, msg.description);
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       notify.error(`Failed to delete ${config.label.toLowerCase()}`, error.message);
     },
   });
