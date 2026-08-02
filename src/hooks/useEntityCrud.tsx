@@ -78,7 +78,8 @@ export function useEntityCrud<T = unknown>(config: EntityCrudConfig<T>) {
   const { data: items = [], isLoading: loading, error } = useQuery({
     queryKey: [config.queryKey, activeChronicleId],
     queryFn: async () => {
-      let query = supabase
+      // Cast to any to avoid excessive PostgREST type instantiation when chaining.
+      let query: any = supabase
         .from(config.table)
         .select(config.select ?? '*');
 
