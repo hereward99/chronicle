@@ -142,6 +142,7 @@ export function GroupMembersPanel({
           <Button
             type="button"
             onClick={handleAdd}
+            offlineDisabled
             disabled={isDisabled || !selectedCharacterId}
             size="icon"
           >
