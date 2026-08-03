@@ -286,7 +286,7 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
                   }
                 }}
               />
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleAddItem}>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleAddItem} offlineDisabled>
                 <Check className="h-4 w-4" />
               </Button>
               <Button 
