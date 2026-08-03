@@ -269,13 +269,16 @@ export function CreateChecklistDialog({ children, defaultPlotId }: CreateCheckli
             </div>
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={!title.trim()}>
-              Create Checklist
-            </Button>
+          <DialogFooter className="sm:justify-between">
+            <DraftSavedIndicator status={draftStatus} lastSavedAt={draftSavedAt} className="self-center" />
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={!title.trim()}>
+                Create Checklist
+              </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>
