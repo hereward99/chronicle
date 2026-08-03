@@ -185,6 +185,7 @@ export function GroupMembersPanel({
                     type="button"
                     variant="ghost"
                     size="icon"
+                    offlineDisabled
                     onClick={() => handleRemove(character.id)}
                     disabled={isDisabled}
                     className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
