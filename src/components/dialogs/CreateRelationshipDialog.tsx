@@ -201,6 +201,13 @@ export function CreateRelationshipDialog({
     notes: "",
   });
 
+  const { clearDraft, status: draftStatus, lastSavedAt: draftSavedAt } = useFormDraft(
+    'create-relationship',
+    formData,
+    setFormData,
+    { enabled: open }
+  );
+
   // Apply pre-filled defaults each time the dialog opens
   useEffect(() => {
     if (open) {
