@@ -237,16 +237,20 @@ export function CreateBoonDialog({
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleSubmit} 
-            disabled={isSubmitting || !description.trim() || (mode === "held" ? !debtorId : !creditorId)}
-          >
-            {isSubmitting ? "Creating..." : "Create Boon"}
-          </Button>
+        <DialogFooter className="sm:justify-between">
+          <DraftSavedIndicator status={draftStatus} lastSavedAt={draftSavedAt} className="self-center" />
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              offlineDisabled
+              disabled={isSubmitting || !description.trim() || (mode === "held" ? !debtorId : !creditorId)}
+            >
+              {isSubmitting ? "Creating..." : "Create Boon"}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
