@@ -79,7 +79,7 @@ export function Navigation() {
           </div>
 
           {/* Search shortcut */}
-          <div className="px-4 pt-4">
+          <div className="px-4 pt-4 space-y-2">
             <button
               onClick={() => {
                 window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
@@ -92,6 +92,9 @@ export function Navigation() {
                 ⌘K
               </kbd>
             </button>
+            <p className="px-1 text-[11px] text-muted-foreground/70 text-center">
+              Press <kbd className="px-1 rounded border border-border bg-muted text-[10px]">?</kbd> for shortcuts
+            </p>
           </div>
 
           {/* Navigation Items */}
