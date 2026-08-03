@@ -14,6 +14,8 @@ import { Relationship } from "@/hooks/useRelationships";
 import { Character } from "@/hooks/useCharacters";
 import { Check, ChevronsUpDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftSavedIndicator } from "@/components/DraftSavedIndicator";
 
 interface CreateRelationshipDialogProps {
   open: boolean;
