@@ -306,6 +306,7 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
               variant="ghost"
               size="sm"
               className="w-full mt-2 text-muted-foreground hover:text-foreground"
+              offlineDisabled
               onClick={() => setIsAddingItem(true)}
             >
               <Plus className="h-4 w-4 mr-2" />
