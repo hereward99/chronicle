@@ -152,6 +152,7 @@ export function BoonsSection({ character, characters, editable = false }: BoonsS
                 <Button 
                   variant="ghost" 
                   size="sm" 
+                  offlineDisabled
                   onClick={() => setCreateMode("owed")}
                   className="h-7 text-xs"
                 >
