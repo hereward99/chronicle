@@ -248,6 +248,7 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6"
+                        offlineDisabled
                         onClick={() => handleStartEdit(item.id, item.text)}
                       >
                         <Pencil className="h-3 w-3" />
@@ -256,7 +257,8 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6 text-destructive hover:text-destructive"
-                        onClick={() => deleteItem(item.id)}
+                        offlineDisabled
+                        onClick={() => handleDeleteItem(item.id)}
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
