@@ -126,6 +126,7 @@ export function CreateChecklistDialog({ children, defaultPlotId }: CreateCheckli
     setItems([]);
     setNewItemText("");
     setTemplateItemsSelected(new Set());
+    clearDraft();
   };
 
   const currentTemplate = selectedTemplate 
