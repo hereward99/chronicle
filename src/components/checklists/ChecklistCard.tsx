@@ -178,6 +178,7 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
                 </DropdownMenuSub>
                 <DropdownMenuItem 
                   onClick={() => setDeleteDialogOpen(true)}
+                  disabled={!isOnline}
                   className="text-destructive focus:text-destructive"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
