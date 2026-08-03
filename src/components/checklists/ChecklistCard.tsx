@@ -150,15 +150,15 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setEditDialogOpen(true)}>
+                <DropdownMenuItem onClick={() => setEditDialogOpen(true)} disabled={!isOnline}>
                   <Pencil className="h-4 w-4 mr-2" />
                   Edit Checklist
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleMarkAllComplete}>
+                <DropdownMenuItem onClick={handleMarkAllComplete} disabled={!isOnline}>
                   <CheckSquare className="h-4 w-4 mr-2" />
                   Mark All Complete
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleMarkAllIncomplete}>
+                <DropdownMenuItem onClick={handleMarkAllIncomplete} disabled={!isOnline}>
                   <Square className="h-4 w-4 mr-2" />
                   Mark All Incomplete
                 </DropdownMenuItem>
