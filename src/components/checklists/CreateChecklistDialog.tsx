@@ -57,6 +57,8 @@ export function CreateChecklistDialog({ children, defaultPlotId }: CreateCheckli
     { enabled: open }
   );
 
+  const handleSelectTemplate = (templateKey: string) => {
+    setSelectedTemplate(templateKey);
     const template = CHECKLIST_TEMPLATES[templateKey as keyof typeof CHECKLIST_TEMPLATES];
     if (template) {
       setTitle(template.name);
