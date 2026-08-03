@@ -28,6 +28,7 @@ import {
 import { SessionChecklist, useChecklists } from "@/hooks/useChecklists";
 import { EditChecklistDialog } from "@/components/checklists/EditChecklistDialog";
 import { exportChecklistToPDF } from "@/lib/pdfExport";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { 
   MoreVertical, 
   Plus, 
@@ -57,12 +58,15 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
   const [editingItemText, setEditingItemText] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const { isOnline, requireOnline } = useOnlineStatus();
+
 
   const completedCount = checklist.items.filter(item => item.is_completed).length;
   const totalCount = checklist.items.length;
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   const handleAddItem = async () => {
+    if (!requireOnline("Adding an item")) return;
     if (newItemText.trim()) {
       await addItem(checklist.id, newItemText.trim());
       setNewItemText("");
@@ -71,11 +75,13 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
   };
 
   const handleStartEdit = (itemId: string, text: string) => {
+    if (!requireOnline("Editing an item")) return;
     setEditingItemId(itemId);
     setEditingItemText(text);
   };
 
   const handleSaveEdit = async () => {
+    if (!requireOnline("Saving an item")) return;
     if (editingItemId && editingItemText.trim()) {
       await updateItem(editingItemId, editingItemText.trim());
       setEditingItemId(null);
@@ -88,12 +94,24 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
     setEditingItemText("");
   };
 
+  const handleDeleteItem = (itemId: string) => {
+    if (!requireOnline("Deleting an item")) return;
+    deleteItem(itemId);
+  };
+
+  const handleToggleItem = (itemId: string, checked: boolean) => {
+    if (!requireOnline("Updating the checklist")) return;
+    toggleItem(itemId, checked);
+  };
+
   const handleDeleteChecklist = async () => {
+    if (!requireOnline("Deleting the checklist")) return;
     await deleteChecklist(checklist.id);
     setDeleteDialogOpen(false);
   };
 
   const handleMarkAllComplete = () => {
+    if (!requireOnline("Updating the checklist")) return;
     checklist.items.forEach(item => {
       if (!item.is_completed) {
         toggleItem(item.id, true);
@@ -102,6 +120,7 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
   };
 
   const handleMarkAllIncomplete = () => {
+    if (!requireOnline("Updating the checklist")) return;
     checklist.items.forEach(item => {
       if (item.is_completed) {
         toggleItem(item.id, false);
@@ -131,15 +150,15 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setEditDialogOpen(true)}>
+                <DropdownMenuItem onClick={() => setEditDialogOpen(true)} disabled={!isOnline}>
                   <Pencil className="h-4 w-4 mr-2" />
                   Edit Checklist
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleMarkAllComplete}>
+                <DropdownMenuItem onClick={handleMarkAllComplete} disabled={!isOnline}>
                   <CheckSquare className="h-4 w-4 mr-2" />
                   Mark All Complete
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleMarkAllIncomplete}>
+                <DropdownMenuItem onClick={handleMarkAllIncomplete} disabled={!isOnline}>
                   <Square className="h-4 w-4 mr-2" />
                   Mark All Incomplete
                 </DropdownMenuItem>
@@ -159,6 +178,7 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
                 </DropdownMenuSub>
                 <DropdownMenuItem 
                   onClick={() => setDeleteDialogOpen(true)}
+                  disabled={!isOnline}
                   className="text-destructive focus:text-destructive"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
@@ -187,7 +207,9 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
               >
                 <Checkbox
                   checked={item.is_completed}
-                  onCheckedChange={(checked) => toggleItem(item.id, checked as boolean)}
+                  onCheckedChange={(checked) => handleToggleItem(item.id, checked as boolean)}
+                  disabled={!isOnline}
+                  title={!isOnline ? "You're offline — reconnect to continue" : undefined}
                   className="shrink-0"
                 />
                 
@@ -203,7 +225,7 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
                         if (e.key === 'Escape') handleCancelEdit();
                       }}
                     />
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleSaveEdit}>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleSaveEdit} offlineDisabled>
                       <Check className="h-3 w-3" />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleCancelEdit}>
@@ -226,6 +248,7 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6"
+                        offlineDisabled
                         onClick={() => handleStartEdit(item.id, item.text)}
                       >
                         <Pencil className="h-3 w-3" />
@@ -234,7 +257,8 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6 text-destructive hover:text-destructive"
-                        onClick={() => deleteItem(item.id)}
+                        offlineDisabled
+                        onClick={() => handleDeleteItem(item.id)}
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
@@ -262,7 +286,7 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
                   }
                 }}
               />
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleAddItem}>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleAddItem} offlineDisabled>
                 <Check className="h-4 w-4" />
               </Button>
               <Button 
@@ -282,6 +306,7 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
               variant="ghost"
               size="sm"
               className="w-full mt-2 text-muted-foreground hover:text-foreground"
+              offlineDisabled
               onClick={() => setIsAddingItem(true)}
             >
               <Plus className="h-4 w-4 mr-2" />

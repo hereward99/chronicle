@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftSavedIndicator } from "@/components/DraftSavedIndicator";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -35,6 +37,25 @@ export function CreateChecklistDialog({ children, defaultPlotId }: CreateCheckli
 
   const { createChecklist } = useChecklists();
   const { plots } = usePlots();
+
+  const draftData = useMemo(
+    () => ({ title, notes, plotId, selectedTemplate, items, templateItemsSelected: Array.from(templateItemsSelected) }),
+    [title, notes, plotId, selectedTemplate, items, templateItemsSelected],
+  );
+  const applyDraft = (d: typeof draftData) => {
+    setTitle(d.title ?? "");
+    setNotes(d.notes ?? "");
+    setPlotId(d.plotId ?? null);
+    setSelectedTemplate(d.selectedTemplate ?? null);
+    setItems(d.items ?? []);
+    setTemplateItemsSelected(new Set(d.templateItemsSelected ?? []));
+  };
+  const { clearDraft, status: draftStatus, lastSavedAt: draftSavedAt } = useFormDraft(
+    'create-checklist',
+    draftData,
+    applyDraft,
+    { enabled: open }
+  );
 
   const handleSelectTemplate = (templateKey: string) => {
     setSelectedTemplate(templateKey);
@@ -105,6 +126,7 @@ export function CreateChecklistDialog({ children, defaultPlotId }: CreateCheckli
     setItems([]);
     setNewItemText("");
     setTemplateItemsSelected(new Set());
+    clearDraft();
   };
 
   const currentTemplate = selectedTemplate 
@@ -247,13 +269,16 @@ export function CreateChecklistDialog({ children, defaultPlotId }: CreateCheckli
             </div>
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={!title.trim()}>
-              Create Checklist
-            </Button>
+          <DialogFooter className="sm:justify-between">
+            <DraftSavedIndicator status={draftStatus} lastSavedAt={draftSavedAt} className="self-center" />
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={!title.trim()}>
+                Create Checklist
+              </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>

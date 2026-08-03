@@ -14,6 +14,8 @@ import { Relationship } from "@/hooks/useRelationships";
 import { Character } from "@/hooks/useCharacters";
 import { Check, ChevronsUpDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftSavedIndicator } from "@/components/DraftSavedIndicator";
 
 interface CreateRelationshipDialogProps {
   open: boolean;
@@ -199,6 +201,13 @@ export function CreateRelationshipDialog({
     notes: "",
   });
 
+  const { clearDraft, status: draftStatus, lastSavedAt: draftSavedAt } = useFormDraft(
+    'create-relationship',
+    formData,
+    setFormData,
+    { enabled: open }
+  );
+
   // Apply pre-filled defaults each time the dialog opens
   useEffect(() => {
     if (open) {
@@ -234,6 +243,7 @@ export function CreateRelationshipDialog({
       notes: "",
     });
     setTargetIds([]);
+    clearDraft();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -449,17 +459,20 @@ export function CreateRelationshipDialog({
             </p>
           )}
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading
-                ? "Creating..."
-                : bulkMode
-                  ? `Create ${targetIds.length || ''} Relationship${targetIds.length === 1 ? '' : 's'}`.trim()
-                  : "Create Relationship"}
-            </Button>
+          <div className="flex items-center justify-between gap-2 pt-4">
+            <DraftSavedIndicator status={draftStatus} lastSavedAt={draftSavedAt} />
+            <div className="flex space-x-2">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading
+                  ? "Creating..."
+                  : bulkMode
+                    ? `Create ${targetIds.length || ''} Relationship${targetIds.length === 1 ? '' : 's'}`.trim()
+                    : "Create Relationship"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>

@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftSavedIndicator } from "@/components/DraftSavedIndicator";
 import {
   Dialog,
   DialogContent,
@@ -55,6 +57,26 @@ export function CreateBoonDialog({
   const [sessionId, setSessionId] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const draftData = useMemo(
+    () => ({ creditorId, debtorId, severity, description, notes, plotId, sessionId }),
+    [creditorId, debtorId, severity, description, notes, plotId, sessionId],
+  );
+  const applyDraft = (d: typeof draftData) => {
+    setCreditorId(d.creditorId ?? "");
+    setDebtorId(d.debtorId ?? "");
+    setSeverity(d.severity ?? "minor");
+    setDescription(d.description ?? "");
+    setNotes(d.notes ?? "");
+    setPlotId(d.plotId ?? "");
+    setSessionId(d.sessionId ?? "");
+  };
+  const { clearDraft, status: draftStatus, lastSavedAt: draftSavedAt } = useFormDraft(
+    `create-boon:${mode}:${characterId}`,
+    draftData,
+    applyDraft,
+    { enabled: open }
+  );
+
   // Filter to only show other characters (not the current one)
   const otherCharacters = characters.filter(c => c.id !== characterId);
 
@@ -102,6 +124,7 @@ export function CreateBoonDialog({
     setNotes("");
     setPlotId("");
     setSessionId("");
+    clearDraft();
   };
 
   const title = mode === "held" 
@@ -180,12 +203,12 @@ export function CreateBoonDialog({
           {/* Story link */}
           <div className="space-y-2">
             <Label>Story (optional)</Label>
-            <Select value={plotId} onValueChange={setPlotId}>
+            <Select value={plotId || "__none__"} onValueChange={(v) => setPlotId(v === "__none__" ? "" : v)}>
               <SelectTrigger>
                 <SelectValue placeholder="Link to a story..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="__none__">None</SelectItem>
                 {plots.map(plot => (
                   <SelectItem key={plot.id} value={plot.id}>
                     {plot.title}
@@ -198,12 +221,12 @@ export function CreateBoonDialog({
           {/* Session link */}
           <div className="space-y-2">
             <Label>Session (optional)</Label>
-            <Select value={sessionId} onValueChange={setSessionId}>
+            <Select value={sessionId || "__none__"} onValueChange={(v) => setSessionId(v === "__none__" ? "" : v)}>
               <SelectTrigger>
                 <SelectValue placeholder="Link to a session..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="__none__">None</SelectItem>
                 {filteredSessions.map(session => (
                   <SelectItem key={session.id} value={session.id}>
                     {session.title}
@@ -214,16 +237,20 @@ export function CreateBoonDialog({
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleSubmit} 
-            disabled={isSubmitting || !description.trim() || (mode === "held" ? !debtorId : !creditorId)}
-          >
-            {isSubmitting ? "Creating..." : "Create Boon"}
-          </Button>
+        <DialogFooter className="sm:justify-between">
+          <DraftSavedIndicator status={draftStatus} lastSavedAt={draftSavedAt} className="self-center" />
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              offlineDisabled
+              disabled={isSubmitting || !description.trim() || (mode === "held" ? !debtorId : !creditorId)}
+            >
+              {isSubmitting ? "Creating..." : "Create Boon"}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
