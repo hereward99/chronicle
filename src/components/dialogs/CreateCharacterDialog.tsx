@@ -10,6 +10,8 @@ import { Plus } from "lucide-react";
 import { z } from "zod";
 import { Card } from "@/components/ui/card";
 import { PortraitGenerator } from "@/components/character/PortraitGenerator";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftSavedIndicator } from "@/components/DraftSavedIndicator";
 
 const MORTAL_TEMPLATES = {
   none: { pool: 0, health: 0, willpower: 0, label: "Custom (full attributes)" },
