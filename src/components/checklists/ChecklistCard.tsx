@@ -225,7 +225,7 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
                         if (e.key === 'Escape') handleCancelEdit();
                       }}
                     />
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleSaveEdit}>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleSaveEdit} offlineDisabled>
                       <Check className="h-3 w-3" />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleCancelEdit}>
