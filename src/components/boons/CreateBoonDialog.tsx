@@ -124,6 +124,7 @@ export function CreateBoonDialog({
     setNotes("");
     setPlotId("");
     setSessionId("");
+    clearDraft();
   };
 
   const title = mode === "held" 
