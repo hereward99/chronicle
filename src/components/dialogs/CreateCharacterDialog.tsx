@@ -62,6 +62,13 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
   
   const { createCharacter } = useCharacters();
   const { currentChronicle, createDefaultChronicle } = useChronicles();
+  const { clearDraft, status: draftStatus, lastSavedAt: draftSavedAt } = useFormDraft(
+    'create-character',
+    formData,
+    setFormData,
+    { enabled: open }
+  );
+
   const clearFieldError = (field: string) => {
     setErrors(prev => {
       const next = { ...prev };
