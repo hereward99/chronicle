@@ -142,7 +142,8 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
         avatarUrl: null,
         mortalTemplate: "none",
       });
-      
+      clearDraft();
+
       setOpen(false);
     } catch (error) {
       if (error instanceof z.ZodError) {
