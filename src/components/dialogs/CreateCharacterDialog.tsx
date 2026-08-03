@@ -350,13 +350,16 @@ export function CreateCharacterDialog({ children }: CreateCharacterDialogProps) 
             />
           </div>
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
-              Cancel
-            </Button>
-            <Button type="submit" className="bg-gradient-blood hover:opacity-90" disabled={loading}>
-              {loading ? "Creating..." : "Create Character"}
-            </Button>
+          <div className="flex items-center justify-between gap-2 pt-4">
+            <DraftSavedIndicator status={draftStatus} lastSavedAt={draftSavedAt} />
+            <div className="flex space-x-2">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-gradient-blood hover:opacity-90" disabled={loading}>
+                {loading ? "Creating..." : "Create Character"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
