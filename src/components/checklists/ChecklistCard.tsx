@@ -28,6 +28,7 @@ import {
 import { SessionChecklist, useChecklists } from "@/hooks/useChecklists";
 import { EditChecklistDialog } from "@/components/checklists/EditChecklistDialog";
 import { exportChecklistToPDF } from "@/lib/pdfExport";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { 
   MoreVertical, 
   Plus, 
