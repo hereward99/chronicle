@@ -38,8 +38,25 @@ export function CreateChecklistDialog({ children, defaultPlotId }: CreateCheckli
   const { createChecklist } = useChecklists();
   const { plots } = usePlots();
 
-  const handleSelectTemplate = (templateKey: string) => {
-    setSelectedTemplate(templateKey);
+  const draftData = useMemo(
+    () => ({ title, notes, plotId, selectedTemplate, items, templateItemsSelected: Array.from(templateItemsSelected) }),
+    [title, notes, plotId, selectedTemplate, items, templateItemsSelected],
+  );
+  const applyDraft = (d: typeof draftData) => {
+    setTitle(d.title ?? "");
+    setNotes(d.notes ?? "");
+    setPlotId(d.plotId ?? null);
+    setSelectedTemplate(d.selectedTemplate ?? null);
+    setItems(d.items ?? []);
+    setTemplateItemsSelected(new Set(d.templateItemsSelected ?? []));
+  };
+  const { clearDraft, status: draftStatus, lastSavedAt: draftSavedAt } = useFormDraft(
+    'create-checklist',
+    draftData,
+    applyDraft,
+    { enabled: open }
+  );
+
     const template = CHECKLIST_TEMPLATES[templateKey as keyof typeof CHECKLIST_TEMPLATES];
     if (template) {
       setTitle(template.name);
