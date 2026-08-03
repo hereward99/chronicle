@@ -57,6 +57,26 @@ export function CreateBoonDialog({
   const [sessionId, setSessionId] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const draftData = useMemo(
+    () => ({ creditorId, debtorId, severity, description, notes, plotId, sessionId }),
+    [creditorId, debtorId, severity, description, notes, plotId, sessionId],
+  );
+  const applyDraft = (d: typeof draftData) => {
+    setCreditorId(d.creditorId ?? "");
+    setDebtorId(d.debtorId ?? "");
+    setSeverity(d.severity ?? "minor");
+    setDescription(d.description ?? "");
+    setNotes(d.notes ?? "");
+    setPlotId(d.plotId ?? "");
+    setSessionId(d.sessionId ?? "");
+  };
+  const { clearDraft, status: draftStatus, lastSavedAt: draftSavedAt } = useFormDraft(
+    `create-boon:${mode}:${characterId}`,
+    draftData,
+    applyDraft,
+    { enabled: open }
+  );
+
   // Filter to only show other characters (not the current one)
   const otherCharacters = characters.filter(c => c.id !== characterId);
 
