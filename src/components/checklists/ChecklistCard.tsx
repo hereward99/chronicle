@@ -207,7 +207,9 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
               >
                 <Checkbox
                   checked={item.is_completed}
-                  onCheckedChange={(checked) => toggleItem(item.id, checked as boolean)}
+                  onCheckedChange={(checked) => handleToggleItem(item.id, checked as boolean)}
+                  disabled={!isOnline}
+                  title={!isOnline ? "You're offline — reconnect to continue" : undefined}
                   className="shrink-0"
                 />
                 
