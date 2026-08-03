@@ -459,17 +459,20 @@ export function CreateRelationshipDialog({
             </p>
           )}
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading
-                ? "Creating..."
-                : bulkMode
-                  ? `Create ${targetIds.length || ''} Relationship${targetIds.length === 1 ? '' : 's'}`.trim()
-                  : "Create Relationship"}
-            </Button>
+          <div className="flex items-center justify-between gap-2 pt-4">
+            <DraftSavedIndicator status={draftStatus} lastSavedAt={draftSavedAt} />
+            <div className="flex space-x-2">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading
+                  ? "Creating..."
+                  : bulkMode
+                    ? `Create ${targetIds.length || ''} Relationship${targetIds.length === 1 ? '' : 's'}`.trim()
+                    : "Create Relationship"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
