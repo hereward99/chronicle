@@ -203,12 +203,12 @@ export function CreateBoonDialog({
           {/* Story link */}
           <div className="space-y-2">
             <Label>Story (optional)</Label>
-            <Select value={plotId} onValueChange={setPlotId}>
+            <Select value={plotId || "__none__"} onValueChange={(v) => setPlotId(v === "__none__" ? "" : v)}>
               <SelectTrigger>
                 <SelectValue placeholder="Link to a story..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="__none__">None</SelectItem>
                 {plots.map(plot => (
                   <SelectItem key={plot.id} value={plot.id}>
                     {plot.title}
@@ -221,12 +221,12 @@ export function CreateBoonDialog({
           {/* Session link */}
           <div className="space-y-2">
             <Label>Session (optional)</Label>
-            <Select value={sessionId} onValueChange={setSessionId}>
+            <Select value={sessionId || "__none__"} onValueChange={(v) => setSessionId(v === "__none__" ? "" : v)}>
               <SelectTrigger>
                 <SelectValue placeholder="Link to a session..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="__none__">None</SelectItem>
                 {filteredSessions.map(session => (
                   <SelectItem key={session.id} value={session.id}>
                     {session.title}
