@@ -243,6 +243,7 @@ export function CreateRelationshipDialog({
       notes: "",
     });
     setTargetIds([]);
+    clearDraft();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
