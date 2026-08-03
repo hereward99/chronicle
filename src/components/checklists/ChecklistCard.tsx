@@ -66,6 +66,7 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   const handleAddItem = async () => {
+    if (!requireOnline("Adding an item")) return;
     if (newItemText.trim()) {
       await addItem(checklist.id, newItemText.trim());
       setNewItemText("");
@@ -74,11 +75,13 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
   };
 
   const handleStartEdit = (itemId: string, text: string) => {
+    if (!requireOnline("Editing an item")) return;
     setEditingItemId(itemId);
     setEditingItemText(text);
   };
 
   const handleSaveEdit = async () => {
+    if (!requireOnline("Saving an item")) return;
     if (editingItemId && editingItemText.trim()) {
       await updateItem(editingItemId, editingItemText.trim());
       setEditingItemId(null);
@@ -91,12 +94,24 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
     setEditingItemText("");
   };
 
+  const handleDeleteItem = (itemId: string) => {
+    if (!requireOnline("Deleting an item")) return;
+    deleteItem(itemId);
+  };
+
+  const handleToggleItem = (itemId: string, checked: boolean) => {
+    if (!requireOnline("Updating the checklist")) return;
+    toggleItem(itemId, checked);
+  };
+
   const handleDeleteChecklist = async () => {
+    if (!requireOnline("Deleting the checklist")) return;
     await deleteChecklist(checklist.id);
     setDeleteDialogOpen(false);
   };
 
   const handleMarkAllComplete = () => {
+    if (!requireOnline("Updating the checklist")) return;
     checklist.items.forEach(item => {
       if (!item.is_completed) {
         toggleItem(item.id, true);
@@ -105,6 +120,7 @@ export function ChecklistCard({ checklist, toggleItem, addItem, updateItem, dele
   };
 
   const handleMarkAllIncomplete = () => {
+    if (!requireOnline("Updating the checklist")) return;
     checklist.items.forEach(item => {
       if (item.is_completed) {
         toggleItem(item.id, false);
