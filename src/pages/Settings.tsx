@@ -302,6 +302,18 @@ export default function Settings() {
                   No notes yet. Add your first development note above.
                 </p>
               )}
+
+              {import.meta.env.DEV && (
+                <div className="pt-2 border-t border-border">
+                  <Link
+                    to="/dev/kitchen-sink"
+                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <FlaskConical className="h-4 w-4" />
+                    Open kitchen-sink component reference
+                  </Link>
+                </div>
+              )}
             </CardContent>
           </Card>
 
