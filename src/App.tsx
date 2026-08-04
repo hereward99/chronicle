@@ -26,6 +26,7 @@ import SessionDetail from "./pages/SessionDetail";
 import LocationDetail from "./pages/LocationDetail";
 import CoterieDetail from "./pages/CoterieDetail";
 import FactionDetail from "./pages/FactionDetail";
+import KitchenSink from "./pages/KitchenSink";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -169,6 +170,9 @@ const App = () => (
             <Route path="/locations/:id" element={<ProtectedRoute><Layout><LocationDetail /></Layout></ProtectedRoute>} />
             <Route path="/coteries/:id" element={<ProtectedRoute><Layout><CoterieDetail /></Layout></ProtectedRoute>} />
             <Route path="/factions/:id" element={<ProtectedRoute><Layout><FactionDetail /></Layout></ProtectedRoute>} />
+            {import.meta.env.DEV && (
+              <Route path="/dev/kitchen-sink" element={<Layout><KitchenSink /></Layout>} />
+            )}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
