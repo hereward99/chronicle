@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useDevNotes } from '@/hooks/useDevNotes';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ChronicleDate } from '@/components/ChronicleDate';
@@ -10,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 
 import { useGeneratorSettings } from '@/hooks/useGeneratorSettings';
-import { Bot, AtSign, ClipboardList, Plus, X, Check, RotateCcw } from 'lucide-react';
+import { Bot, AtSign, ClipboardList, Plus, X, Check, RotateCcw, FlaskConical } from 'lucide-react';
 import { GuidedTour } from '@/components/onboarding/GuidedTour';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
