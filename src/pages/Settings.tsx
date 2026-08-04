@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useDevNotes } from '@/hooks/useDevNotes';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ChronicleDate } from '@/components/ChronicleDate';
@@ -10,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 
 import { useGeneratorSettings } from '@/hooks/useGeneratorSettings';
-import { Bot, AtSign, ClipboardList, Plus, X, Check, RotateCcw } from 'lucide-react';
+import { Bot, AtSign, ClipboardList, Plus, X, Check, RotateCcw, FlaskConical } from 'lucide-react';
 import { GuidedTour } from '@/components/onboarding/GuidedTour';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -300,6 +301,18 @@ export default function Settings() {
                 <p className="text-sm text-muted-foreground text-center py-4">
                   No notes yet. Add your first development note above.
                 </p>
+              )}
+
+              {import.meta.env.DEV && (
+                <div className="pt-2 border-t border-border">
+                  <Link
+                    to="/dev/kitchen-sink"
+                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <FlaskConical className="h-4 w-4" />
+                    Open kitchen-sink component reference
+                  </Link>
+                </div>
               )}
             </CardContent>
           </Card>
