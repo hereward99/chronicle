@@ -317,9 +317,10 @@ export default function KitchenSink() {
             variant="outline"
             onClick={() =>
               notify.undo({
-                message: "Note deleted",
+                description: "Note deleted",
+                perform: () => undefined,
                 onUndo: () => notify.success("Restored"),
-                onCommit: () => undefined,
+                successMessage: "Note deleted",
               })
             }
           >
