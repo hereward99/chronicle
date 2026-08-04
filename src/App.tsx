@@ -26,6 +26,7 @@ import SessionDetail from "./pages/SessionDetail";
 import LocationDetail from "./pages/LocationDetail";
 import CoterieDetail from "./pages/CoterieDetail";
 import FactionDetail from "./pages/FactionDetail";
+import KitchenSink from "./pages/KitchenSink";
 
 const queryClient = new QueryClient({
   defaultOptions: {
