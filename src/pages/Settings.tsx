@@ -9,17 +9,36 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-import { useGeneratorSettings } from '@/hooks/useGeneratorSettings';
-import { Bot, AtSign, ClipboardList, Plus, X, Check, RotateCcw, FlaskConical } from 'lucide-react';
+import { useGeneratorSettings, type AIProvider } from '@/hooks/useGeneratorSettings';
+import { GOOGLE_MODELS, testGoogleKey } from '@/lib/gemini';
+import { notify } from '@/lib/notify';
+import { Bot, AtSign, ClipboardList, Plus, X, Check, RotateCcw, FlaskConical, Eye, EyeOff } from 'lucide-react';
 import { GuidedTour } from '@/components/onboarding/GuidedTour';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
 
 
 export default function Settings() {
   const { settings: generatorSettings, updateSettings: updateGeneratorSettings } = useGeneratorSettings();
   const { requireOnline } = useOnlineStatus();
   const [showTour, setShowTour] = useState(false);
+  const [showGoogleKey, setShowGoogleKey] = useState(false);
+  const [testingKey, setTestingKey] = useState(false);
+
+  const handleTestGoogleKey = async () => {
+    setTestingKey(true);
+    try {
+      await testGoogleKey(generatorSettings.googleApiKey, generatorSettings.googleModel);
+      notify.success('Key works', 'Google AI accepted your API key.');
+    } catch (error) {
+      notify.error('Key test failed', error instanceof Error ? error.message : 'Unknown error');
+    } finally {
+      setTestingKey(false);
+    }
+  };
+
 
   // Dev notes (Supabase-backed)
   const { devNotes, addNote, toggleNote, removeNote } = useDevNotes();
@@ -70,21 +89,95 @@ export default function Settings() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="use-local-llm">Use Local LLM (Ollama)</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Generate content using a local Ollama instance instead of cloud AI.
-                  </p>
-                </div>
-                <Switch
-                  id="use-local-llm"
-                  checked={generatorSettings.useLocalLLM}
-                  onCheckedChange={(checked) => updateGeneratorSettings({ useLocalLLM: checked })}
-                />
+              <div className="space-y-2">
+                <Label htmlFor="ai-provider">AI Provider</Label>
+                <Select
+                  value={generatorSettings.provider}
+                  onValueChange={(value) => updateGeneratorSettings({ provider: value as AIProvider })}
+                >
+                  <SelectTrigger id="ai-provider">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="lovable">Built-in AI (no setup needed)</SelectItem>
+                    <SelectItem value="google">Google AI (your own API key)</SelectItem>
+                    <SelectItem value="ollama">Local LLM (Ollama)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  {generatorSettings.provider === 'lovable' && 'Uses the app’s shared AI service. Nothing to configure.'}
+                  {generatorSettings.provider === 'google' && 'Calls Google Gemini directly from your browser using your own key, billed to your Google account.'}
+                  {generatorSettings.provider === 'ollama' && 'Runs generation against a local Ollama instance on your machine.'}
+                </p>
               </div>
 
-              {generatorSettings.useLocalLLM && (
+              {generatorSettings.provider === 'google' && (
+                <div className="space-y-4 pt-4 border-t border-border">
+                  <div className="space-y-2">
+                    <Label htmlFor="google-api-key">Google API Key</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="google-api-key"
+                        type={showGoogleKey ? 'text' : 'password'}
+                        autoComplete="off"
+                        placeholder="AIza..."
+                        value={generatorSettings.googleApiKey}
+                        onChange={(e) => updateGeneratorSettings({ googleApiKey: e.target.value })}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        aria-label={showGoogleKey ? 'Hide API key' : 'Show API key'}
+                        onClick={() => setShowGoogleKey((v) => !v)}
+                      >
+                        {showGoogleKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Get a free key at{' '}
+                      <a
+                        href="https://aistudio.google.com/app/apikey"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary underline underline-offset-2"
+                      >
+                        aistudio.google.com
+                      </a>
+                      . Stored in this browser only — never sent to our servers or database. Anyone with access to this
+                      browser profile can read it, so restrict the key in Google AI Studio.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="google-model">Model</Label>
+                    <Select
+                      value={generatorSettings.googleModel}
+                      onValueChange={(value) => updateGeneratorSettings({ googleModel: value })}
+                    >
+                      <SelectTrigger id="google-model">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {GOOGLE_MODELS.map((m) => (
+                          <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={testingKey || !generatorSettings.googleApiKey.trim()}
+                    onClick={handleTestGoogleKey}
+                  >
+                    {testingKey ? 'Testing…' : 'Test key'}
+                  </Button>
+                </div>
+              )}
+
+              {generatorSettings.provider === 'ollama' && (
                 <div className="space-y-4 pt-4 border-t border-border">
                   <div className="space-y-2">
                     <Label htmlFor="ollama-url">Ollama URL</Label>
@@ -113,6 +206,7 @@ export default function Settings() {
                 </div>
               )}
             </CardContent>
+
           </Card>
 
           {/* Mentions & Cross-References */}

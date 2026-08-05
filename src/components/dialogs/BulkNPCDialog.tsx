@@ -19,6 +19,7 @@ import { useCoteries } from "@/hooks/useCoteries";
 import { useFactions } from "@/hooks/useFactions";
 import { useGeneratorSettings } from "@/hooks/useGeneratorSettings";
 import { generateWithOllama } from "@/lib/ollama";
+import { generateWithGoogle } from "@/lib/gemini";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { NPCWizardDialog } from "@/components/dialogs/NPCWizardDialog";
 
@@ -181,8 +182,10 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
     prompt += ` Status: ${npcStatus}.`;
 
     let data;
-    if (generatorSettings.useLocalLLM) {
+    if (generatorSettings.provider === 'ollama') {
       data = await generateWithOllama(prompt, "npc", generatorSettings.ollamaUrl, generatorSettings.ollamaModel);
+    } else if (generatorSettings.provider === 'google') {
+      data = await generateWithGoogle(prompt, "bulk-npc", generatorSettings.googleApiKey, generatorSettings.googleModel);
     } else {
       const { data: edgeData, error } = await supabase.functions.invoke('generate-content', {
         body: { prompt, contentType: "bulk-npc" }
@@ -191,6 +194,7 @@ export function BulkNPCDialog({ open, onOpenChange }: BulkNPCDialogProps) {
       if (edgeData?.error) throw new Error(edgeData.error);
       data = edgeData;
     }
+
 
     if (!data?.parsed) throw new Error("Failed to parse generated content");
 
