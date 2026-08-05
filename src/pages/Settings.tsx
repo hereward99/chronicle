@@ -9,17 +9,36 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-import { useGeneratorSettings } from '@/hooks/useGeneratorSettings';
-import { Bot, AtSign, ClipboardList, Plus, X, Check, RotateCcw, FlaskConical } from 'lucide-react';
+import { useGeneratorSettings, type AIProvider } from '@/hooks/useGeneratorSettings';
+import { GOOGLE_MODELS, testGoogleKey } from '@/lib/gemini';
+import { notify } from '@/lib/notify';
+import { Bot, AtSign, ClipboardList, Plus, X, Check, RotateCcw, FlaskConical, Eye, EyeOff } from 'lucide-react';
 import { GuidedTour } from '@/components/onboarding/GuidedTour';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
 
 
 export default function Settings() {
   const { settings: generatorSettings, updateSettings: updateGeneratorSettings } = useGeneratorSettings();
   const { requireOnline } = useOnlineStatus();
   const [showTour, setShowTour] = useState(false);
+  const [showGoogleKey, setShowGoogleKey] = useState(false);
+  const [testingKey, setTestingKey] = useState(false);
+
+  const handleTestGoogleKey = async () => {
+    setTestingKey(true);
+    try {
+      await testGoogleKey(generatorSettings.googleApiKey, generatorSettings.googleModel);
+      notify.success('Key works', 'Google AI accepted your API key.');
+    } catch (error) {
+      notify.error('Key test failed', error instanceof Error ? error.message : 'Unknown error');
+    } finally {
+      setTestingKey(false);
+    }
+  };
+
 
   // Dev notes (Supabase-backed)
   const { devNotes, addNote, toggleNote, removeNote } = useDevNotes();
