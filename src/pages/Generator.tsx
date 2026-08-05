@@ -12,6 +12,7 @@ import { useCharacters } from "@/hooks/useCharacters";
 import { usePlots } from "@/hooks/usePlots";
 import { useGeneratorSettings } from "@/hooks/useGeneratorSettings";
 import { generateWithOllama } from "@/lib/ollama";
+import { generateWithGoogle } from "@/lib/gemini";
 import { GenerateNPCDialog } from "@/components/dialogs/GenerateNPCDialog";
 import { NPCWizardDialog } from "@/components/dialogs/NPCWizardDialog";
 import { BulkNPCDialog } from "@/components/dialogs/BulkNPCDialog";
@@ -57,7 +58,7 @@ export default function Generator() {
 
   const generateContent = async () => {
     if (!prompt.trim()) return;
-    if (!generatorSettings.useLocalLLM && !requireOnline("Generate content")) return;
+    if (generatorSettings.provider === 'lovable' && !requireOnline("Generate content")) return;
     
     setIsGenerating(true);
     setGeneratedData(null);
@@ -66,13 +67,21 @@ export default function Generator() {
     try {
       let data;
 
-      if (generatorSettings.useLocalLLM) {
+      if (generatorSettings.provider === 'ollama') {
         // Use local Ollama
         data = await generateWithOllama(
           prompt,
           activeTab,
           generatorSettings.ollamaUrl,
           generatorSettings.ollamaModel
+        );
+      } else if (generatorSettings.provider === 'google') {
+        // Use the user's own Google API key, straight from the browser
+        data = await generateWithGoogle(
+          prompt,
+          activeTab,
+          generatorSettings.googleApiKey,
+          generatorSettings.googleModel
         );
       } else {
         // Use cloud AI via edge function
@@ -102,7 +111,7 @@ export default function Generator() {
       
       // Provide helpful hints for common Ollama errors
       let description = errorMessage;
-      if (generatorSettings.useLocalLLM && errorMessage.includes('Failed to fetch')) {
+      if (generatorSettings.provider === 'ollama' && errorMessage.includes('Failed to fetch')) {
         description = "Cannot connect to Ollama. Make sure it's running with CORS enabled: OLLAMA_ORIGINS=* ollama serve";
       }
       
@@ -111,6 +120,7 @@ export default function Generator() {
       setIsGenerating(false);
     }
   };
+
 
   const saveToChronicle = async () => {
     if (!generatedData?.parsed || !currentChronicle) {

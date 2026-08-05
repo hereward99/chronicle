@@ -10,6 +10,7 @@ import { Sparkles, RefreshCw, ArrowRight, Bot, Cloud } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useGeneratorSettings } from "@/hooks/useGeneratorSettings";
 import { generateWithOllama } from "@/lib/ollama";
+import { generateWithGoogle } from "@/lib/gemini";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 type CreationMethod = "full" | "simple" | "general" | "standard";
@@ -106,12 +107,19 @@ export function GenerateNPCDialog({ open, onOpenChange, onComplete }: GenerateNP
         enhancedPrompt = `${enhancedPrompt} Note: This is a quick NPC, focus on concept, personality, and key disciplines. Attributes and skills can be minimal.`;
       }
 
-      if (generatorSettings.useLocalLLM) {
+      if (generatorSettings.provider === 'ollama') {
         data = await generateWithOllama(
           enhancedPrompt,
           "npc",
           generatorSettings.ollamaUrl,
           generatorSettings.ollamaModel
+        );
+      } else if (generatorSettings.provider === 'google') {
+        data = await generateWithGoogle(
+          enhancedPrompt,
+          "npc",
+          generatorSettings.googleApiKey,
+          generatorSettings.googleModel
         );
       } else {
         const { data: edgeData, error } = await supabase.functions.invoke('generate-content', {
@@ -128,6 +136,7 @@ export function GenerateNPCDialog({ open, onOpenChange, onComplete }: GenerateNP
 
         data = edgeData;
       }
+
 
       if (data?.parsed) {
         // Ensure the clan matches the selected creature type
