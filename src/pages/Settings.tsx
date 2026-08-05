@@ -105,7 +105,7 @@ export default function Settings() {
                   </SelectContent>
                 </Select>
                 <p className="text-sm text-muted-foreground">
-                  {generatorSettings.provider === 'lovable' && 'Uses the app\u2019s shared AI service. Nothing to configure.'}
+                  {generatorSettings.provider === 'lovable' && 'Uses the app’s shared AI service. Nothing to configure.'}
                   {generatorSettings.provider === 'google' && 'Calls Google Gemini directly from your browser using your own key, billed to your Google account.'}
                   {generatorSettings.provider === 'ollama' && 'Runs generation against a local Ollama instance on your machine.'}
                 </p>
@@ -144,7 +144,7 @@ export default function Settings() {
                       >
                         aistudio.google.com
                       </a>
-                      . Stored in this browser only \u2014 never sent to our servers or database. Anyone with access to this
+                      . Stored in this browser only — never sent to our servers or database. Anyone with access to this
                       browser profile can read it, so restrict the key in Google AI Studio.
                     </p>
                   </div>
@@ -172,7 +172,7 @@ export default function Settings() {
                     disabled={testingKey || !generatorSettings.googleApiKey.trim()}
                     onClick={handleTestGoogleKey}
                   >
-                    {testingKey ? 'Testing\u2026' : 'Test key'}
+                    {testingKey ? 'Testing…' : 'Test key'}
                   </Button>
                 </div>
               )}
