@@ -20,8 +20,14 @@ const defaultSettings: GeneratorSettings = {
   ollamaUrl: 'http://localhost:11434',
   ollamaModel: 'llama3.2',
   googleApiKey: '',
-  googleModel: 'gemini-2.5-flash',
+  googleModel: 'gemini-3.5-flash',
 };
+
+const DEPRECATED_GOOGLE_MODELS = new Set([
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
+  'gemini-2.5-pro',
+]);
 
 function migrate(raw: Partial<GeneratorSettings>): GeneratorSettings {
   const merged = { ...defaultSettings, ...raw };
@@ -29,6 +35,9 @@ function migrate(raw: Partial<GeneratorSettings>): GeneratorSettings {
     merged.provider = raw.useLocalLLM ? 'ollama' : 'lovable';
   }
   merged.useLocalLLM = merged.provider === 'ollama';
+  if (merged.provider === 'google' && DEPRECATED_GOOGLE_MODELS.has(merged.googleModel)) {
+    merged.googleModel = defaultSettings.googleModel;
+  }
   return merged;
 }
 
