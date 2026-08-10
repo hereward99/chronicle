@@ -7,9 +7,9 @@ interface GeminiResponse {
 }
 
 export const GOOGLE_MODELS = [
-  { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (fast, cheap)' },
-  { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite (fastest)' },
-  { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (best quality)' },
+  { value: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash (latest standard)' },
+  { value: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash Lite (fastest)' },
+  { value: 'gemini-3.1-pro', label: 'Gemini 3.1 Pro (best quality)' },
 ];
 
 function cleanJsonResponse(content: string): string {
@@ -57,7 +57,7 @@ export async function generateWithGoogle(
   }
 
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-    model || 'gemini-2.5-flash'
+    model || 'gemini-3.5-flash'
   )}:generateContent`;
 
   let response: Response;
@@ -107,7 +107,7 @@ export async function generateWithGoogle(
 /** Lightweight key check used by the "Test key" button in Settings. */
 export async function testGoogleKey(apiKey: string, model: string): Promise<void> {
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-    model || 'gemini-2.5-flash'
+    model || 'gemini-3.5-flash'
   )}:generateContent`;
 
   let response: Response;
