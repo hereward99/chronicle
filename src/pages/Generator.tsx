@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Copy, RefreshCw, Users, BookOpen, MapPin, Scroll, Save, Check, Bot, Cloud } from "lucide-react";
+import { Sparkles, Copy, RefreshCw, Users, BookOpen, MapPin, Scroll, Save, Check, Bot, Cloud, Key } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useChronicles } from "@/hooks/useChronicles";
 import { useCharacters } from "@/hooks/useCharacters";
@@ -232,15 +232,20 @@ export default function Generator() {
           <p className="text-muted-foreground flex flex-wrap items-center gap-2">
             <span>Generate scenes, NPCs, and stories for your chronicle</span>
             <Badge variant="outline" className="text-xs">
-              {generatorSettings.useLocalLLM ? (
+              {generatorSettings.provider === 'ollama' ? (
                 <>
                   <Bot className="h-3 w-3 mr-1" />
                   Ollama ({generatorSettings.ollamaModel})
                 </>
+              ) : generatorSettings.provider === 'google' ? (
+                <>
+                  <Key className="h-3 w-3 mr-1" />
+                  Google Gemini ({generatorSettings.googleModel})
+                </>
               ) : (
                 <>
                   <Cloud className="h-3 w-3 mr-1" />
-                  Cloud AI
+                  Built-in AI
                 </>
               )}
             </Badge>

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Lightbulb } from "lucide-react";
 
 interface EmptyStateProps {
   icon: React.ReactNode;
@@ -18,8 +19,9 @@ export function EmptyState({ icon, title, description, tip, action, className }:
       <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
       <p className="text-sm text-muted-foreground leading-relaxed mb-1">{description}</p>
       {tip && (
-        <p className="text-xs text-muted-foreground mt-2 bg-card border border-border rounded-lg px-3 py-2">
-          💡 {tip}
+        <p className="text-xs text-muted-foreground mt-2 bg-card border border-border rounded-lg px-3 py-2 flex items-center gap-1.5">
+          <Lightbulb className="h-3 w-3 text-primary shrink-0" />
+          {tip}
         </p>
       )}
       {action && <div className="mt-5">{action}</div>}
