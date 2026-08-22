@@ -153,7 +153,7 @@ export default function Chronicle() {
 
         <EntityCard variant="panel">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Plots</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Stories</CardTitle>
             <BookOpen className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
@@ -165,7 +165,7 @@ export default function Chronicle() {
             {statsLoading ? (
               <Skeleton className="h-3 w-20" />
             ) : (
-              <p className="text-xs text-muted-foreground">{stats.plots.active} active plots</p>
+              <p className="text-xs text-muted-foreground">{stats.plots.active} active stories</p>
             )}
           </CardContent>
         </EntityCard>

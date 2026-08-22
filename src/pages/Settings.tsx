@@ -337,17 +337,26 @@ export default function Settings() {
                 />
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex gap-1.5 flex-1 flex-wrap">
+                <ToggleGroup
+                  type="single"
+                  value={newNoteCategory}
+                  onValueChange={(value) => value && setNewNoteCategory(value as DevNoteCategory)}
+                  className="flex-1 flex-wrap justify-start"
+                >
                   {(['idea', 'feature', 'fix', 'change'] as const).map(cat => (
-                    <button
+                    <ToggleGroupItem
                       key={cat}
-                      onClick={() => setNewNoteCategory(cat)}
-                      className={`px-2.5 py-1 rounded-full text-xs font-medium border capitalize transition-all ${categoryColors[cat]} ${newNoteCategory === cat ? 'ring-2 ring-ring ring-offset-1 ring-offset-background' : 'opacity-60 hover:opacity-100'}`}
+                      value={cat}
+                      size="sm"
+                      className={cn(
+                        "rounded-full text-xs font-medium border capitalize transition-all data-[state=off]:opacity-60 data-[state=off]:hover:opacity-100",
+                        categoryColors[cat]
+                      )}
                     >
                       {cat}
-                    </button>
+                    </ToggleGroupItem>
                   ))}
-                </div>
+                </ToggleGroup>
                 <Button size="sm" onClick={addDevNote} disabled={!newNoteText.trim()}>
                   <Plus className="h-4 w-4 mr-1" />
                   Add
