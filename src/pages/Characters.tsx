@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Search, Users, Wand2, X, ChevronDown, UsersRound, Flag, Edit, UserPlus } from "lucide-react";
+import { Plus, Search, Users, Wand2, X, ChevronDown, UsersRound, Flag, Edit, UserPlus, Filter } from "lucide-react";
 import { BulkNPCDialog } from "@/components/dialogs/BulkNPCDialog";
 import { useCharacters, Character } from "@/hooks/useCharacters";
 import { useFactions, Faction } from "@/hooks/useFactions";
@@ -92,6 +92,7 @@ export default function Characters() {
   const [editFactionDialogOpen, setEditFactionDialogOpen] = useState(false);
   const [selectedFaction, setSelectedFaction] = useState<Faction | null>(null);
   const [manageMembersDialogOpen, setManageMembersDialogOpen] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   const { characters, loading, updateCharacter, deleteCharacter } = useCharacters();
   const { currentChronicle } = useChronicles();
@@ -312,7 +313,122 @@ export default function Characters() {
           </div>
 
           {/* Filter / Group / Sort Toolbar */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-col sm:hidden gap-2">
+            <Collapsible open={showMobileFilters} onOpenChange={setShowMobileFilters}>
+              <div className="flex items-center gap-2">
+                <CollapsibleTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-9">
+                    <Filter className="h-4 w-4 mr-1" />
+                    Filters
+                    {hasActiveFilters && <span className="ml-1.5 w-2 h-2 rounded-full bg-primary" />}
+                  </Button>
+                </CollapsibleTrigger>
+                {hasActiveFilters && (
+                  <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9 px-2 text-muted-foreground hover:text-foreground">
+                    <X className="h-4 w-4 mr-1" /> Clear
+                  </Button>
+                )}
+              </div>
+              <CollapsibleContent className="mt-2">
+                <div className="flex flex-wrap items-center gap-2 p-3 rounded-lg bg-gradient-subtle border border-border">
+                  <Select value={toolbar.filterType} onValueChange={v => setFilter("filterType", v)}>
+                    <SelectTrigger className="w-[120px] h-9 text-sm bg-input border-border"><SelectValue placeholder="Type" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__all__">All Types</SelectItem>
+                      <SelectItem value="PC">PC</SelectItem>
+                      <SelectItem value="NPC">NPC</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={toolbar.filterClan} onValueChange={v => setFilter("filterClan", v)}>
+                    <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border"><SelectValue placeholder="Clan" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__all__">All Clans</SelectItem>
+                      {filterOptions.clans.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={toolbar.filterStatus} onValueChange={v => setFilter("filterStatus", v)}>
+                    <SelectTrigger className="w-[130px] h-9 text-sm bg-input border-border"><SelectValue placeholder="Status" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__all__">All Statuses</SelectItem>
+                      {filterOptions.statuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+
+                  {coteries.length > 0 && (
+                    <Select value={toolbar.filterCoterie} onValueChange={v => setFilter("filterCoterie", v)}>
+                      <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border"><SelectValue placeholder="Coterie" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__all__">All Coteries</SelectItem>
+                        {coteries.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  )}
+
+                  {factions.length > 0 && (
+                    <Select value={toolbar.filterFaction} onValueChange={v => setFilter("filterFaction", v)}>
+                      <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border"><SelectValue placeholder="Faction" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__all__">All Factions</SelectItem>
+                        {factions.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  )}
+
+                  {plots.length > 0 && (
+                    <Select value={toolbar.filterStory} onValueChange={v => setFilter("filterStory", v)}>
+                      <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border"><SelectValue placeholder="Story" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__all__">All Stories</SelectItem>
+                        {plots.map(p => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  )}
+
+                  {filterOptions.sires.length > 0 && (
+                    <Select value={toolbar.filterSire} onValueChange={v => setFilter("filterSire", v)}>
+                      <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border"><SelectValue placeholder="Sire" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__all__">All Sires</SelectItem>
+                        {filterOptions.sires.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  )}
+
+                  <div className="h-6 w-px bg-border mx-1 hidden sm:block" />
+
+                  <Select value={toolbar.groupBy} onValueChange={v => setFilter("groupBy", v)}>
+                    <SelectTrigger className="w-[140px] h-9 text-sm bg-input border-border"><SelectValue placeholder="Group by" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">No Grouping</SelectItem>
+                      <SelectItem value="clan">Group by Clan</SelectItem>
+                      <SelectItem value="status">Group by Status</SelectItem>
+                      <SelectItem value="type">Group by Type</SelectItem>
+                      <SelectItem value="coterie">Group by Coterie</SelectItem>
+                      <SelectItem value="faction">Group by Faction</SelectItem>
+                      <SelectItem value="sire">Group by Sire</SelectItem>
+                      <SelectItem value="generation">Group by Generation</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={toolbar.sortBy} onValueChange={v => setFilter("sortBy", v)}>
+                    <SelectTrigger className="w-[150px] h-9 text-sm bg-input border-border"><SelectValue placeholder="Sort by" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name-asc">Name (A–Z)</SelectItem>
+                      <SelectItem value="name-desc">Name (Z–A)</SelectItem>
+                      <SelectItem value="clan">Clan</SelectItem>
+                      <SelectItem value="status">Status</SelectItem>
+                      <SelectItem value="updated">Recently Updated</SelectItem>
+                      <SelectItem value="generation">Generation</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          </div>
+
+          <div className="hidden sm:flex flex-wrap items-center gap-2">
             <Select value={toolbar.filterType} onValueChange={v => setFilter("filterType", v)}>
               <SelectTrigger className="w-[120px] h-9 text-sm bg-input border-border"><SelectValue placeholder="Type" /></SelectTrigger>
               <SelectContent>
