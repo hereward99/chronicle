@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 import { useGeneratorSettings, type AIProvider } from '@/hooks/useGeneratorSettings';
 import { GOOGLE_MODELS, testGoogleKey } from '@/lib/gemini';
