@@ -214,7 +214,7 @@ export default function Chronicle() {
         </EntityCard>
       </div>
 
-      {/* Recent Activity and Active Plots */}
+      {/* Recent Activity and Active Stories */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <EntityCard variant="panel">
           <CardHeader>
@@ -258,7 +258,7 @@ export default function Chronicle() {
 
         <EntityCard variant="panel">
           <CardHeader>
-            <CardTitle className="text-foreground">Active Plots</CardTitle>
+            <CardTitle className="text-foreground">Active Stories</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {plotsLoading ? (
