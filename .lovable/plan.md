@@ -82,14 +82,19 @@ Each phase ends in a reviewable state; nothing is removed until its replacement 
 - New surface/elevation tokens added to `index.css` and `tailwind.config.ts`; `mem://design/tokens` updated in the same phase.
 - Existing routes, detail pages, keyboard shortcuts, offline guards, draft autosave and PDF export all carry over unchanged.
 
-## 7. Delivery as a separate project
+## 7. Delivery as a separate project (decided)
 
-Yes — V2 can be built as a new project so this one (V1) stays untouched and available. Two decisions follow:
+V2 will be a **separate Lovable project** sharing V1's Supabase database, so kindred-chronicle-scribe stays available and untouched.
 
-**Moving the code.** The clean path is: connect this project to GitHub, then create a new Lovable project from that repo (or start the new project and paste in the source tree). The entire frontend ports as-is; the redesign work then happens only in the new project.
+**One manual step is yours — I cannot create a new project from inside this one:**
 
-**The data is the real decision.** Your chronicles live in this project's Supabase backend, not in the code. Options:
-- **Shared database (recommended):** connect the new project to the *same* Supabase backend. V1 and V2 then read and write identical chronicle data — you can open either app against your real games. Schema additions (e.g. `session_beats`) apply to the shared database and remain harmless to V1, which simply never reads them.
-- **Fresh database:** the new project gets its own backend. Clean and zero-risk to V1, but V2 starts empty; you would seed it via the existing Import feature or keep it for design evaluation only.
+1. In this project: click the project name (top left) → Settings → **Remix this project**. Remix copies the full codebase into a new project in your workspace. (The GitHub connection is a valid alternative — you could create a new project from that repo — but Remix is the one-click path and does not depend on the repo being fully in sync.)
+2. In the new project: connect it to the **same external Supabase project** (ref `ffnqzcmzuofzzodufsbm`) via the Supabase integration, using the shared-database approach we agreed.
+3. Open a chat in the new project and we start Phase 1 (shell) there.
 
-Recommendation: shared database, and ship Phase 1 (shell) first so you can flip between V1 and V2 on real data from day one.
+**Rules for the shared database:**
+- V1 and V2 read/write identical chronicle data. New schema V2 needs (e.g. `session_beats`) is additive only — no renames, no drops, no type changes to existing tables — so V1 never breaks.
+- V2's new tables get GRANTs + chronicle-scoped RLS identical in shape to existing tables.
+- Destructive schema changes stay off-limits unless both apps are updated in the same step.
+
+**Working agreement:** after the remix, all V2 work happens in the new project. This V1 project then only receives critical fixes (if any) until you retire it.
