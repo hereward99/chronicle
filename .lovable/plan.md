@@ -81,3 +81,15 @@ Each phase ends in a reviewable state; nothing is removed until its replacement 
 - Loose ends promote into the existing `checklists` tables rather than a new mechanism.
 - New surface/elevation tokens added to `index.css` and `tailwind.config.ts`; `mem://design/tokens` updated in the same phase.
 - Existing routes, detail pages, keyboard shortcuts, offline guards, draft autosave and PDF export all carry over unchanged.
+
+## 7. Delivery as a separate project
+
+Yes — V2 can be built as a new project so this one (V1) stays untouched and available. Two decisions follow:
+
+**Moving the code.** The clean path is: connect this project to GitHub, then create a new Lovable project from that repo (or start the new project and paste in the source tree). The entire frontend ports as-is; the redesign work then happens only in the new project.
+
+**The data is the real decision.** Your chronicles live in this project's Supabase backend, not in the code. Options:
+- **Shared database (recommended):** connect the new project to the *same* Supabase backend. V1 and V2 then read and write identical chronicle data — you can open either app against your real games. Schema additions (e.g. `session_beats`) apply to the shared database and remain harmless to V1, which simply never reads them.
+- **Fresh database:** the new project gets its own backend. Clean and zero-risk to V1, but V2 starts empty; you would seed it via the existing Import feature or keep it for design evaluation only.
+
+Recommendation: shared database, and ship Phase 1 (shell) first so you can flip between V1 and V2 on real data from day one.
